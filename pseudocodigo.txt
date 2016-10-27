@@ -1,0 +1,10 @@
+vectorizar (quizas en python)
+entrenar
+  -SGD(neural_net, training_data, epochs, mini_batch_size, eta): wrapper
+    -update_mini_batch(neural_net, mini_batch, eta): actualiza weight y bias de todas las neuronas
+      -backprop(neural_net, x, y): aplica el algoritmo de backpropagation y devuelve el vector gradiente evaluado en (x,y) 
+evaluar
+
+En ASM:
+* Suma, producto escalar
+* Sigmoid/logistic
