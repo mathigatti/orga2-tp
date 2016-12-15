@@ -1,9 +1,15 @@
-CC=gcc -std=c99
+CC=gcc 
+CFLAGS=-std=c99 -lm 
+DEPS = nn.h
+OBJ = main.o
 
-all: red-neuronal.o
+all: neural-net
 
-red-neuronal.o: main.c
-	$(CC) $^ -o $@
+%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+neural-net: $(OBJ)
+	gcc -o $@ $^ $(CFLAGS)
 
 clean:
 	rm -rf *.o *~
