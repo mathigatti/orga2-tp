@@ -31,18 +31,40 @@ void initialize_net(Network* net, uint num_of_hid_units){
   }
 }
 
-double* feed_forward(Network* net, double* input) {
+void feed_forward(Network* net, double* input, double* output) {
 /*Return the output of the network if ``a`` is input.*/
   uint rows = net->num_of_hid_units;
   uint cols = 784;
-  double* z = sum_vec(matrix_vec_prod(net->w_in_to_hid, input, rows, cols), net->bias_in_to_hid, rows);
-  double* hidden_state = sigmoid_v(z, rows);
+
+
+  double* matrixProduct1 = (double*) malloc(rows * sizeof(double));
+  matrix_vec_prod(net->w_in_to_hid, input, rows, cols, matrixProduct1);
+
+  double* z = (double*) malloc(rows * sizeof(double));
+  sum_vec(matrixProduct1, net->bias_in_to_hid, rows, z);
+
+  double* hidden_state = (double*) malloc(rows * sizeof(double));
+
+  sigmoid_v(z, rows, hidden_state);
+
+  free(z);
 
   rows = 10;
   cols = net->num_of_hid_units;
-  z = sum_vec(matrix_vec_prod(net->w_hid_to_out, hidden_state, rows, cols), net->bias_hid_to_out, rows);
 
-  return sigmoid_v(z, rows);
+  double* matrixProduct2 = (double*) malloc(rows * sizeof(double));
+
+  z = (double*) malloc(rows * sizeof(double));
+
+  matrix_vec_prod(net->w_hid_to_out, hidden_state, rows, cols, matrixProduct2);
+  sum_vec(matrixProduct2, net->bias_hid_to_out, rows, z);
+
+  sigmoid_v(z, rows, output);
+ 
+  free(matrixProduct1);
+  free(matrixProduct2);
+  free(hidden_state);
+  free(z);
 }
 
 void SGD(Network* net, double* training_data, uint epochs, uint mini_batch_size, double eta);
@@ -61,7 +83,7 @@ void update_mini_batch(Network* net);
   The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
   is the learning rate.*/
 
-double* backprop(Network* net, double* X, double* y);
+void backprop(Network* net, double* X, double* y, double* output);
 /*Return a tuple ``(nabla_b, nabla_w)`` representing the
 gradient for the cost function C_x.  ``nabla_b`` and
 ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
@@ -73,7 +95,7 @@ int evaluate(Network* net, double* test_data);
   network's output is assumed to be the index of whichever
   neuron in the final layer has the highest activation.*/
 
-double* cost_derivative(double* output_activations, double* y);
+void cost_derivative(double* output_activations, double* y, double* output);
 /*Return the vector of partial derivatives \partial C_x /
   \partial a for the output activations.*/
 
@@ -82,39 +104,53 @@ double sigmoid(double z){
   return 1/(1 + exp(-z));
 }
 
-double* sigmoid_v(double* z, uint n){
+void sigmoid_v(double* z, uint n, double* output){
 /*The sigmoid function.*/
-  double* y = (double*) malloc(n * sizeof(double));
   for(uint i = 0; i < n; i++) {
-    y[i] = sigmoid(z[i]);
+    output[i] = sigmoid(z[i]);
   }
-  return y;
 }
 
-double sigmoid_prime(double z);
-/*Derivative of the sigmoid function.*/
+double sigmoid_prime(double z){
+/*The sigmoid function.*/
+  return sigmoid(z)*(1-sigmoid(z));
+}
 
-double* sum_vec(double* v, double* w, uint n){
+
+void sigmoid_prime_v(double* z, uint n, double* output){
+
+  for(uint i = 0; i < n; i++){
+    double sigmoidea = sigmoid(z[i]);
+    double minusOneSigmoid = 1 - sigmoidea;
+    output[i] = minusOneSigmoid*sigmoidea;
+  }
+}
+
+/*
+Derivative of the sigmoid function.
+
+def sigmoid_prime(z):
+    """Derivative of the sigmoid function."""
+    return sigmoid(z)*(1-sigmoid(z))
+*/
+
+void sum_vec(double* v, double* w, uint n, double* output){
 /*Sum of vectors*/
 /*TO OPTIMIZE*/
-  double* sum = (double*) malloc(n * sizeof(double));
   for(uint i = 0; i < n; i++){
-    sum[i] = v[i] + w[i];
+    output[i] = v[i] + w[i];
   }
-  return sum;
 }
 
-double* matrix_vec_prod(double* W, double* x, uint rows, uint cols){
+void matrix_vec_prod(double* W, double* x, uint rows, uint cols, double* output){
 /*Usual matrix product*/
 /*TO OPTIMIZE*/
-  double* y = (double*) malloc(sizeof(double) * rows);
   for(uint i = 0; i < rows; i++){
-    y[i] = 0;
+    output[i] = 0;
     for(uint j = 0; j < cols; j++){
-      y[i*cols] += W[i*cols + j] * x[j];
+      output[i*cols] += W[i*cols + j] * x[j];
     }
   }
-  return y;
 }
 
 void shuffle(int *array, size_t n) {
@@ -136,7 +172,9 @@ int main(){
   initialize_net(net, 10);
 
   //testeo feedforward con una imagen
-  double* res = feed_forward(net, &training_data->mat[0]);
+  double* res = (double*) malloc(10 * sizeof(double));
+
+  feed_forward(net, &training_data->mat[0], res);
   for(int i = 0; i < 10; i++){
     printf("Valor para %d: %f\n", i, res[i]);
   }
@@ -144,11 +182,20 @@ int main(){
   printf("La cantidad de unidades ocultas es %d \n", net->num_of_hid_units);
   //testeo feedforward con todos 0's
   double input[784] = {[0 ... 783] = 0};
-  double* y = feed_forward(net, input);
+
+  double* y = (double*) malloc(10 * sizeof(double));
+
+  printf("esta por empezar feed_forward");
+
+  feed_forward(net, input, y);
+  printf("Termino feed_forward");
   for(int i = 0; i < 10; i++){
     printf("Valor asignado a %d: %f\n", i, y[i]);
   }
+
+  free(y);
   free(net);
   free(training_data);
+
   return 0;
 }

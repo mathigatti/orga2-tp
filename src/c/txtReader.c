@@ -22,7 +22,7 @@ Imagenes* trainSetReader() {
    Imagenes* Img = (Imagenes*) malloc(sizeof(Imagenes));
    Img->cantImg = cantImagenes;
 
-   FILE *fstream = fopen("data/train_set.txt","r");
+   FILE *fstream = fopen("../data/test_set.txt","r");
    if(fstream == NULL) {
       printf("\n file opening failed ");
       return NULL ;
@@ -54,7 +54,7 @@ Imagenes* testSetReader() {
    Imagenes* Img = (Imagenes*) malloc(sizeof(Imagenes));
    Img->cantImg = cantImagenes;
 
-   FILE *fstream = fopen("data/test_set.txt","r");
+   FILE *fstream = fopen("../data/test_set.txt","r");
    if(fstream == NULL) {
       printf("\n file opening failed ");
       return NULL ;
