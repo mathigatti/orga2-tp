@@ -3,18 +3,14 @@
 #include <math.h>
 #include <time.h>
 #include "nn.h"
-
-double* training_data; 
-double* test_data;
-double* training_labels;
-double* test_labels;
+#include "txtReader.c"
 
 /*The architechture of the network consist of
 784 input units ---> a custom number of hidden units ---> 10 output units
 */
 
 void initialize_net(Network* net, uint num_of_hid_units){
-  //srand(time(NULL));
+  srand(time(NULL));
   net->num_of_hid_units = num_of_hid_units;
   net->bias_in_to_hid = (double*) malloc(num_of_hid_units*sizeof(double));
   net->bias_hid_to_out = (double*) malloc(num_of_hid_units*sizeof(double));
@@ -23,8 +19,9 @@ void initialize_net(Network* net, uint num_of_hid_units){
   
   for(int i = 0; i < num_of_hid_units; i++) { 
     net->bias_in_to_hid[i] = (double) rand() / RAND_MAX;
-    for(int j = 0; j < 784; j++)
+    for(int j = 0; j < 784; j++) {
       net->w_in_to_hid[i * num_of_hid_units + j] = (double) rand() / RAND_MAX;     
+    }
   }
 
   for(int i = 0; i < 10; i++){
@@ -114,22 +111,32 @@ double* matrix_vec_prod(double* W, double* x, uint rows, uint cols){
   for(uint i = 0; i < rows; i++){
     y[i] = 0;
     for(uint j = 0; j < cols; j++){
-      y[i*cols+j] += W[i*cols + j] * x[j];
+      y[i*cols] += W[i*cols + j] * x[j];
     }
   }
   return y;
 }
 
 int main(){
+  Imagenes* training_data = trainSetReader();
+  Imagenes* test_data = testSetReader();
   Network* net = (Network*) malloc(sizeof(Network));
-  initialize_net(net, 1);
+  initialize_net(net, 10);
+
+  //testeo feedforward con una imagen
+  double* res = feed_forward(net, &training_data->mat[0]);
+  for(int i = 0; i < 10; i++){
+    printf("Valor para %d: %f\n", i, res[i]);
+  }
 
   printf("La cantidad de unidades ocultas es %d \n", net->num_of_hid_units);
+  //testeo feedforward con todos 0's
   double input[784] = {[0 ... 783] = 0};
   double* y = feed_forward(net, input);
   for(int i = 0; i < 10; i++){
     printf("Valor asignado a %d: %f\n", i, y[i]);
   }
   free(net);
+  free(training_data);
   return 0;
 }

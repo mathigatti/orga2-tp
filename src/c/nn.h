@@ -41,3 +41,5 @@ double sigmoid_prime(double z);
 double* sum_vec(double* v, double* w, uint n);
 
 double* matrix_vec_prod(double* W, double* x, uint rows, uint cols);
+
+void shuffle(int *array, size_t n);
