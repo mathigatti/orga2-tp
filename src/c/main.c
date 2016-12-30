@@ -31,21 +31,20 @@ void initialize_net(Network* net, uint num_of_hid_units){
   }
 }
 
-void feed_forward(Network* net, double* input, double* output) {
+void feed_forward(Network* net, double* input, uint cant_img, double* output) {
 /*Return the output of the network if ``a`` is input.*/
   uint rows = net->num_of_hid_units;
   uint cols = 784;
 
+  double* resProduct1 = (double*) malloc(rows * cant_img * sizeof(double));
+  matrix_vec_prod(net->w_in_to_hid, input, rows, cols, cant_img, resProduct1);
 
-  double* resProduct1 = (double*) malloc(rows * sizeof(double));
-  matrix_vec_prod(net->w_in_to_hid, input, rows, cols, resProduct1);
+  double* z = (double*) malloc(rows * cant_img * sizeof(double));
+  sum_vec(resProduct1, net->bias_in_to_hid, rows, cant_img, z);
 
-  double* z = (double*) malloc(rows * sizeof(double));
-  sum_vec(resProduct1, net->bias_in_to_hid, rows, z);
+  double* hidden_state = (double*) malloc(rows * cant_img * sizeof(double));
 
-  double* hidden_state = (double*) malloc(rows * sizeof(double));
-
-  sigmoid_v(z, rows, hidden_state);
+  sigmoid_v(z, rows, cant_img, hidden_state);
 
   free(z);
   free(resProduct1);
@@ -53,14 +52,14 @@ void feed_forward(Network* net, double* input, double* output) {
   rows = 10;
   cols = net->num_of_hid_units;
 
-  double* resProduct2 = (double*) malloc(rows * sizeof(double));
+  double* resProduct2 = (double*) malloc(rows * cant_img * sizeof(double));
 
-  z = (double*) malloc(rows * sizeof(double));
+  z = (double*) malloc(rows * cant_img * sizeof(double));
 
-  matrix_vec_prod(net->w_hid_to_out, hidden_state, rows, cols, resProduct2);
-  sum_vec(resProduct2, net->bias_hid_to_out, rows, z);
+  matrix_vec_prod(net->w_hid_to_out, hidden_state, rows, cols, cant_img, resProduct2);
+  sum_vec(resProduct2, net->bias_hid_to_out, rows, cant_img, z);
 
-  sigmoid_v(z, rows, output);
+  sigmoid_v(z, rows, cant_img, output);
  
   free(resProduct2);
   free(hidden_state);
@@ -108,10 +107,12 @@ double sigmoid(double z){
   return 1/(1 + exp(-z));
 }
 
-void sigmoid_v(double* z, uint n, double* output){
+void sigmoid_v(double* z, uint n, uint cant_img, double* output){
 /*The sigmoid function.*/
-  for(uint i = 0; i < n; i++) {
-    output[i] = sigmoid(z[i]);
+  for(uint k = 0; k < cant_img; k++){
+    for(uint i = 0; i < n; i++) {
+      output[k * n + i] = sigmoid(z[k * n + i]);
+    }
   }
 }
 
@@ -122,7 +123,6 @@ double sigmoid_prime(double z){
 
 
 void sigmoid_prime_v(double* z, uint n, double* output){
-
   for(uint i = 0; i < n; i++){
     double sigmoidea = sigmoid(z[i]);
     double minusOneSigmoid = 1 - sigmoidea;
@@ -130,21 +130,25 @@ void sigmoid_prime_v(double* z, uint n, double* output){
   }
 }
 
-void sum_vec(double* v, double* w, uint n, double* output){
+void sum_vec(double* v, double* w, uint n, uint cant_img, double* output){
 /*Sum of vectors*/
 /*TO OPTIMIZE*/
-  for(uint i = 0; i < n; i++){
-    output[i] = v[i] + w[i];
+  for(int k = 0; k < cant_img; k++){
+    for(uint i = 0; i < n; i++){
+      output[k * n + i] = v[k * n + i] + w[i];
+    }
   }
 }
 
-void matrix_vec_prod(double* W, double* x, uint rows, uint cols, double* output){
+void matrix_vec_prod(double* W, double* X, uint rows, uint cols, uint cant_img, double* output){
 /*Usual matrix product*/
 /*TO OPTIMIZE*/
-  for(uint i = 0; i < rows; i++){
-    output[i] = 0;
-    for(uint j = 0; j < cols; j++){
-      output[i*cols] += W[i*cols + j] * x[j];
+  for(uint k = 0; k < cant_img; k++) {
+    for(uint i = 0; i < rows; i++){
+      output[i * cant_img + k] = 0;
+      for(uint j = 0; j < cols; j++){
+        output[i * cant_img + k] += W[i*cols + j] * X[j * cant_img + k];
+      }
     }
   }
 }
@@ -170,7 +174,7 @@ int main(){
   //testeo feedforward con una imagen
   double* res = (double*) malloc(10 * sizeof(double));
 
-  feed_forward(net, &training_data->mat[0], res);
+  feed_forward(net, training_data->mat_tr, 100, res);
   for(int i = 0; i < 10; i++){
     printf("Valor para %d: %f\n", i, res[i]);
   }
@@ -180,7 +184,7 @@ int main(){
 
   double* y = (double*) malloc(10 * sizeof(double));
 
-  feed_forward(net, input, y);
+  feed_forward(net, input, 1, y);
   for(int i = 0; i < 10; i++){
     printf("Valor asignado a %d: %f\n", i, y[i]);
   }

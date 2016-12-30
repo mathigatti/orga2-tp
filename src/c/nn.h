@@ -20,7 +20,7 @@ typedef struct Network {
 
 void initialize_net(Network* net, uint num_of_hid_units);
 
-void feed_forward(Network* net, double* input, double* output);
+void feed_forward(Network* net, double* input, uint cant_img, double* output);
 
 void SGD(Network* net, double* training_data, uint epochs, uint mini_batch_size, double eta);
 
@@ -34,7 +34,7 @@ void cost_derivative(double* output_activations, double* y, uint n, double* outp
 
 double sigmoid(double z);
 
-void sigmoid_v(double* z, uint n, double* output);
+void sigmoid_v(double* z, uint n, uint cant_img, double* output);
 
 double sigmoid_prime(double z);
 
@@ -42,6 +42,6 @@ void sigmoid_prime_v(double* z, uint n, double* output);
 
 void shuffle(int *array, size_t n);
 
-void sum_vec(double* v, double* w, uint n, double* output);
+void sum_vec(double* v, double* w, uint n, uint cant_img, double* output);
 
-void matrix_vec_prod(double* W, double* x, uint rows, uint cols, double* output);
+void matrix_vec_prod(double* W, double* x, uint rows, uint cols, uint cant_img, double* output);
