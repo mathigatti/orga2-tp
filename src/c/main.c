@@ -37,32 +37,32 @@ void feed_forward(Network* net, double* input, double* output) {
   uint cols = 784;
 
 
-  double* matrixProduct1 = (double*) malloc(rows * sizeof(double));
-  matrix_vec_prod(net->w_in_to_hid, input, rows, cols, matrixProduct1);
+  double* resProduct1 = (double*) malloc(rows * sizeof(double));
+  matrix_vec_prod(net->w_in_to_hid, input, rows, cols, resProduct1);
 
   double* z = (double*) malloc(rows * sizeof(double));
-  sum_vec(matrixProduct1, net->bias_in_to_hid, rows, z);
+  sum_vec(resProduct1, net->bias_in_to_hid, rows, z);
 
   double* hidden_state = (double*) malloc(rows * sizeof(double));
 
   sigmoid_v(z, rows, hidden_state);
 
   free(z);
+  free(resProduct1);
 
   rows = 10;
   cols = net->num_of_hid_units;
 
-  double* matrixProduct2 = (double*) malloc(rows * sizeof(double));
+  double* resProduct2 = (double*) malloc(rows * sizeof(double));
 
   z = (double*) malloc(rows * sizeof(double));
 
-  matrix_vec_prod(net->w_hid_to_out, hidden_state, rows, cols, matrixProduct2);
-  sum_vec(matrixProduct2, net->bias_hid_to_out, rows, z);
+  matrix_vec_prod(net->w_hid_to_out, hidden_state, rows, cols, resProduct2);
+  sum_vec(resProduct2, net->bias_hid_to_out, rows, z);
 
   sigmoid_v(z, rows, output);
  
-  free(matrixProduct1);
-  free(matrixProduct2);
+  free(resProduct2);
   free(hidden_state);
   free(z);
 }
@@ -95,9 +95,13 @@ int evaluate(Network* net, double* test_data);
   network's output is assumed to be the index of whichever
   neuron in the final layer has the highest activation.*/
 
-void cost_derivative(double* output_activations, double* y, double* output);
+void cost_derivative(double* output_activations, double* y, uint n, double* output) {
 /*Return the vector of partial derivatives \partial C_x /
   \partial a for the output activations.*/
+  for(uint i = 0; i < n; i++){
+    output[i] = output_activations[i] - y[i];
+  }
+}
 
 double sigmoid(double z){
 /*The sigmoid function.*/
@@ -125,14 +129,6 @@ void sigmoid_prime_v(double* z, uint n, double* output){
     output[i] = minusOneSigmoid*sigmoidea;
   }
 }
-
-/*
-Derivative of the sigmoid function.
-
-def sigmoid_prime(z):
-    """Derivative of the sigmoid function."""
-    return sigmoid(z)*(1-sigmoid(z))
-*/
 
 void sum_vec(double* v, double* w, uint n, double* output){
 /*Sum of vectors*/
@@ -179,16 +175,12 @@ int main(){
     printf("Valor para %d: %f\n", i, res[i]);
   }
 
-  printf("La cantidad de unidades ocultas es %d \n", net->num_of_hid_units);
   //testeo feedforward con todos 0's
   double input[784] = {[0 ... 783] = 0};
 
   double* y = (double*) malloc(10 * sizeof(double));
 
-  printf("esta por empezar feed_forward");
-
   feed_forward(net, input, y);
-  printf("Termino feed_forward");
   for(int i = 0; i < 10; i++){
     printf("Valor asignado a %d: %f\n", i, y[i]);
   }
