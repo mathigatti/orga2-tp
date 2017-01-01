@@ -13,21 +13,21 @@ void initialize_net(Network* net, uint num_of_hid_units){
   srand(time(NULL));
   net->num_of_hid_units = num_of_hid_units;
   net->bias_in_to_hid = (double*) malloc(num_of_hid_units*sizeof(double));
-  net->bias_hid_to_out = (double*) malloc(num_of_hid_units*sizeof(double));
+  net->bias_hid_to_out = (double*) malloc(10*sizeof(double));
   net->w_in_to_hid = (double*) malloc(784 * num_of_hid_units * sizeof(double));
   net->w_hid_to_out = (double*) malloc(10 * num_of_hid_units * sizeof(double));
   
   for(int i = 0; i < num_of_hid_units; i++) { 
     net->bias_in_to_hid[i] = (double) rand() / RAND_MAX;
     for(int j = 0; j < 784; j++) {
-      net->w_in_to_hid[i * num_of_hid_units + j] = (double) rand() / RAND_MAX;     
+      net->w_in_to_hid[i * 784 + j] = (double) rand() / RAND_MAX;     
     }
   }
 
   for(int i = 0; i < 10; i++){
     net->bias_hid_to_out[i] = (double) rand() / RAND_MAX;
     for(int j = 0; j < num_of_hid_units; j++)
-      net->w_hid_to_out[i * 10 + j] = (double) rand() / RAND_MAX;
+      net->w_hid_to_out[i * num_of_hid_units + j] = (double) rand() / RAND_MAX;
   }
 }
 
