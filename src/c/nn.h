@@ -22,6 +22,8 @@ typedef struct Network {
 
 void initialize_net(Network* net, uint num_of_hid_units);
 
+void destructor_net(Network* net);
+
 void feed_forward(Network* net, double* input, uint cant_img, double* output);
 
 void SGD(Network* net, double* training_data, uint epochs, uint mini_batch_size, double eta);

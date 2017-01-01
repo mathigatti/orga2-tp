@@ -31,6 +31,14 @@ void initialize_net(Network* net, uint num_of_hid_units){
   }
 }
 
+void destructor_net(Network* net) {
+  free(net->bias_in_to_hid);
+  free(net->bias_hid_to_out);
+  free(net->w_in_to_hid);
+  free(net->w_hid_to_out);
+  free(net);
+}
+
 void feed_forward(Network* net, double* input, uint cant_img, double* output) {
 /*Return the output of the network if ``a`` is input.*/
   uint rows = net->num_of_hid_units;
@@ -179,6 +187,8 @@ int main(){
     printf("Valor para %d: %f\n", i, res[i]);
   }
 
+  free(res);
+  
   //testeo feedforward con todos 0's
   double input[784] = {[0 ... 783] = 0};
 
@@ -190,7 +200,7 @@ int main(){
   }
 
   free(y);
-  free(net);
+  destructor_net(net);
   free(training_data);
   free(test_data);
 

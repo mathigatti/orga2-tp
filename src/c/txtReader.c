@@ -17,17 +17,17 @@ typedef struct Imagenes {
 
 
 Imagenes* trainSetReader() {
-   char buffer[150];
-   char *record,*line;
+  char buffer[150];
+  char *record,*line;
 
-   Imagenes* Img = (Imagenes*) malloc(sizeof(Imagenes));
-   Img->cantImg = cantImagenes;
+  Imagenes* Img = (Imagenes*) malloc(sizeof(Imagenes));
+  Img->cantImg = cantImagenes;
 
-   FILE *fstream = fopen("../data/train_set.txt","r");
-   if(fstream == NULL) {
-      printf("\n file opening failed ");
-      return NULL ;
-   }
+  FILE *fstream = fopen("../data/train_set.txt","r");
+  if(fstream == NULL) {
+    printf("\n file opening failed ");
+    return NULL ;
+  }
 
 	for(int i = 0; i<cantImagenes; i++){
 		//printf("Imagen %d\n",i);
@@ -44,23 +44,23 @@ Imagenes* trainSetReader() {
 		//printf("%s\n",record);
 		Img->res[i] = atoi(record);
 		record = strtok(NULL,"\n");
-    }
-
+  }
+  fclose(fstream);
   return Img;
 }
 
 Imagenes* testSetReader() {
-   char buffer[150];
-   char *record,*line;
+  char buffer[150];
+  char *record,*line;
 
-   Imagenes* Img = (Imagenes*) malloc(sizeof(Imagenes));
-   Img->cantImg = cantImagenes;
+  Imagenes* Img = (Imagenes*) malloc(sizeof(Imagenes));
+  Img->cantImg = cantImagenes;
 
-   FILE *fstream = fopen("../data/test_set.txt","r");
-   if(fstream == NULL) {
-      printf("\n file opening failed ");
-      return NULL ;
-   }
+  FILE *fstream = fopen("../data/test_set.txt","r");
+  if(fstream == NULL) {
+    printf("\n file opening failed ");
+    return NULL ;
+  }
 
   for(int i = 0; i<cantImagenes; i++){
     //printf("Imagen %d\n",i);
@@ -77,7 +77,8 @@ Imagenes* testSetReader() {
     //printf("%s\n",record);
     Img->res[i] = atoi(record);
     record = strtok(NULL,"\n");
-    }
+  }
 
+  fclose(fstream);
   return Img;
 }
