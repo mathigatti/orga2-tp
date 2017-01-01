@@ -1,3 +1,5 @@
+#define MINI_BATCH_SIZE 100
+
 typedef unsigned int uint;
 
 typedef struct Network {

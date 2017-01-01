@@ -1,7 +1,7 @@
 CC=gcc 
 CFLAGS=-std=c99 -lm 
-DEPS = nn.h
-OBJ = main.o
+DEPS = nn.h txtReader.c
+OBJ = main.o 
 
 all: neural-net
 

@@ -171,10 +171,10 @@ int main(){
   Network* net = (Network*) malloc(sizeof(Network));
   initialize_net(net, 10);
 
-  //testeo feedforward con una imagen
-  double* res = (double*) malloc(10 * sizeof(double));
+  //testeo feedforward con un mini-batch
+  double* res = (double*) malloc(10 * MINI_BATCH_SIZE * sizeof(double));
 
-  feed_forward(net, training_data->mat_tr, 100, res);
+  feed_forward(net, training_data->mat_tr, MINI_BATCH_SIZE, res);
   for(int i = 0; i < 10; i++){
     printf("Valor para %d: %f\n", i, res[i]);
   }
@@ -192,6 +192,7 @@ int main(){
   free(y);
   free(net);
   free(training_data);
+  free(test_data);
 
   return 0;
 }
