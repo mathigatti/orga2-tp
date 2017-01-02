@@ -34,7 +34,7 @@ void backprop(Network* net, double* X, double* y, double* output);
 
 int evaluate(Network* net, double* test_data);
 
-void cost_derivative(double* output_activations, double* y, uint n, double* output);
+void cost_derivative(double* output_activations, double* y, uint n, uint cant_img, double* output);
 
 double sigmoid(double z);
 
@@ -42,7 +42,7 @@ void sigmoid_v(double* z, uint n, uint cant_img, double* output);
 
 double sigmoid_prime(double z);
 
-void sigmoid_prime_v(double* z, uint n, double* output);
+void sigmoid_prime_v(double* z, uint n, uint cant_img, double* output);
 
 void shuffle(int *array, size_t n);
 

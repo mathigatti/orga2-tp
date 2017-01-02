@@ -102,11 +102,13 @@ int evaluate(Network* net, double* test_data);
   network's output is assumed to be the index of whichever
   neuron in the final layer has the highest activation.*/
 
-void cost_derivative(double* output_activations, double* y, uint n, double* output) {
+void cost_derivative(double* output_activations, double* y, uint n, uint cant_img, double* output) {
 /*Return the vector of partial derivatives \partial C_x /
   \partial a for the output activations.*/
-  for(uint i = 0; i < n; i++){
-    output[i] = output_activations[i] - y[i];
+  for(uint k = 0; k < cant_img; k++){
+    for(uint i = 0; i < n; i++){
+      output[k * n + i] = output_activations[k * n + i] - y[i];
+    }
   }
 }
 
@@ -130,11 +132,13 @@ double sigmoid_prime(double z){
 }
 
 
-void sigmoid_prime_v(double* z, uint n, double* output){
-  for(uint i = 0; i < n; i++){
-    double sigmoidea = sigmoid(z[i]);
-    double minusOneSigmoid = 1 - sigmoidea;
-    output[i] = minusOneSigmoid*sigmoidea;
+void sigmoid_prime_v(double* z, uint n, uint cant_img, double* output){
+  for(uint k = 0; k < cant_img; k++){ 
+    for(uint i = 0; i < n; i++){
+      double sigmoidea = sigmoid(z[k * n + i]);
+      double minusOneSigmoid = 1 - sigmoidea;
+      output[k * n + i] = minusOneSigmoid*sigmoidea;
+    }
   }
 }
 
@@ -178,6 +182,11 @@ int main(){
   Imagenes* test_data = testSetReader();
   Network* net = (Network*) malloc(sizeof(Network));
   initialize_net(net, 10);
+
+  if (training_data == NULL || test_data == NULL){
+    printf("Error intentando leer data-sets de entrada\n");
+    return 0;
+  }
 
   //testeo feedforward con un mini-batch
   double* res = (double*) malloc(10 * MINI_BATCH_SIZE * sizeof(double));
