@@ -11,14 +11,14 @@ f = gzip.open('./mnist.pkl.gz', 'rb')
 # len de valid_set:  10000
 # len de test_set:  10000
 train_set, valid_set, test_set = cPickle.load(f)
-# with open("train_set.txt", "a") as myfile:
-# 	cantImagenes = 50000
-# 	for i in range(cantImagenes):
-# 		imagen = train_set[0][i]
-# 		res = train_set[1][i]
-# 		formatearEspaciado(imagen,res,myfile)
+with open("../data/train_set.txt", "a") as myfile:
+	cantImagenes = 50000
+	for i in range(cantImagenes):
+		imagen = train_set[0][i]
+		res = train_set[1][i]
+		formatearEspaciado(imagen,res,myfile)
 
-with open("test_set.txt", "a") as myfile:
+with open("../data/test_set.txt", "a") as myfile:
   cantImagenes = 10000
   for i in range(cantImagenes):
     imagen = test_set[0][i]
