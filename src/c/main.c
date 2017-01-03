@@ -107,7 +107,7 @@ void cost_derivative(double* output_activations, double* y, uint n, uint cant_im
   \partial a for the output activations.*/
   for(uint k = 0; k < cant_img; k++){
     for(uint i = 0; i < n; i++){
-      output[k * n + i] = output_activations[k * n + i] - y[i];
+      output[k * n + i] = output_activations[k * n + i] - y[k * n + i];
     }
   }
 }
