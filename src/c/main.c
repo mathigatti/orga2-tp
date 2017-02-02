@@ -95,6 +95,10 @@ void backprop(Network* net, double* X, double* y, double* output);
 gradient for the cost function C_x.  ``nabla_b`` and
 ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
 to ``self.biases`` and ``self.weights``.*/
+  double* nabla_b_in_to_hid;   // h x 1
+  double* nabla_b_hid_to_out;  // 10 x 1
+  double* nabla_w_in_to_hid;      // h x 784
+  double* nabla_w_hid_to_out;     // 10 x h
 
 int evaluate(Network* net, double* test_data);
 /*Return the number of test inputs for which the neural
