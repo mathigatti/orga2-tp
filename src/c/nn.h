@@ -1,3 +1,9 @@
+#include "txtReader.c"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+
 #define MINI_BATCH_SIZE 100
 
 typedef unsigned int uint;
@@ -18,9 +24,10 @@ typedef struct Network {
   double* bias_hid_to_out;  // 10 x 1
   double* w_in_to_hid;      // h x 784
   double* w_hid_to_out;     // 10 x h
+  double eta; //learning rate
 } Network;
 
-void initialize_net(Network* net, uint num_of_hid_units);
+void initialize_net(Network* net, uint num_of_hid_units, double eta);
 
 void destructor_net(Network* net);
 
@@ -28,9 +35,11 @@ void feed_forward(Network* net, double* input, uint cant_img, double* output);
 
 void SGD(Network* net, double* training_data, uint epochs, uint mini_batch_size, double eta);
 
-void update_mini_batch(Network* net);
+void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end);
 
-void backprop(Network* net, double* X, double* y, double* output);
+void backprop(Network* net, double* X, double* y, uint start, uint end, double* output);
+
+void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta);
 
 int evaluate(Network* net, double* test_data);
 

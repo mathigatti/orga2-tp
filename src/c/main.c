@@ -1,16 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
 #include "nn.h"
-#include "txtReader.c"
 
 /*The architechture of the network consist of
 784 input units ---> a custom number of hidden units ---> 10 output units
 */
 
-void initialize_net(Network* net, uint num_of_hid_units){
+void initialize_net(Network* net, uint num_of_hid_units, double eta){
   srand(time(NULL));
+  net->eta = eta;
   net->num_of_hid_units = num_of_hid_units;
   net->bias_in_to_hid = (double*) malloc(num_of_hid_units*sizeof(double));
   net->bias_hid_to_out = (double*) malloc(10*sizeof(double));
@@ -84,13 +80,49 @@ void SGD(Network* net, double* training_data, uint epochs, uint mini_batch_size,
   epoch, and partial progress printed out.  This is useful for
   tracking progress, but slows things down substantially.*/
 
-void update_mini_batch(Network* net);
+void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end) {
 /*Update the network's weights and biases by applying
   gradient descent using backpropagation to a single mini batch.
   The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
   is the learning rate.*/
+  uint h = net->num_of_hid_units;
 
-void backprop(Network* net, double* X, double* y, double* output);
+  double* nabla_w_in_to_hid = (double*) malloc(h * 764 * sizeof(double));;      // h x 784
+  double* nabla_b_in_to_hid = (double*) malloc(h * sizeof(double));   // h x 1
+  double* nabla_w_hid_to_out = (double*) malloc(h * 10 * sizeof(double));;     // 10 x h
+  double* nabla_b_hid_to_out = (double*) malloc(10 * sizeof(double)); // 10 x 1
+
+  // dnb = delta nabla b
+  // dnw = delta nabla w
+  double* dnw_in_to_hid = (double*) malloc(h * 764 * sizeof(double));;      // h x 784
+  double* dnb_in_to_hid = (double*) malloc(h * sizeof(double));   // h x 1
+  double* dnw_hid_to_out = (double*) malloc(h * 10 * sizeof(double));;     // 10 x h
+  double* dnb_hid_to_out = (double*) malloc(10 * sizeof(double)); // 10 x 1
+  
+  for(uint i = start; i < end; i++){
+    backprop(net, minibatch, start, end, dnb_hid_to_out, dnw_hid_to_out, dnb_in_to_hid, dnw_in_to_hid);
+    sum_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 764, 1, nabla_w_in_to_hid);
+    sum_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, 1, nabla_b_in_to_hid);
+    sum_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, 1, nabla_w_hid_to_out);
+    sum_vec(nabla_b_hid_to_out, dnb_hid_to_out, 10, 1, nabla_b_hid_to_out);
+  }
+
+  uint mb_size = end-start;
+  double eta = net->eta;
+  update_weight(net->w_in_to_hid, nabla_w_in_to_hid, h * 764, mb_size, eta);
+  update_weight(net->b_in_to_hid, nabla_b_in_to_hid, h, mb_size, eta);
+  update_weight(net->w_hid_to_out, nabla_w_hid_to_out, 10 * h, mb_size, eta);
+  update_weight(net->b_hid_to_out, nabla_b_hid_to_out, 10, mb_size, eta);  
+}
+
+void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta){
+/*TO OPTIMIZE*/
+  for(uint i = 0; i < n; i++){
+    w[i] = w[i] - (eta/mb_size) * nw[i];
+  }
+}
+
+void backprop(Network* net, double* X, double* y, uint start, uint end, double* nb_hid_to_out , double* nw_hid_to_out, double* nb_in_to_hid, double* nw_in_to_hid);
 /*Return a tuple ``(nabla_b, nabla_w)`` representing the
 gradient for the cost function C_x.  ``nabla_b`` and
 ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
@@ -185,7 +217,7 @@ int main(){
   Imagenes* training_data = trainSetReader();
   Imagenes* test_data = testSetReader();
   Network* net = (Network*) malloc(sizeof(Network));
-  initialize_net(net, 10);
+  initialize_net(net, 10, 0.3);
 
   if (training_data == NULL || test_data == NULL){
     printf("Error intentando leer data-sets de entrada\n");

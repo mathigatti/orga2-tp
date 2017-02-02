@@ -10,7 +10,7 @@
 
 typedef struct Imagenes {
   double mat[cantImagenes*tamanioImagen];
-	double mat_tr[cantImagenes*tamanioImagen];
+	double mat_tr[tamanioImagen*cantImagenes];
 	int res[cantImagenes];
 	int cantImg;
 } Imagenes;
