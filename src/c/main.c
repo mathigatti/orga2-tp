@@ -127,76 +127,101 @@ void backprop(Network* net, double* X, double* y, uint start, uint end, double* 
 gradient for the cost function C_x.  ``nabla_b`` and
 ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
 to ``self.biases`` and ``self.weights``.*/
+
   int h = net->num_of_hid_units;
-  double* nabla_b_in_to_hid[h] = (double*) malloc( h * 1 * sizeof(double));   // h x 1 
+
+  double* nabla_b_in_to_hid = (double*) malloc(h * 1 * sizeof(double));   // h x 1 
   double* nabla_b_hid_to_out = (double*) malloc(10 * 1 * sizeof(double));  // 10 x 1
   double* nabla_w_in_to_hid = (double*) malloc(h * 784 * sizeof(double));      // h x 784
   double* nabla_w_hid_to_out  = (double*) malloc(10 * h * sizeof(double));     // 10 x h
 
-  double* activation = X;
+  double* activation0 = X;
 
-  // double* zs = []
-  // double* activations = [activation]
+  //--- FeedForward ---//
 
-  double* activation2 = (double*) malloc(10 * sizeof(double));
+  // Ciclo 1
 
   uint cant_img = 1;
   uint rows = net->num_of_hid_units;
   uint cols = 784;
 
   double* resProduct1 = (double*) malloc(rows * cant_img * sizeof(double));
-  matrix_vec_prod(net->w_in_to_hid, activation, rows, cols, cant_img, resProduct1);
+  matrix_vec_prod(activation0, net->w_in_to_hid, rows, cols, cant_img, resProduct1);
 
   double* z1 = (double*) malloc(rows * cant_img * sizeof(double));
-  sum_vec(resProduct1, net->bias_in_to_hid, rows, cant_img, z);
+  sum_vec(resProduct1, net->bias_in_to_hid, rows, cant_img, z1);
 
-  double* hidden_state = (double*) malloc(rows * cant_img * sizeof(double));
+  double* activation1 = (double*) malloc(rows * cant_img * sizeof(double));
 
-  sigmoid_v(z1, rows, cant_img, hidden_state);
-
-  // zs.append(z)
-  double* activation1 = hidden_state;
+  sigmoid_v(z1, rows, cant_img, activation1);
 
   free(resProduct1);
+
+  // Ciclo 2
 
   rows = 10;
   cols = net->num_of_hid_units;
 
   double* resProduct2 = (double*) malloc(rows * cant_img * sizeof(double));
+  matrix_vec_prod(activation1, net->w_hid_to_out, rows, cols, cant_img, resProduct2);
 
-  z2 = (double*) malloc(rows * cant_img * sizeof(double));
+  double* z2 = (double*) malloc(rows * cant_img * sizeof(double));
+  sum_vec(resProduct2, net->bias_hid_to_out, rows, cant_img, z2);
 
-  matrix_vec_prod(net->w_hid_to_out, hidden_state, rows, cols, cant_img, resProduct2);
-  sum_vec(resProduct2, net->bias_hid_to_out, rows, cant_img, z);
-
+  double* activation2 = (double*) malloc(10 * sizeof(double));
 
   sigmoid_v(z2, rows, cant_img, activation2);  
 
   free(resProduct2);
 
-  /*
-        delta = self.cost_derivative(activations[-1], y) * sigmoid_prime(zs[-1])
-        nabla_b[-1] = delta
-        nabla_w[-1] = np.dot(delta, activations[-2].transpose())
-  */
+  //--- BackProp ---//
 
-  cost_derivative(activation2, y, 10, 1, double* output1); 
+  // Ciclo 1
 
-  sigmoid_prime_v(z2, 10, 1, double* output2);
+  double* resProduct1 = (double*) malloc(rows * cant_img * sizeof(double));
 
-  matrix_vec_prod(double* W, double* X, uint rows, uint cols, 1, double* output);
+  cost_derivative(activation2, y, 10, 1, double* resProduct1); 
 
-  double* delta = (double*) malloc();
+  double* resProduct2 = (double*) malloc(rows * cant_img * sizeof(double));
 
+  sigmoid_prime_v(z2, 10, 1, double* resProduct2);
 
+  double delta = resProduct1 * resProduct2;
 
+  free(resProduct1);  
+  free(resProduct2);
 
+  nb_hid_to_out = &delta;
+
+  matrix_vec_prod(delta, activations1, uint rows, uint cols, 1, nw_hid_to_out);  
+
+  // Ciclo 2
+
+  double* resProduct1 = (double*) malloc(rows * cant_img * sizeof(double));
+
+  sigmoid_prime_v(z1, 10, 1, double* resProduct1);
+
+  double* resProduct2 = (double*) malloc(rows * cant_img * sizeof(double));
+
+  matrix_vec_prod(net->w_hid_to_out, delta, uint rows, uint cols, 1, resProduct2);
+
+  double delta = resProduct1 * resProduct2;
+
+  free(resProduct1);  
+  free(resProduct2);
+
+  nb_in_to_hid = &delta;
+
+  matrix_vec_prod(delta, activation0, uint rows, uint cols, 1, nw_in_to_hid);
+
+  //--- Libero memoria ---//
 
   free(z1);
   free(z2);
 
   free(activation1);
   free(activation2);
+
   free(nabla_b_hid_to_out);
   free(nabla_w_hid_to_out);
   free(nabla_b_in_to_hid);
