@@ -9,8 +9,8 @@
 #define tamanioTotalRecorrer (tamanioRes + tamanioImagen + 1)
 
 typedef struct Imagenes {
-  double mat[cantImagenes][tamanioImagen];
-	double mat_tr[tamanioImagen][cantImagenes];
+  double mat[cantImagenes*tamanioImagen];
+	double mat_tr[tamanioImagen*cantImagenes];
 	int res[cantImagenes];
 	int cantImg;
 } Imagenes;
@@ -35,8 +35,8 @@ Imagenes* trainSetReader() {
 			line=fgets(buffer,sizeof(buffer),fstream);
 			record = strtok(line,"\n");
 			//printf("%s\n",record);
-      Img->mat[i][j] = atof(record);
-			Img->mat_tr[j][i] = atof(record);
+      Img->mat[i*tamanioImagen+j] = atof(record);
+			Img->mat_tr[j*cantImagenes+i] = atof(record);
 			record = strtok(NULL,"\n");				
 	   	}
 		line=fgets(buffer,sizeof(buffer),fstream);
@@ -68,8 +68,8 @@ Imagenes* testSetReader() {
       line=fgets(buffer,sizeof(buffer),fstream);
       record = strtok(line,"\n");
       //printf("%s\n",record);
-      Img->mat[i][j] = atof(record);
-      Img->mat_tr[j][i] = atof(record);
+      Img->mat[i*tamanioImagen+j] = atof(record);
+      Img->mat_tr[j*cantImagenes+i] = atof(record);
       record = strtok(NULL,"\n");       
       }
     line=fgets(buffer,sizeof(buffer),fstream);
