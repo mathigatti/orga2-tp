@@ -43,18 +43,20 @@ void backprop(Network* net, double* X, int* y, uint start, uint end, double* nb_
 
 int evaluate(Network* net, double* test_data);
 
+void productoHadamard(double* matrix_1, double* matrix_2, uint rows, uint cols, double* output);
+
 void cost_derivative(double* output_activations, double* y, uint n, uint cant_img, double* output);
 
 double sigmoid(double z);
 
-void sigmoid_v(double* z, uint n, uint cant_img, double* output);
+void sigmoid_v(double* matrix, uint rows, uint cols, double* output);
 
 double sigmoid_prime(double z);
 
-void sigmoid_prime_v(double* z, uint n, uint cant_img, double* output);
+void sigmoid_prime_v(double* matrix, uint rows, uint cols, double* output);
 
 void shuffle(int *array, size_t n);
 
-void sum_vec(double* v, double* w, uint n, uint cant_img, double* output);
+void sum_vec(double* matrix, double* vector, uint vector_size, uint matrix_cols, double* output);
 
-void matrix_vec_prod(double* W, double* x, uint rows, uint cols, uint cant_img, double* output);
+void matrix_prod(double* matrix_1, double* matrix_2, uint matrix_1_rows, uint matrix_1_cols, uint matrix_2_cols, double* output);
