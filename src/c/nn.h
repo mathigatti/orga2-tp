@@ -55,7 +55,7 @@ double sigmoid_prime(double z);
 
 void sigmoid_prime_v(double* matrix, uint rows, uint cols, double* output);
 
-void shuffle(int *array, size_t n);
+void shuffle(Imagenes*);
 
 void sum_vec(double* matrix, double* vector, uint vector_size, uint matrix_cols, double* output);
 

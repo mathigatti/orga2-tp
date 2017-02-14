@@ -82,7 +82,7 @@ void SGD(Network* net, Imagenes* training_data, uint epochs, uint mini_batch_siz
   epoch, and partial progress printed out.  This is useful for
   tracking progress, but slows things down substantially.*/
   for(uint i = 0; i < epochs; i++){
-    random_shuffle(training_data, n);
+    random_shuffle(training_data);
     for(uint j = 0; j < n; j += mini_batch_size){
       update_mini_batch(net, training_data, j, j + minibatch_size);
     }
@@ -300,14 +300,30 @@ void matrix_prod(double* matrix_1, double* matrix_2, uint matrix_1_rows, uint ma
   }
 }
 
-void random_shuffle(double *array, size_t n) {
+void random_shuffle(Imagenes* batch) {
+  size_t n = batch.cant_img;
   if (n > 1) {
     size_t i;
     for (i = 0; i < n - 1; i++) {
       size_t j = i + rand() / (RAND_MAX / (n - i) + 1);
-      int t = array[j];
-      array[j] = array[i];
-      array[i] = t;
+      
+      // We permute the rows of batch.mat
+      double temp_img[] = batch.mat[j];
+      batch.mat[j] = batch.mat[i];
+      batch.mat[i] = temp_img;
+
+      // Now permute the columns of batch.mat_tr
+      double temp_pixel;
+      for(uint k = 0; k < 784; k++){
+        temp_pixel = batch.mat_tr[k][j];
+        batch.mat_tr[k][j] = batch.mat_tr[k][i];
+        batch.mat_tr[k][i] = temp_pixel;
+      }
+
+      // Finally, let's permute the targets
+      int temp_res = batch.res[j];
+      batch.res[j] = batch.res[i];
+      batch.res[i] = temp_res;
     }
   }
 }
