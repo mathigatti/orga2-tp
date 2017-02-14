@@ -93,16 +93,42 @@ class Network(object):
         activation = x
         activations = [x] # list to store all the activations, layer by layer
         zs = [] # list to store all the z vectors, layer by layer
+
         for b, w in zip(self.biases, self.weights):
             z = np.dot(w, activation)+b
             zs.append(z)
             activation = sigmoid(z)
             activations.append(activation)
+
         # backward pass
-        delta = self.cost_derivative(activations[-1], y) * \
-            sigmoid_prime(zs[-1])
+
+        print "z1 es: " 
+        print zs[-2].shape
+
+        print "z2 es: " 
+        print zs[-1].shape
+
+        a = sigmoid_prime(zs[-1])
+
+        print "sigmoid'(z2): "
+        print a.shape
+
+        b = self.cost_derivative(activations[-1], y)
+
+        print "cost_derivative(activation2,y): "
+        print b.shape
+
+        delta = b * a
         nabla_b[-1] = delta
+
+        print "nabla_B2 es: " 
+        print nabla_b[-1].shape
+
         nabla_w[-1] = np.dot(delta, activations[-2].transpose())
+
+        print "nabla_W2 es: " 
+        print nabla_w[-1].shape
+
         # Note that the variable l in the loop below is used a little
         # differently to the notation in Chapter 2 of the book.  Here,
         # l = 1 means the last layer of neurons, l = 2 is the
@@ -114,7 +140,13 @@ class Network(object):
             sp = sigmoid_prime(z)
             delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
             nabla_b[-l] = delta
+            print "nabla_B1 es: " 
+            print nabla_b[-l].shape
+
             nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
+            print "nabla_W1 es: " 
+            print nabla_w[-l].shape
+
         return (nabla_b, nabla_w)
 
     def evaluate(self, test_data):
@@ -139,3 +171,11 @@ def sigmoid(z):
 def sigmoid_prime(z):
     """Derivative of the sigmoid function."""
     return sigmoid(z)*(1-sigmoid(z))
+
+x = np.zeros((784,1))
+y = np.zeros((10,1))
+sizes = [784,100,10]
+
+net = Network(sizes)
+
+net.backprop(x,y)

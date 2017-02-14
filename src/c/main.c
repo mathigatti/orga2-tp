@@ -122,6 +122,12 @@ void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta)
   }
 }
 
+void productoVectorialLocoBahEnrealidadNo(w, v, a, b, output){
+  for(uint i = 0; i < a; i++){
+    output[i] = w[i]*v[i];
+  }
+}
+
 void backprop(Network* net, double* X, double* y, uint start, uint end, double* nb_hid_to_out , double* nw_hid_to_out, double* nb_in_to_hid, double* nw_in_to_hid){
 /*Return a tuple ``(nabla_b, nabla_w)`` representing the
 gradient for the cost function C_x.  ``nabla_b`` and
@@ -130,11 +136,6 @@ to ``self.biases`` and ``self.weights``.*/
 
   int h = net->num_of_hid_units;
 
-  double* nabla_b_in_to_hid = (double*) malloc(h * 1 * sizeof(double));   // h x 1 
-  double* nabla_b_hid_to_out = (double*) malloc(10 * 1 * sizeof(double));  // 10 x 1
-  double* nabla_w_in_to_hid = (double*) malloc(h * 784 * sizeof(double));      // h x 784
-  double* nabla_w_hid_to_out  = (double*) malloc(10 * h * sizeof(double));     // 10 x h
-
   double* activation0 = X;
 
   //--- FeedForward ---//
@@ -142,35 +143,30 @@ to ``self.biases`` and ``self.weights``.*/
   // Ciclo 1
 
   uint cant_img = 1;
-  uint rows = net->num_of_hid_units;
-  uint cols = 784;
+  uint inputUnits = 784;
+  uint outputUnits = 10;
 
-  double* resProduct1 = (double*) malloc(rows * cant_img * sizeof(double));
-  matrix_vec_prod(activation0, net->w_in_to_hid, rows, cols, cant_img, resProduct1);
+  double* resProduct1 = (double*) malloc(h * cant_img * sizeof(double));
+  matrix_vec_prod(net->w_in_to_hid, activation0, h, inputUnits, cant_img, resProduct1);
 
-  double* z1 = (double*) malloc(rows * cant_img * sizeof(double));
-  sum_vec(resProduct1, net->bias_in_to_hid, rows, cant_img, z1);
+  double* z1 = (double*) malloc(h * cant_img * sizeof(double));
+  sum_vec(resProduct1, net->bias_in_to_hid, h, cant_img, z1);
 
-  double* activation1 = (double*) malloc(rows * cant_img * sizeof(double));
-
-  sigmoid_v(z1, rows, cant_img, activation1);
+  double* activation1 = (double*) malloc(h * cant_img * sizeof(double));
+  sigmoid_v(z1, h, cant_img, activation1);
 
   free(resProduct1);
 
   // Ciclo 2
 
-  rows = 10;
-  cols = net->num_of_hid_units;
+  double* resProduct2 = (double*) malloc(outputUnits * cant_img * sizeof(double));
+  matrix_vec_prod(activation1, net->w_hid_to_out, outputUnits, h, cant_img, resProduct2);
 
-  double* resProduct2 = (double*) malloc(rows * cant_img * sizeof(double));
-  matrix_vec_prod(activation1, net->w_hid_to_out, rows, cols, cant_img, resProduct2);
+  double* z2 = (double*) malloc(outputUnits * cant_img * sizeof(double));
+  sum_vec(resProduct2, net->bias_hid_to_out, outputUnits, cant_img, z2);
 
-  double* z2 = (double*) malloc(rows * cant_img * sizeof(double));
-  sum_vec(resProduct2, net->bias_hid_to_out, rows, cant_img, z2);
-
-  double* activation2 = (double*) malloc(10 * sizeof(double));
-
-  sigmoid_v(z2, rows, cant_img, activation2);  
+  double* activation2 = (double*) malloc(outputUnits * cant_img * sizeof(double));
+  sigmoid_v(z2, outputUnits, cant_img, activation2);  
 
   free(resProduct2);
 
@@ -178,41 +174,37 @@ to ``self.biases`` and ``self.weights``.*/
 
   // Ciclo 1
 
-  double* resProduct1 = (double*) malloc(rows * cant_img * sizeof(double));
+  double* resProduct1 = (double*) malloc(outputUnits * cant_img * sizeof(double));
 
-  cost_derivative(activation2, y, 10, 1, double* resProduct1); 
+  cost_derivative(activation2, y, outputUnits, 1, double* resProduct1); 
 
-  double* resProduct2 = (double*) malloc(rows * cant_img * sizeof(double));
+  double* resProduct2 = (double*) malloc(outputUnits * cant_img * sizeof(double));
 
-  sigmoid_prime_v(z2, 10, 1, double* resProduct2);
+  sigmoid_prime_v(z2, outputUnits, 1, double* resProduct2);
 
-  double delta = resProduct1 * resProduct2;
+  productoVectorialLocoBahEnrealidadNo(resProduct1, resProduct2, outputUnits, 1, nb_hid_to_out); // producto del nombre raro
 
   free(resProduct1);  
   free(resProduct2);
 
-  nb_hid_to_out = &delta;
-
-  matrix_vec_prod(delta, activations1, uint rows, uint cols, 1, nw_hid_to_out);  
+  matrix_vec_prod(nb_hid_to_out, activations1, outputUnits, outputUnits, h, nw_hid_to_out);
 
   // Ciclo 2
 
-  double* resProduct1 = (double*) malloc(rows * cant_img * sizeof(double));
+  double* resProduct1 = (double*) malloc(h * cant_img * sizeof(double));
 
-  sigmoid_prime_v(z1, 10, 1, double* resProduct1);
+  sigmoid_prime_v(z1, h, 1, resProduct1);
 
-  double* resProduct2 = (double*) malloc(rows * cant_img * sizeof(double));
+  double* resProduct2 = (double*) malloc(h * cant_img * sizeof(double));
 
-  matrix_vec_prod(net->w_hid_to_out, delta, uint rows, uint cols, 1, resProduct2);
+  matrix_vec_prod(net->w_hid_to_out, nb_hid_to_out, uint rows, uint cols, 1, resProduct2);
 
-  double delta = resProduct1 * resProduct2;
+  productoVectorialLocoBahEnrealidadNo(resProduct1, resProduct2, h, 1, nb_in_to_hid);
 
   free(resProduct1);  
   free(resProduct2);
 
-  nb_in_to_hid = &delta;
-
-  matrix_vec_prod(delta, activation0, uint rows, uint cols, 1, nw_in_to_hid);
+  matrix_vec_prod(nb_in_to_hid, activation0, h, inputUnits, 1, nw_in_to_hid);
 
   //--- Libero memoria ---//
 
@@ -221,11 +213,6 @@ to ``self.biases`` and ``self.weights``.*/
 
   free(activation1);
   free(activation2);
-
-  free(nabla_b_hid_to_out);
-  free(nabla_w_hid_to_out);
-  free(nabla_b_in_to_hid);
-  free(nabla_w_in_to_hid);
 
 }
 
