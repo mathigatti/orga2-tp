@@ -8,28 +8,28 @@ void initialize_net(Network* net, uint num_of_hid_units, double eta){
   srand(time(NULL));
   net->eta = eta;
   net->num_of_hid_units = num_of_hid_units;
-  net->bias_in_to_hid = (double*) malloc(num_of_hid_units*sizeof(double));
-  net->bias_hid_to_out = (double*) malloc(10*sizeof(double));
+  net->b_in_to_hid = (double*) malloc(num_of_hid_units*sizeof(double));
+  net->b_hid_to_out = (double*) malloc(10*sizeof(double));
   net->w_in_to_hid = (double*) malloc(784 * num_of_hid_units * sizeof(double));
   net->w_hid_to_out = (double*) malloc(10 * num_of_hid_units * sizeof(double));
   
   for(int i = 0; i < num_of_hid_units; i++) { 
-    net->bias_in_to_hid[i] = (double) rand() / RAND_MAX;
+    net->b_in_to_hid[i] = (double) rand() / RAND_MAX;
     for(int j = 0; j < 784; j++) {
       net->w_in_to_hid[i * 784 + j] = (double) rand() / RAND_MAX;     
     }
   }
 
   for(int i = 0; i < 10; i++){
-    net->bias_hid_to_out[i] = (double) rand() / RAND_MAX;
+    net->b_hid_to_out[i] = (double) rand() / RAND_MAX;
     for(int j = 0; j < num_of_hid_units; j++)
       net->w_hid_to_out[i * num_of_hid_units + j] = (double) rand() / RAND_MAX;
   }
 }
 
 void destructor_net(Network* net) {
-  free(net->bias_in_to_hid);
-  free(net->bias_hid_to_out);
+  free(net->b_in_to_hid);
+  free(net->b_hid_to_out);
   free(net->w_in_to_hid);
   free(net->w_hid_to_out);
   free(net);
@@ -44,7 +44,7 @@ void feed_forward(Network* net, double* input, uint cant_img, double* output) {
   matrix_vec_prod(net->w_in_to_hid, input, rows, cols, cant_img, resProduct1);
 
   double* z = (double*) malloc(rows * cant_img * sizeof(double));
-  sum_vec(resProduct1, net->bias_in_to_hid, rows, cant_img, z);
+  sum_vec(resProduct1, net->b_in_to_hid, rows, cant_img, z);
 
   double* hidden_state = (double*) malloc(rows * cant_img * sizeof(double));
 
@@ -61,7 +61,7 @@ void feed_forward(Network* net, double* input, uint cant_img, double* output) {
   z = (double*) malloc(rows * cant_img * sizeof(double));
 
   matrix_vec_prod(net->w_hid_to_out, hidden_state, rows, cols, cant_img, resProduct2);
-  sum_vec(resProduct2, net->bias_hid_to_out, rows, cant_img, z);
+  sum_vec(resProduct2, net->b_hid_to_out, rows, cant_img, z);
 
   sigmoid_v(z, rows, cant_img, output);
  
@@ -100,7 +100,7 @@ void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end) 
   double* dnb_hid_to_out = (double*) malloc(10 * sizeof(double)); // 10 x 1
   
   for(uint i = start; i < end; i++){
-    backprop(net, minibatch, start, end, dnb_hid_to_out, dnw_hid_to_out, dnb_in_to_hid, dnw_in_to_hid);
+    backprop(net, minibatch->mat_tr, minibatch->res, start, end, dnb_hid_to_out, dnw_hid_to_out, dnb_in_to_hid, dnw_in_to_hid);
     sum_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 764, 1, nabla_w_in_to_hid);
     sum_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, 1, nabla_b_in_to_hid);
     sum_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, 1, nabla_w_hid_to_out);
@@ -117,7 +117,7 @@ void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end) 
 
 void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta){
 /*TO OPTIMIZE*/
-  for(uint i = 0; i < n; i++){
+  for(uint i = 0; i < w_size; i++){
     w[i] = w[i] - (eta/mb_size) * nw[i];
   }
 }
@@ -129,6 +129,7 @@ void productoVectorialLocoBahEnrealidadNo(w, v, a, b, output){
 }
 
 void backprop(Network* net, double* X, double* y, uint start, uint end, double* nb_hid_to_out , double* nw_hid_to_out, double* nb_in_to_hid, double* nw_in_to_hid){
+
 /*Return a tuple ``(nabla_b, nabla_w)`` representing the
 gradient for the cost function C_x.  ``nabla_b`` and
 ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
@@ -173,7 +174,6 @@ to ``self.biases`` and ``self.weights``.*/
   //--- BackProp ---//
 
   // Ciclo 1
-
   double* resProduct1 = (double*) malloc(outputUnits * cant_img * sizeof(double));
 
   cost_derivative(activation2, y, outputUnits, 1, double* resProduct1); 

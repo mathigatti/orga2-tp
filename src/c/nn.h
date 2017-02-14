@@ -20,8 +20,8 @@ typedef struct Network {
     won't set any biases for those neurons, since biases are only
     ever used in computing the outputs from later layers.*/
   uint num_of_hid_units;    // h = #hidden units
-  double* bias_in_to_hid;   // h x 1
-  double* bias_hid_to_out;  // 10 x 1
+  double* b_in_to_hid;   // h x 1
+  double* b_hid_to_out;  // 10 x 1
   double* w_in_to_hid;      // h x 784
   double* w_hid_to_out;     // 10 x h
   double eta; //learning rate
@@ -39,7 +39,7 @@ void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end);
 
 void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta);
 
-void backprop(Network* net, double* X, double* y, uint start, uint end, double* nb_hid_to_out , double* nw_hid_to_out, double* nb_in_to_hid, double* nw_in_to_hid);
+void backprop(Network* net, double* X, int* y, uint start, uint end, double* nb_hid_to_out , double* nw_hid_to_out, double* nb_in_to_hid, double* nw_in_to_hid);
 
 int evaluate(Network* net, double* test_data);
 
