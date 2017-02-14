@@ -33,7 +33,7 @@ void destructor_net(Network* net);
 
 void feed_forward(Network* net, double* input, uint cant_img, double* output);
 
-void SGD(Network* net, double* training_data, uint epochs, uint mini_batch_size, double eta);
+void SGD(Network* net, Imagenes* training_data, uint epochs, uint mini_batch_size, double eta);
 
 void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end);
 

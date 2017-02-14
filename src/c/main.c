@@ -72,7 +72,7 @@ void feed_forward(Network* net, double* input, uint cant_img, double* output) {
   free(z);
 }
 
-void SGD(Network* net, double* training_data, uint epochs, uint mini_batch_size, double eta);
+void SGD(Network* net, Imagenes* training_data, uint epochs, uint mini_batch_size, double eta);
 /*Train the neural network using mini-batch stochastic
   gradient descent.  The ``training_data`` is a list of tuples
   ``(x, y)`` representing the training inputs and the desired
@@ -81,6 +81,12 @@ void SGD(Network* net, double* training_data, uint epochs, uint mini_batch_size,
   network will be evaluated against the test data after each
   epoch, and partial progress printed out.  This is useful for
   tracking progress, but slows things down substantially.*/
+  for(uint i = 0; i < epochs; i++){
+    random_shuffle(training_data, n);
+    for(uint j = 0; j < n; j += mini_batch_size){
+      update_mini_batch(net, training_data, j, j + minibatch_size);
+    }
+  }
 
 void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end) {
 /*Update the network's weights and biases by applying
@@ -294,7 +300,7 @@ void matrix_prod(double* matrix_1, double* matrix_2, uint matrix_1_rows, uint ma
   }
 }
 
-void shuffle(int *array, size_t n) {
+void random_shuffle(double *array, size_t n) {
   if (n > 1) {
     size_t i;
     for (i = 0; i < n - 1; i++) {
