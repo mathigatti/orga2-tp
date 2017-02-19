@@ -3,15 +3,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define tamanioImagen 784
-#define tamanioRes 1
-#define cantImagenes 100
-#define tamanioTotalRecorrer (tamanioRes + tamanioImagen + 1)
+#define IMG_SIZE 784
+#define RES_SIZE 1
+#define IMGS_NUM 1000
+#define tamanioTotalRecorrer (RES_SIZE + IMG_SIZE + 1)
 
 typedef struct Imagenes {
-  double mat[cantImagenes*tamanioImagen];
-	double mat_tr[tamanioImagen*cantImagenes];
-	int res[cantImagenes];
+  double mat[IMGS_NUM * IMG_SIZE];
+	double mat_tr[IMG_SIZE * IMGS_NUM];
+	int res[IMGS_NUM];
 	int cantImg;
 } Imagenes;
 
@@ -21,7 +21,7 @@ Imagenes* trainSetReader() {
   char *record,*line;
 
   Imagenes* Img = (Imagenes*) malloc(sizeof(Imagenes));
-  Img->cantImg = cantImagenes;
+  Img->cantImg = IMGS_NUM;
 
   FILE *fstream = fopen("../data/train_set.txt","r");
   if(fstream == NULL) {
@@ -29,14 +29,14 @@ Imagenes* trainSetReader() {
     return NULL ;
   }
 
-	for(int i = 0; i<cantImagenes; i++){
+	for(int i = 0; i<IMGS_NUM; i++){
 		//printf("Imagen %d\n",i);
-		for(int j = 0; j<tamanioImagen; j++){
+		for(int j = 0; j<IMG_SIZE; j++){
 			line=fgets(buffer,sizeof(buffer),fstream);
 			record = strtok(line,"\n");
 			//printf("%s\n",record);
-      Img->mat[i*tamanioImagen+j] = atof(record);
-			Img->mat_tr[j*cantImagenes+i] = atof(record);
+      Img->mat[i * IMG_SIZE + j] = atof(record);
+			Img->mat_tr[j * IMGS_NUM + i] = atof(record);
 			record = strtok(NULL,"\n");				
 	   	}
 		line=fgets(buffer,sizeof(buffer),fstream);
@@ -54,7 +54,7 @@ Imagenes* testSetReader() {
   char *record,*line;
 
   Imagenes* Img = (Imagenes*) malloc(sizeof(Imagenes));
-  Img->cantImg = cantImagenes;
+  Img->cantImg = IMGS_NUM;
 
   FILE *fstream = fopen("../data/test_set.txt","r");
   if(fstream == NULL) {
@@ -62,14 +62,14 @@ Imagenes* testSetReader() {
     return NULL ;
   }
 
-  for(int i = 0; i<cantImagenes; i++){
+  for(int i = 0; i<IMGS_NUM; i++){
     //printf("Imagen %d\n",i);
-    for(int j = 0; j<tamanioImagen; j++){
+    for(int j = 0; j<IMG_SIZE; j++){
       line=fgets(buffer,sizeof(buffer),fstream);
       record = strtok(line,"\n");
       //printf("%s\n",record);
-      Img->mat[i*tamanioImagen+j] = atof(record);
-      Img->mat_tr[j*cantImagenes+i] = atof(record);
+      Img->mat[i * IMG_SIZE + j] = atof(record);
+      Img->mat_tr[j * IMGS_NUM + i] = atof(record);
       record = strtok(NULL,"\n");       
       }
     line=fgets(buffer,sizeof(buffer),fstream);

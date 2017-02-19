@@ -80,9 +80,12 @@ void SGD(Network* net, Imagenes* training_data, uint epochs, uint mini_batch_siz
   epoch, and partial progress printed out.  This is useful for
   tracking progress, but slows things down substantially.*/
   uint n = training_data->cantImg;
+  printf("Cantidad de imagenes: %d\n", n);
 
   for(uint i = 0; i < epochs; i++){
+    printf("Epoch: %d\n", i);
     random_shuffle(training_data);
+    printf("Shuffle exitoso\n");
     for(uint j = 0; j < n; j += mini_batch_size){
       update_mini_batch(net, training_data, j, j + mini_batch_size);
     }
@@ -96,32 +99,44 @@ void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end) 
   is the learning rate.*/
   uint h = net->num_of_hid_units;
 
-  double* nabla_w_in_to_hid = (double*) malloc(h * 764 * sizeof(double));;      // h x 784
+  double* nabla_w_in_to_hid = (double*) malloc(h * 784 * sizeof(double));;      // h x 784
   double* nabla_b_in_to_hid = (double*) malloc(h * sizeof(double));   // h x 1
   double* nabla_w_hid_to_out = (double*) malloc(h * 10 * sizeof(double));;     // 10 x h
   double* nabla_b_hid_to_out = (double*) malloc(10 * sizeof(double)); // 10 x 1
 
   // dnb = delta nabla b
   // dnw = delta nabla w
-  double* dnw_in_to_hid = (double*) malloc(h * 764 * sizeof(double));;      // h x 784
+  double* dnw_in_to_hid = (double*) malloc(h * 784 * sizeof(double));;      // h x 784
   double* dnb_in_to_hid = (double*) malloc(h * sizeof(double));   // h x 1
   double* dnw_hid_to_out = (double*) malloc(h * 10 * sizeof(double));;     // 10 x h
   double* dnb_hid_to_out = (double*) malloc(10 * sizeof(double)); // 10 x 1
   
   for(uint i = start; i < end; i++){
     backprop(net, &minibatch->mat[i*784], minibatch->res[i], dnb_hid_to_out, dnw_hid_to_out, dnb_in_to_hid, dnw_in_to_hid);
-    sum_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 764, 1, nabla_w_in_to_hid);
+    sum_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 784, 1, nabla_w_in_to_hid);
     sum_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, 1, nabla_b_in_to_hid);
     sum_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, 1, nabla_w_hid_to_out);
     sum_vec(nabla_b_hid_to_out, dnb_hid_to_out, 10, 1, nabla_b_hid_to_out);
   }
 
+  // Free memory for delta nablas
+  free(dnw_in_to_hid);
+  free(dnb_in_to_hid);
+  free(dnw_hid_to_out);
+  free(dnb_hid_to_out);
+
   uint mb_size = end-start;
   double eta = net->eta;
-  update_weight(net->w_in_to_hid, nabla_w_in_to_hid, h * 764, mb_size, eta);
+  update_weight(net->w_in_to_hid, nabla_w_in_to_hid, h * 784, mb_size, eta);
   update_weight(net->bias_in_to_hid, nabla_b_in_to_hid, h, mb_size, eta);
   update_weight(net->w_hid_to_out, nabla_w_hid_to_out, 10 * h, mb_size, eta);
-  update_weight(net->bias_hid_to_out, nabla_b_hid_to_out, 10, mb_size, eta);  
+  update_weight(net->bias_hid_to_out, nabla_b_hid_to_out, 10, mb_size, eta);
+
+  // Free memory for nablas
+  free(nabla_w_in_to_hid);
+  free(nabla_b_in_to_hid);
+  free(nabla_w_hid_to_out);
+  free(nabla_b_hid_to_out);  
 }
 
 void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta){
@@ -136,7 +151,7 @@ void productoHadamard(double* matrix_1, double* matrix_2, uint rows, uint cols, 
   // Las dos matrices de entrada y la de salida deben tener las mismas dimensiones
   for(uint i = 0; i < cols; i++){
     for(uint j = 0; j < rows; j++){
-      output[i * rows + j] += matrix_1[i * rows + j] * matrix_2[i * rows + j];
+      output[i * rows + j] = matrix_1[i * rows + j] * matrix_2[i * rows + j];
     }
   }
 }
@@ -344,10 +359,15 @@ int main(){
     return 0;
   }
 
-  //testeo feedforward con un mini-batch
+  //testeo SGD con un mini-batch
   double* res = (double*) malloc(10 * MINI_BATCH_SIZE * sizeof(double));
+  
+  // Cuando epochs > 1, hay seg fault
+  printf("Iniciando SGD...\n");
+  SGD(net, training_data, 50, MINI_BATCH_SIZE, net->eta);
+  printf("SGD finalizo exitosamente\n");
 
-  feed_forward(net, training_data->mat_tr, MINI_BATCH_SIZE, res);
+  feed_forward(net, test_data->mat_tr, MINI_BATCH_SIZE, res);
   for(int i = 0; i < 10; i++){
     printf("Valor para %d: %f\n", i, res[i]);
   }
