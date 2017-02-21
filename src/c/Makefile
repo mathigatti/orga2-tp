@@ -1,5 +1,6 @@
 CC=gcc 
-CFLAGS=-std=c99 -lm 
+# Quitar -g (opcion de debugeo)
+CFLAGS=-std=c99 -lm -O3 -g 
 DEPS = nn.h txtReader.c
 OBJ = main.o 
 

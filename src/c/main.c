@@ -2,10 +2,16 @@
 
 /*The architechture of the network consist of
 784 input units ---> a custom number of hidden units ---> 10 output units
+in a full-connected style
 */
 
 void initialize_net(Network* net, uint num_of_hid_units, double eta){
   srand(time(NULL));
+  /*
+  for(uint i = 0; i < 1000; i++){
+    printf("%f\n", (double) rand() / RAND_MAX);
+  }
+  */
   net->eta = eta;
   net->num_of_hid_units = num_of_hid_units;
   net->bias_in_to_hid = (double*) malloc(num_of_hid_units*sizeof(double));
@@ -39,12 +45,13 @@ void feed_forward(Network* net, double* input, uint cant_img, double* output) {
 /*Return the output of the network if ``a`` is input.*/
   uint rows = net->num_of_hid_units;
   uint cols = 784;
+  //cant_img = 1;
 
   double* resProduct1 = (double*) malloc(rows * cant_img * sizeof(double));
   matrix_prod(net->w_in_to_hid, input, rows, cols, cant_img, resProduct1);
 
   double* z = (double*) malloc(rows * cant_img * sizeof(double));
-  sum_vec(resProduct1, net->bias_in_to_hid, rows, cant_img, z);
+  mat_plus_vec(resProduct1, net->bias_in_to_hid, rows, cant_img, z);
 
   double* hidden_state = (double*) malloc(rows * cant_img * sizeof(double));
 
@@ -61,7 +68,7 @@ void feed_forward(Network* net, double* input, uint cant_img, double* output) {
   z = (double*) malloc(rows * cant_img * sizeof(double));
 
   matrix_prod(net->w_hid_to_out, hidden_state, rows, cols, cant_img, resProduct2);
-  sum_vec(resProduct2, net->bias_hid_to_out, rows, cant_img, z);
+  mat_plus_vec(resProduct2, net->bias_hid_to_out, rows, cant_img, z);
 
   sigmoid_v(z, rows, cant_img, output);
  
@@ -85,7 +92,7 @@ void SGD(Network* net, Imagenes* training_data, uint epochs, uint mini_batch_siz
   for(uint i = 0; i < epochs; i++){
     printf("Epoch: %d\n", i);
     random_shuffle(training_data);
-    printf("Shuffle exitoso\n");
+    //printf("Shuffle exitoso\n");
     for(uint j = 0; j < n; j += mini_batch_size){
       update_mini_batch(net, training_data, j, j + mini_batch_size);
     }
@@ -99,24 +106,24 @@ void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end) 
   is the learning rate.*/
   uint h = net->num_of_hid_units;
 
-  double* nabla_w_in_to_hid = (double*) malloc(h * 784 * sizeof(double));;      // h x 784
-  double* nabla_b_in_to_hid = (double*) malloc(h * sizeof(double));   // h x 1
-  double* nabla_w_hid_to_out = (double*) malloc(h * 10 * sizeof(double));;     // 10 x h
-  double* nabla_b_hid_to_out = (double*) malloc(10 * sizeof(double)); // 10 x 1
+  double* nabla_w_in_to_hid = (double*) calloc(h * 784, sizeof(double));      // h x 784
+  double* nabla_b_in_to_hid = (double*) calloc(h, sizeof(double));   // h x 1
+  double* nabla_w_hid_to_out = (double*) calloc(h * 10, sizeof(double));     // 10 x h
+  double* nabla_b_hid_to_out = (double*) calloc(10, sizeof(double)); // 10 x 1
 
   // dnb = delta nabla b
   // dnw = delta nabla w
-  double* dnw_in_to_hid = (double*) malloc(h * 784 * sizeof(double));;      // h x 784
+  double* dnw_in_to_hid = (double*) malloc(h * 784 * sizeof(double));    // h x 784
   double* dnb_in_to_hid = (double*) malloc(h * sizeof(double));   // h x 1
-  double* dnw_hid_to_out = (double*) malloc(h * 10 * sizeof(double));;     // 10 x h
+  double* dnw_hid_to_out = (double*) malloc(h * 10 * sizeof(double));     // 10 x h
   double* dnb_hid_to_out = (double*) malloc(10 * sizeof(double)); // 10 x 1
   
   for(uint i = start; i < end; i++){
-    backprop(net, &minibatch->mat[i*784], minibatch->res[i], dnb_hid_to_out, dnw_hid_to_out, dnb_in_to_hid, dnw_in_to_hid);
-    sum_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 784, 1, nabla_w_in_to_hid);
-    sum_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, 1, nabla_b_in_to_hid);
-    sum_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, 1, nabla_w_hid_to_out);
-    sum_vec(nabla_b_hid_to_out, dnb_hid_to_out, 10, 1, nabla_b_hid_to_out);
+    backprop(net, &(minibatch->mat[i*784]), minibatch->res[i], dnw_in_to_hid, dnb_in_to_hid, dnw_hid_to_out, dnb_hid_to_out);
+    mat_plus_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 784, 1, nabla_w_in_to_hid);
+    mat_plus_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, 1, nabla_b_in_to_hid);
+    mat_plus_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, 1, nabla_w_hid_to_out);
+    mat_plus_vec(nabla_b_hid_to_out, dnb_hid_to_out, 10, 1, nabla_b_hid_to_out);
   }
 
   // Free memory for delta nablas
@@ -147,17 +154,17 @@ void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta)
 }
 
 
-void productoHadamard(double* matrix_1, double* matrix_2, uint rows, uint cols, double* output){
-  // Las dos matrices de entrada y la de salida deben tener las mismas dimensiones
-  for(uint i = 0; i < cols; i++){
-    for(uint j = 0; j < rows; j++){
-      output[i * rows + j] = matrix_1[i * rows + j] * matrix_2[i * rows + j];
+void productoHadamard(double* matrix1, double* matrix2, uint n, uint m, double* output){
+/* matrix1 and matrix2 are nxm*/
+  for(uint i = 0; i < n; i++){
+    for(uint j = 0; j < m; j++){
+      output[i * m + j] = matrix1[i * m + j] * matrix2[i * m + j];
     }
   }
 }
 
 
-void backprop(Network* net, double* X, int target, double* nb_hid_to_out, double* nw_hid_to_out, double* nb_in_to_hid, double* nw_in_to_hid){
+void backprop(Network* net, double* input, int target, double* nw_in_to_hid, double* nb_in_to_hid, double* nw_hid_to_out, double* nb_hid_to_out){
 /*Return a tuple ``(nabla_b, nabla_w)`` representing the
 gradient for the cost function C_x.  ``nabla_b`` and
 ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
@@ -165,7 +172,7 @@ to ``self.biases`` and ``self.weights``.*/
 
   int h = net->num_of_hid_units;
 
-  double* activation0 = X;
+  double* activation0 = input;
 
   //--- FeedForward ---//
 
@@ -179,7 +186,7 @@ to ``self.biases`` and ``self.weights``.*/
   matrix_prod(net->w_in_to_hid, activation0, h, inputUnits, cant_img, resProduct1);
 
   double* z1 = (double*) malloc(h * cant_img * sizeof(double));
-  sum_vec(resProduct1, net->bias_in_to_hid, h, cant_img, z1);
+  mat_plus_vec(resProduct1, net->bias_in_to_hid, h, cant_img, z1);
 
   double* activation1 = (double*) malloc(h * cant_img * sizeof(double));
   sigmoid_v(z1, h, cant_img, activation1);
@@ -189,10 +196,10 @@ to ``self.biases`` and ``self.weights``.*/
   // Ciclo 2
 
   double* resProduct2 = (double*) malloc(outputUnits * cant_img * sizeof(double));
-  matrix_prod(activation1, net->w_hid_to_out, outputUnits, h, cant_img, resProduct2);
+  matrix_prod(net->w_hid_to_out, activation1, outputUnits, h, cant_img, resProduct2);
 
   double* z2 = (double*) malloc(outputUnits * cant_img * sizeof(double));
-  sum_vec(resProduct2, net->bias_hid_to_out, outputUnits, cant_img, z2);
+  mat_plus_vec(resProduct2, net->bias_hid_to_out, outputUnits, cant_img, z2);
 
   double* activation2 = (double*) malloc(outputUnits * cant_img * sizeof(double));
   sigmoid_v(z2, outputUnits, cant_img, activation2);  
@@ -208,19 +215,24 @@ to ``self.biases`` and ``self.weights``.*/
   double y[10] = {[0 ... 9] = 0};
   y[target] = 1;
 
+  // (y - t)
   cost_derivative(activation2, y, outputUnits, 1, resProduct1); 
 
   resProduct2 = (double*) malloc(outputUnits * cant_img * sizeof(double));
 
+  // y(1-y)
   sigmoid_prime_v(z2, outputUnits, 1, resProduct2);
 
+  // y(1-y)(y-t)
   productoHadamard(resProduct1, resProduct2, outputUnits, 1, nb_hid_to_out);
 
   free(resProduct1);  
   free(resProduct2);
 
-  matrix_prod(nb_hid_to_out, activation1, outputUnits, outputUnits, h, nw_hid_to_out);
+  // xy(1-y)(y-t)
+  matrix_prod(nb_hid_to_out, activation1, outputUnits, 1, h, nw_hid_to_out);
 
+  // Hasta aca me cierra bien
   // Ciclo 2
 
   resProduct1 = (double*) malloc(h * cant_img * sizeof(double));
@@ -229,14 +241,18 @@ to ``self.biases`` and ``self.weights``.*/
 
   resProduct2 = (double*) malloc(h * cant_img * sizeof(double));
 
-  matrix_prod(net->w_hid_to_out, nb_hid_to_out, 10, h, 1, resProduct2);
+  // Hay que transponer net->w_hid_to_out 
+  double* aux = (double*) malloc(h * 10 * sizeof(double));
+  transpose(net->w_hid_to_out, 10, h, aux);
+  matrix_prod(aux, nb_hid_to_out, h, 10, 1, resProduct2);
+  free(aux);
 
   productoHadamard(resProduct1, resProduct2, h, 1, nb_in_to_hid);
 
   free(resProduct1);  
   free(resProduct2);
 
-  matrix_prod(nb_in_to_hid, activation0, h, inputUnits, 1, nw_in_to_hid);
+  matrix_prod(nb_in_to_hid, activation0, h, 1, inputUnits, nw_in_to_hid);
 
   //--- Libero memoria ---//
 
@@ -248,18 +264,27 @@ to ``self.biases`` and ``self.weights``.*/
 
 }
 
+void transpose(double* matrix, uint n, uint m, double* output){
+  for(uint i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      output[j * n + i] = matrix[i * m + j];
+    }
+  }
+}
+
 int evaluate(Network* net, double* test_data);
 /*Return the number of test inputs for which the neural
   network outputs the correct result. Note that the neural
   network's output is assumed to be the index of whichever
   neuron in the final layer has the highest activation.*/
 
-void cost_derivative(double* matrix, double* y, uint rows, uint cols, double* output) {
+void cost_derivative(double* matrix, double* y, uint n, uint m, double* output) {
 /*Return the vector of partial derivatives \partial C_x /
   \partial a for the output activations.*/
-  for(uint k = 0; k < cols; k++){
-    for(uint i = 0; i < rows; i++){
-      output[k * rows + i] = matrix[k * rows + i] - y[i];
+  // En general m = 1
+  for(uint i = 0; i < n; i++){
+    for(uint j = 0; j < m; j++){
+      output[i * m + j] = matrix[i * m + j] - y[i * m + j];
     }
   }
 }
@@ -269,49 +294,54 @@ double sigmoid(double number){
   return 1/(1 + exp(-number));
 }
 
-void sigmoid_v(double* matrix, uint rows, uint cols, double* output){
+void sigmoid_v(double* matrix, uint n, uint m, double* output){
 /*The sigmoid function.*/
-  for(uint k = 0; k < cols; k++){
-    for(uint i = 0; i < rows; i++) {
-      output[k * rows + i] = sigmoid(matrix[k * rows + i]);
+  // TO OPTIMIZE
+  for(uint i = 0; i < n; i++){
+    for(uint j = 0; j < m; j++) {
+      output[i * m + j] = sigmoid(matrix[i * m + j]);
     }
   }
 }
 
 double sigmoid_prime(double number){
 /*The sigmoid function.*/
-  return sigmoid(number)*(1-sigmoid(number));
+  double sig = sigmoid(number); 
+  return sig * (1 - sig);
 }
 
 
-void sigmoid_prime_v(double* matrix, uint rows, uint cols, double* output){
-  for(uint k = 0; k < cols; k++){ 
-    for(uint i = 0; i < rows; i++){
-      double sigmoidea = sigmoid(matrix[k * rows + i]);
-      double minusOneSigmoid = 1 - sigmoidea;
-      output[k * rows + i] = minusOneSigmoid*sigmoidea;
+void sigmoid_prime_v(double* matrix, uint n, uint m, double* output){
+  double sig;
+  double minusOneSig;
+  for(uint i = 0; i < n; i++){ 
+    for(uint j = 0; j < m; j++){
+      sig = sigmoid(matrix[i * m + j]);
+      minusOneSig = 1 - sig;
+      output[i * m + j] = minusOneSig * sig;
     }
   }
 }
 
-void sum_vec(double* matrix, double* vector, uint vector_size, uint matrix_cols, double* output){
-/* matrix_rows == vector_size */
+void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output){
+/* |vector| == n */
 
-  for(int k = 0; k < matrix_cols; k++){
-    for(uint i = 0; i < vector_size; i++){
-      output[k * vector_size + i] = vector[k * vector_size + i] + matrix[i];
+  for(int i = 0; i < n; i++){
+    for(uint j = 0; j < m; j++){
+      output[i * m + j] = vector[i] + matrix[i * m + j];
     }
   }
 }
 
-void matrix_prod(double* matrix_1, double* matrix_2, uint matrix_1_rows, uint matrix_1_cols, uint matrix_2_cols, double* output){
-/* matrix_1_cols == matrix_2_rows */
-
-  for(uint k = 0; k < matrix_2_cols; k++) {
-    for(uint i = 0; i < matrix_1_rows; i++){
-      output[i * matrix_2_cols + k] = 0;
-      for(uint j = 0; j < matrix_1_cols; j++){
-        output[i * matrix_2_cols + k] += matrix_1[i*matrix_1_cols + j] * matrix_2[j * matrix_2_cols + k];
+void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, double* output){
+/* matrix1 is nxm */
+/* matrix2 is mxl */
+/* output is nxl */
+  for(uint i = 0; i < n; i++) {
+    for(uint j = 0; j < l; j++){
+      output[i * l + j] = 0;
+      for(uint k = 0; k < m; k++){
+        output[i * l + j] += matrix1[i * m + k] * matrix2[k * l + j];
       }
     }
   }
@@ -362,20 +392,23 @@ int main(){
   //testeo SGD con un mini-batch
   double* res = (double*) malloc(10 * MINI_BATCH_SIZE * sizeof(double));
   
-  // Cuando epochs > 1, hay seg fault
   printf("Iniciando SGD...\n");
-  SGD(net, training_data, 50, MINI_BATCH_SIZE, net->eta);
+  SGD(net, training_data, 10, MINI_BATCH_SIZE, net->eta);
   printf("SGD finalizo exitosamente\n");
 
-  feed_forward(net, test_data->mat_tr, MINI_BATCH_SIZE, res);
+  feed_forward(net, test_data->mat_tr, 1, res);
   for(int i = 0; i < 10; i++){
     printf("Valor para %d: %f\n", i, res[i]);
   }
+  printf("Target: %d\n", test_data->res[0]);
 
   free(res);
   
-  //testeo feedforward con todos 0's
+  //testeo feedforward con un 1 artificial
   double input[784] = {[0 ... 783] = 0};
+  for(uint i = 42; i < 784; i += 28){
+    input[i] = 1.0;
+  }
 
   double* y = (double*) malloc(10 * sizeof(double));
 

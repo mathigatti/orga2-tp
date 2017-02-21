@@ -39,24 +39,29 @@ void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end);
 
 void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta);
 
-void backprop(Network* net, double* X, int target, double* nb_hid_to_out , double* nw_hid_to_out, double* nb_in_to_hid, double* nw_in_to_hid);
+void backprop(Network* net, double* X, int target, double* , double*, double*, double*);
 
 int evaluate(Network* net, double* test_data);
 
-void productoHadamard(double* matrix_1, double* matrix_2, uint rows, uint cols, double* output);
+void productoHadamard(double* matrix1, double* matrix2, uint n, uint m, double* output);
 
-void cost_derivative(double* output_activations, double* y, uint n, uint cant_img, double* output);
+// Posiblemente se podria cambiar para que tome un vector directamente
+void cost_derivative(double* output_activations, double* y, uint n, uint m, double* output);
 
 double sigmoid(double z);
 
-void sigmoid_v(double* matrix, uint rows, uint cols, double* output);
+void sigmoid_v(double* matrix, uint n, uint m, double* output);
 
 double sigmoid_prime(double z);
 
-void sigmoid_prime_v(double* matrix, uint rows, uint cols, double* output);
+void sigmoid_prime_v(double* matrix, uint n, uint m, double* output);
 
 void random_shuffle(Imagenes* batch);
 
-void sum_vec(double* matrix, double* vector, uint vector_size, uint matrix_cols, double* output);
+// Posiblemente se podria cambiar para que tome un vector directamente
+// i.e. hacer suma de vector-vector
+void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output);
 
-void matrix_prod(double* matrix_1, double* matrix_2, uint matrix_1_rows, uint matrix_1_cols, uint matrix_2_cols, double* output);
+void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, double* output);
+
+void transpose(double* matrix, uint n, uint m, double* output);
