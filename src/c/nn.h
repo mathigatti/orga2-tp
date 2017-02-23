@@ -41,7 +41,9 @@ void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta)
 
 void backprop(Network* net, double* X, int target, double* , double*, double*, double*);
 
-int evaluate(Network* net, double* test_data);
+double evaluate(Network* net, Images* test_data);
+
+int max_arg(double* vector, uint n);
 
 void productoHadamard(double* matrix1, double* matrix2, uint n, uint m, double* output);
 

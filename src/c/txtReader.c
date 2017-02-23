@@ -12,6 +12,7 @@
 typedef struct Images {
   double* mat;
 	int res[IMGS_NUM];
+  int size; //Number of images
 } Images;
 
 
@@ -22,6 +23,7 @@ Images* trainSetReader() {
 
   Images* Img = (Images*) malloc(sizeof(Images));
   Img->mat = (double*) malloc(IMGS_NUM * IMG_SIZE * sizeof(double));
+  Img->size = IMGS_NUM;
 
   FILE *fstream = fopen("../data/train_set.txt","r");
   if(fstream == NULL) {
@@ -55,6 +57,7 @@ Images* testSetReader() {
 
   Images* Img = (Images*) malloc(sizeof(Images));
   Img->mat = (double*) malloc(TEST_IMGS_NUM * IMG_SIZE * sizeof(double));
+  Img->size = TEST_IMGS_NUM;
 
   FILE *fstream = fopen("../data/test_set.txt","r");
   if(fstream == NULL) {

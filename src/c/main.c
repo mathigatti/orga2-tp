@@ -284,11 +284,34 @@ void transpose(double* matrix, uint n, uint m, double* output){
   }
 }
 
-int evaluate(Network* net, double* test_data);
-/*Return the number of test inputs for which the neural
-  network outputs the correct result. Note that the neural
-  network's output is assumed to be the index of whichever
-  neuron in the final layer has the highest activation.*/
+double evaluate(Network* net, Images* test_data){
+/*Return the accuracy over test_data*/
+  int hits = 0;
+  double* res = (double*) malloc(10 * sizeof(double));
+
+  for(uint i = 0; i < test_data->size; i++) {
+    feed_forward(net, &test_data->mat[i * 784], 1, res);
+    int y = max_arg(res, 10);
+    if(y == test_data->res[i]) {
+      hits++;
+    }
+  }
+  free(res);
+
+  return hits / (double) test_data->size;
+}
+
+int max_arg(double* vector, uint n) {
+  int maxIndex = 0;
+  double maxValue = vector[maxIndex]; 
+  for(int i = 1; i < n; i++){
+    if(maxValue < vector[i]) {
+      maxIndex = i;
+      maxValue = vector[i];
+    }
+  }
+  return maxIndex;
+}
 
 void cost_derivative(double* matrix, double* y, uint n, uint m, double* output) {
 /*Return the vector of partial derivatives \partial C_x /
@@ -432,6 +455,10 @@ int main(){
   }
 
   free(res);
+
+  // Evaluate accuracy over data set
+  printf("Accuracy over testing data set: %f\n", evaluate(net, test_data));
+
   destructor_net(net);
   imagesDestructor(training_data);
   imagesDestructor(test_data);
