@@ -43,12 +43,15 @@ void destructor_net(Network* net) {
 
 void feed_forward(Network* net, double* input, uint cant_img, double* output) {
 /*Return the output of the network if ``a`` is input.*/
+  double* input_tr = (double*) malloc(784 * cant_img * sizeof(double));
+  transpose(input, cant_img, 784, input_tr);
+
   uint rows = net->num_of_hid_units;
   uint cols = 784;
   //cant_img = 1;
 
   double* resProduct1 = (double*) malloc(rows * cant_img * sizeof(double));
-  matrix_prod(net->w_in_to_hid, input, rows, cols, cant_img, resProduct1);
+  matrix_prod(net->w_in_to_hid, input_tr, rows, cols, cant_img, resProduct1);
 
   double* z = (double*) malloc(rows * cant_img * sizeof(double));
   mat_plus_vec(resProduct1, net->bias_in_to_hid, rows, cant_img, z);
@@ -57,6 +60,7 @@ void feed_forward(Network* net, double* input, uint cant_img, double* output) {
 
   sigmoid_v(z, rows, cant_img, hidden_state);
 
+  free(input_tr);
   free(z);
   free(resProduct1);
 
@@ -77,7 +81,7 @@ void feed_forward(Network* net, double* input, uint cant_img, double* output) {
   free(z);
 }
 
-void SGD(Network* net, Imagenes* training_data, uint epochs, uint mini_batch_size, double eta){
+void SGD(Network* net, Images* training_data, uint epochs, uint mini_batch_size, double eta){
 /*Train the neural network using mini-batch stochastic
   gradient descent.  The ``training_data`` is a list of tuples
   ``(x, y)`` representing the training inputs and the desired
@@ -86,7 +90,8 @@ void SGD(Network* net, Imagenes* training_data, uint epochs, uint mini_batch_siz
   network will be evaluated against the test data after each
   epoch, and partial progress printed out.  This is useful for
   tracking progress, but slows things down substantially.*/
-  uint n = training_data->cantImg;
+  printf("Starting SGD...\n");
+  uint n = IMGS_NUM;
   printf("Cantidad de imagenes: %d\n", n);
 
   for(uint i = 0; i < epochs; i++){
@@ -97,9 +102,10 @@ void SGD(Network* net, Imagenes* training_data, uint epochs, uint mini_batch_siz
       update_mini_batch(net, training_data, j, j + mini_batch_size);
     }
   }
+  printf("SGD ended successfully\n");
 }
 
-void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end) {
+void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
 /*Update the network's weights and biases by applying
   gradient descent using backpropagation to a single mini batch.
   The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
@@ -119,7 +125,7 @@ void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end) 
   double* dnb_hid_to_out = (double*) malloc(10 * sizeof(double)); // 10 x 1
   
   for(uint i = start; i < end; i++){
-    backprop(net, &(minibatch->mat[i*784]), minibatch->res[i], dnw_in_to_hid, dnb_in_to_hid, dnw_hid_to_out, dnb_hid_to_out);
+    backprop(net, &minibatch->mat[i*784], minibatch->res[i], dnw_in_to_hid, dnb_in_to_hid, dnw_hid_to_out, dnb_hid_to_out);
     mat_plus_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 784, 1, nabla_w_in_to_hid);
     mat_plus_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, 1, nabla_b_in_to_hid);
     mat_plus_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, 1, nabla_w_hid_to_out);
@@ -149,7 +155,7 @@ void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end) 
 void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta){
 /*TO OPTIMIZE*/
   for(uint i = 0; i < w_size; i++){
-    w[i] = w[i] - (eta/mb_size) * nw[i];
+    w[i] -= (eta/mb_size) * nw[i];
   }
 }
 
@@ -265,6 +271,12 @@ to ``self.biases`` and ``self.weights``.*/
 }
 
 void transpose(double* matrix, uint n, uint m, double* output){
+  /* NOTA: n y m no tienen que coincidir forzosamente con la cantidad de 
+           filas y columnas real de matrix. Por ejemplo, si matrix es pxm
+           con n < p, output sera la matriz que tenga por columnas las 
+           primeras n filas de matrix. Esto es util a la hora de usar mini 
+           batches.
+  */
   for(uint i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
       output[j * n + i] = matrix[i * m + j];
@@ -348,8 +360,8 @@ void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, doubl
 }
 
 
-void random_shuffle(Imagenes* batch) {
-  size_t n = batch->cantImg;
+void random_shuffle(Images* batch) {
+  size_t n = IMGS_NUM;
   if (n > 1) {
     size_t i;
     for (i = 0; i < n - 1; i++) {
@@ -363,13 +375,6 @@ void random_shuffle(Imagenes* batch) {
         batch->mat[i * 784 + k] = temp_pixel;
       }
 
-      // Now permute the columns of batch.mat_tr
-      for(uint k = 0; k < 784; k++){
-        temp_pixel = batch->mat_tr[k * n + j];
-        batch->mat_tr[k * n + j] = batch->mat_tr[k * n + i];
-        batch->mat_tr[k * n + i] = temp_pixel;
-      }
-
       // Finally, let's permute the targets
       int temp_res = batch->res[j];
       batch->res[j] = batch->res[i];
@@ -378,11 +383,24 @@ void random_shuffle(Imagenes* batch) {
   }
 }
 
+void printImg(double* img) {
+  for(uint i = 0; i < 28; i++) {
+    for(uint j = 0; j < 28; j++) {
+      if(img[i * 28 + j] >= 0.45) {
+        printf("X");
+      } else {
+        printf(" ");
+      }
+    }
+    printf("\n");
+  }
+} 
+
 int main(){
-  Imagenes* training_data = trainSetReader();
-  Imagenes* test_data = testSetReader();
+  Images* training_data = trainSetReader();
+  Images* test_data = testSetReader();
   Network* net = (Network*) malloc(sizeof(Network));
-  initialize_net(net, 10, 0.3);
+  initialize_net(net, 30, 3.0);
 
   if (training_data == NULL || test_data == NULL){
     printf("Error intentando leer data-sets de entrada\n");
@@ -390,37 +408,33 @@ int main(){
   }
 
   //testeo SGD con un mini-batch
-  double* res = (double*) malloc(10 * MINI_BATCH_SIZE * sizeof(double));
+  double* res = (double*) malloc(10 * sizeof(double));
   
-  printf("Iniciando SGD...\n");
-  SGD(net, training_data, 10, MINI_BATCH_SIZE, net->eta);
-  printf("SGD finalizo exitosamente\n");
+  SGD(net, training_data, 3, 10, net->eta);
 
-  feed_forward(net, test_data->mat_tr, 1, res);
+  feed_forward(net, &test_data->mat[3], 1, res);
+  // printImg(&test_data->mat[3 * 784]);
+  // printf("Target: %d\n", test_data->res[3]);
   for(int i = 0; i < 10; i++){
     printf("Valor para %d: %f\n", i, res[i]);
   }
-  printf("Target: %d\n", test_data->res[0]);
+  printf("Target: %d\n", test_data->res[3]);
 
-  free(res);
-  
   //testeo feedforward con un 1 artificial
   double input[784] = {[0 ... 783] = 0};
   for(uint i = 42; i < 784; i += 28){
     input[i] = 1.0;
   }
 
-  double* y = (double*) malloc(10 * sizeof(double));
-
-  feed_forward(net, input, 1, y);
+  feed_forward(net, input, 1, res);
   for(int i = 0; i < 10; i++){
-    printf("Valor asignado a %d: %f\n", i, y[i]);
+    printf("Valor asignado a %d: %f\n", i, res[i]);
   }
 
-  free(y);
+  free(res);
   destructor_net(net);
-  free(training_data);
-  free(test_data);
+  imagesDestructor(training_data);
+  imagesDestructor(test_data);
 
   return 0;
 }

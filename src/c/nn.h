@@ -33,9 +33,9 @@ void destructor_net(Network* net);
 
 void feed_forward(Network* net, double* input, uint cant_img, double* output);
 
-void SGD(Network* net, Imagenes* training_data, uint epochs, uint mini_batch_size, double eta);
+void SGD(Network* net, Images* training_data, uint epochs, uint mini_batch_size, double eta);
 
-void update_mini_batch(Network* net, Imagenes* minibatch, uint start, uint end);
+void update_mini_batch(Network* net, Images* minibatch, uint start, uint end);
 
 void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta);
 
@@ -56,7 +56,7 @@ double sigmoid_prime(double z);
 
 void sigmoid_prime_v(double* matrix, uint n, uint m, double* output);
 
-void random_shuffle(Imagenes* batch);
+void random_shuffle(Images* batch);
 
 // Posiblemente se podria cambiar para que tome un vector directamente
 // i.e. hacer suma de vector-vector
