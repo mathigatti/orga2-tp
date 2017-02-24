@@ -21,15 +21,20 @@ void initialize_net(Network* net, uint num_of_hid_units, double eta){
   
   for(int i = 0; i < num_of_hid_units; i++) { 
     net->bias_in_to_hid[i] = (double) rand() / RAND_MAX;
+    net->bias_in_to_hid[i] /= 10.0;
     for(int j = 0; j < 784; j++) {
       net->w_in_to_hid[i * 784 + j] = (double) rand() / RAND_MAX;     
+      net->w_in_to_hid[i * 784 + j] /= 10.0;     
     }
   }
 
   for(int i = 0; i < 10; i++){
     net->bias_hid_to_out[i] = (double) rand() / RAND_MAX;
-    for(int j = 0; j < num_of_hid_units; j++)
+    net->bias_hid_to_out[i] /= 10.0;
+    for(int j = 0; j < num_of_hid_units; j++) {
       net->w_hid_to_out[i * num_of_hid_units + j] = (double) rand() / RAND_MAX;
+      net->w_hid_to_out[i * num_of_hid_units + j] /= 10.0;
+    }
   }
 }
 
@@ -48,7 +53,7 @@ void feed_forward(Network* net, double* input, uint cant_img, double* output) {
 
   uint rows = net->num_of_hid_units;
   uint cols = 784;
-  //cant_img = 1;
+  cant_img = 1;
 
   double* resProduct1 = (double*) malloc(rows * cant_img * sizeof(double));
   matrix_prod(net->w_in_to_hid, input_tr, rows, cols, cant_img, resProduct1);
@@ -389,6 +394,9 @@ void random_shuffle(Images* batch) {
     size_t i;
     for (i = 0; i < n - 1; i++) {
       size_t j = i + rand() / (RAND_MAX / (n - i) + 1);
+
+      // printImg(&batch->mat[i * 784]);
+      // printImg(&batch->mat[j * 784]);
       
       // We permute the rows of batch.mat
       double temp_pixel;
@@ -402,6 +410,9 @@ void random_shuffle(Images* batch) {
       int temp_res = batch->res[j];
       batch->res[j] = batch->res[i];
       batch->res[i] = temp_res;
+      // printImg(&batch->mat[i * 784]);
+      // printImg(&batch->mat[j * 784]);
+      // printf("*****************************\n");
     }
   }
 }
@@ -419,6 +430,15 @@ void printImg(double* img) {
   }
 } 
 
+void printMatrix(double* matrix, int n, int m) {
+  for(int i = 0; i < n; i++) {
+    for(int j = 0; j < m; j++) {
+      printf("%.3f ", matrix[i * m + j]);
+    }
+    printf("\n");
+  }
+}
+
 int main(){
   Images* training_data = trainSetReader();
   Images* test_data = testSetReader();
@@ -433,9 +453,9 @@ int main(){
   //testeo SGD con un mini-batch
   double* res = (double*) malloc(10 * sizeof(double));
   
-  SGD(net, training_data, 3, 10, net->eta);
+  SGD(net, training_data, 28, MINI_BATCH_SIZE, net->eta);
 
-  feed_forward(net, &test_data->mat[3], 1, res);
+  feed_forward(net, &test_data->mat[3 * 784], 1, res);
   // printImg(&test_data->mat[3 * 784]);
   // printf("Target: %d\n", test_data->res[3]);
   for(int i = 0; i < 10; i++){
@@ -465,3 +485,19 @@ int main(){
 
   return 0;
 }
+
+/*
+  ALTAS CHANCES de que todos los valores que hay en las matrices de pesos 
+  sean 0 despues del entrenamiento. Eso explicaria porque siempre se 
+  obtiene el mismo resultado independientemente del input.
+  Siempre se estaria obteniendo el bias de hidden to output layer.
+
+  UPDATE: Los pesos son distintos a 0. Logre avanzar un poco, y llegue a la
+  conclusión de que los pesos son tan grandes en la capa de entrada que provocan que el hidden state siempre sea 1.0 para todas las unidades. Eso 
+  explicaria el por que no se depende del input. Lo que habria que ver entonces es porque no aprende pesos acordes a esto.
+
+  Finalmente resulto ser que el codigo estaba bien. El problema en realidad 
+  era que los valores con los que se inicializaban las matrices de pesos eran muy grandes (pese a ser random). Sospecho que la razon de que este problema no surgiera con la version de python es la diferencia en la calidad del sampleo. Mi solucion "artesanal" fue reescalar las valores sampleados, dividiendolos por 10.0
+  Este cambio permitio replicar el accuracy expuesto por el autor del algoritmo en python
+
+*/

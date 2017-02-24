@@ -4,7 +4,7 @@
 #include <math.h>
 #include <time.h>
 
-#define MINI_BATCH_SIZE 100
+#define MINI_BATCH_SIZE 10
 
 typedef unsigned int uint;
 
@@ -67,3 +67,7 @@ void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output
 void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, double* output);
 
 void transpose(double* matrix, uint n, uint m, double* output);
+
+void printImg(double* img);
+
+void printMatrix(double* matrix, int n, int m);

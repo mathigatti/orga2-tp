@@ -5,7 +5,7 @@
 
 #define IMG_SIZE 784
 #define RES_SIZE 1
-#define IMGS_NUM 10000
+#define IMGS_NUM 50000
 #define TEST_IMGS_NUM 10000
 #define tamanioTotalRecorrer (RES_SIZE + IMG_SIZE + 1)
 
