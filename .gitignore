@@ -1,3 +1,5 @@
 src/data/train_set.txt
 src/data/test_set.txt
 src/c/neural-net
+src/c/main.o
+src/mnist/mnist.pkl.gz

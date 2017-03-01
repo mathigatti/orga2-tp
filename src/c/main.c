@@ -165,16 +165,6 @@ void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta)
 }
 
 
-void productoHadamard(double* matrix1, double* matrix2, uint n, uint m, double* output){
-/* matrix1 and matrix2 are nxm*/
-  for(uint i = 0; i < n; i++){
-    for(uint j = 0; j < m; j++){
-      output[i * m + j] = matrix1[i * m + j] * matrix2[i * m + j];
-    }
-  }
-}
-
-
 void backprop(Network* net, double* input, int target, double* nw_in_to_hid, double* nb_in_to_hid, double* nw_hid_to_out, double* nb_hid_to_out){
 /*Return a tuple ``(nabla_b, nabla_w)`` representing the
 gradient for the cost function C_x.  ``nabla_b`` and
@@ -235,7 +225,7 @@ to ``self.biases`` and ``self.weights``.*/
   sigmoid_prime_v(z2, outputUnits, 1, resProduct2);
 
   // y(1-y)(y-t)
-  productoHadamard(resProduct1, resProduct2, outputUnits, 1, nb_hid_to_out);
+  hadamardProduct(resProduct1, resProduct2, outputUnits, 1, nb_hid_to_out);
 
   free(resProduct1);  
   free(resProduct2);
@@ -258,7 +248,7 @@ to ``self.biases`` and ``self.weights``.*/
   matrix_prod(aux, nb_hid_to_out, h, 10, 1, resProduct2);
   free(aux);
 
-  productoHadamard(resProduct1, resProduct2, h, 1, nb_in_to_hid);
+  hadamardProduct(resProduct1, resProduct2, h, 1, nb_in_to_hid);
 
   free(resProduct1);  
   free(resProduct2);
@@ -275,19 +265,6 @@ to ``self.biases`` and ``self.weights``.*/
 
 }
 
-void transpose(double* matrix, uint n, uint m, double* output){
-  /* NOTA: n y m no tienen que coincidir forzosamente con la cantidad de 
-           filas y columnas real de matrix. Por ejemplo, si matrix es pxm
-           con n < p, output sera la matriz que tenga por columnas las 
-           primeras n filas de matrix. Esto es util a la hora de usar mini 
-           batches.
-  */
-  for(uint i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-      output[j * n + i] = matrix[i * m + j];
-    }
-  }
-}
 
 double evaluate(Network* net, Images* test_data){
 /*Return the accuracy over test_data*/
@@ -318,6 +295,29 @@ int max_arg(double* vector, uint n) {
   return maxIndex;
 }
 
+void transpose(double* matrix, uint n, uint m, double* output){
+  /* NOTA: n y m no tienen que coincidir forzosamente con la cantidad de 
+           filas y columnas real de matrix. Por ejemplo, si matrix es pxm
+           con n < p, output sera la matriz que tenga por columnas las 
+           primeras n filas de matrix. Esto es util a la hora de usar mini 
+           batches.
+  */
+  for(uint i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      output[j * n + i] = matrix[i * m + j];
+    }
+  }
+}
+
+void hadamardProduct(double* matrix1, double* matrix2, uint n, uint m, double* output){
+/* matrix1 and matrix2 are nxm*/
+  for(uint i = 0; i < n; i++){
+    for(uint j = 0; j < m; j++){
+      output[i * m + j] = matrix1[i * m + j] * matrix2[i * m + j];
+    }
+  }
+}
+
 void cost_derivative(double* matrix, double* y, uint n, uint m, double* output) {
 /*Return the vector of partial derivatives \partial C_x /
   \partial a for the output activations.*/
@@ -336,7 +336,6 @@ double sigmoid(double number){
 
 void sigmoid_v(double* matrix, uint n, uint m, double* output){
 /*The sigmoid function.*/
-  // TO OPTIMIZE
   for(uint i = 0; i < n; i++){
     for(uint j = 0; j < m; j++) {
       output[i * m + j] = sigmoid(matrix[i * m + j]);
@@ -345,7 +344,6 @@ void sigmoid_v(double* matrix, uint n, uint m, double* output){
 }
 
 double sigmoid_prime(double number){
-/*The sigmoid function.*/
   double sig = sigmoid(number); 
   return sig * (1 - sig);
 }
@@ -428,7 +426,7 @@ void printImg(double* img) {
     }
     printf("\n");
   }
-} 
+}
 
 void printMatrix(double* matrix, int n, int m) {
   for(int i = 0; i < n; i++) {
@@ -468,6 +466,7 @@ int main(){
   for(uint i = 42; i < 784; i += 28){
     input[i] = 1.0;
   }
+  printf("Target: %d\n", 1);
 
   feed_forward(net, input, 1, res);
   for(int i = 0; i < 10; i++){

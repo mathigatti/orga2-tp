@@ -45,7 +45,7 @@ double evaluate(Network* net, Images* test_data);
 
 int max_arg(double* vector, uint n);
 
-void productoHadamard(double* matrix1, double* matrix2, uint n, uint m, double* output);
+void hadamardProduct(double* matrix1, double* matrix2, uint n, uint m, double* output);
 
 // Posiblemente se podria cambiar para que tome un vector directamente
 void cost_derivative(double* output_activations, double* y, uint n, uint m, double* output);
