@@ -466,12 +466,12 @@ int main(){
   for(uint i = 42; i < 784; i += 28){
     input[i] = 1.0;
   }
-  printf("Target: %d\n", 1);
 
   feed_forward(net, input, 1, res);
   for(int i = 0; i < 10; i++){
     printf("Valor asignado a %d: %f\n", i, res[i]);
   }
+  printf("Target: %d\n", 1);
 
   free(res);
 
