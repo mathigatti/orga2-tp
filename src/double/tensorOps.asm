@@ -49,14 +49,6 @@ section .text
 	cost_derivative:
 	push rbp
 	mov rbp, rsp
-	push r12
-	push r13
-	push r14
-	sub rsp, 8
-
-	mov r12, rdi			;r12 = matrix
-	mov r13, rsi			;r13 = matrix2
-	mov r14, r8 			;r14 = output
 
 	;Calculo la cantidad de pixeles total
 	xor rax, rax
@@ -69,25 +61,20 @@ section .text
 	mov rcx, rax
 	shr rcx, 1				;Proceso de a 2 pixeles
 
-
 	;Itero sobre todos los pixeles y realizo la operación de SUBPD
 	.ciclo:
-		movupd xmm1, [r12]	;xmm1 = | px0 | px1 |
-		movupd xmm2, [r13]	;xmm2 = | px0'| px1'|
+		movupd xmm1, [rdi]	;xmm1 = | px0 | px1 |
+		movupd xmm2, [rsi]	;xmm2 = | px0'| px1'|
 
 		subpd xmm1, xmm2
 
-		movupd [r14], xmm1
+		movupd [r8], xmm1
 
 		;Avanzo los punteros
-		add r12, 16
-		add r13, 16
-		add r14, 16
+		add rdi, 16
+		add rsi, 16
+		add r8, 16
 		loop .ciclo
 	
-	add rsp, 8
-	pop r14	
-	pop r13
-	pop r12	
 	pop rbp
    	ret

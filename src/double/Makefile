@@ -2,25 +2,31 @@ CC=gcc
 # Quitar -g (opcion de debugeo)
 CFLAGS=-std=c99 -lm -O3 -g 
 DEPS = nn.h helpers.h tensorOps.h
-OBJ = nn.o helpers.o tensorOps.o
-
-all: neural-net
+OBJ = nn.o helpers.o 
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-neural-net: $(OBJ)
+tensorOps_c.o: tensorOps.c $(DEPS)
+	gcc -c -o $@ $< $(CFLAGS)
+
+tensorOps_asm.o: tensorOps.asm $(DEPS)
+	nasm -f elf64 $< -o tensorOps_asm.o
+
+c_version: $(OBJ) tensorOps_c.o
 	gcc -o $@ $^ $(CFLAGS)
 
-c_double: neural-net
-
-c_float: 
-
-asm_double:
+asm_version: $(OBJ) tensorOps_asm.o
+	gcc -o $@ $^ $(CFLAGS)
+	
+#nasm -f elf64 tensorOps.asm -o tensorOps.o
+#gcc -c helpers.c -o helpers.o -std=c99 -O3 -lm
+#gcc -o neural-net nn.c tensorOps.o helpers.o -std=c99 -O3 -lm -g
 
 clean:
-	rm -rf *.o *~
-
+	rm -f *.o *~
+	rm -f c_version
+	rm -f asm_version
 # Para compilar funciones en ASM
-# nasm -f elf64 nn.asm -o nn_asm.o
+# 
 # gcc -o neural-net main.c nn_asm.o -std=c99 -lm -g
