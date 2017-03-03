@@ -1,8 +1,8 @@
 CC=gcc 
 # Quitar -g (opcion de debugeo)
 CFLAGS=-std=c99 -lm -O3 -g 
-DEPS = nn.h txtReader.c
-OBJ = main.o 
+DEPS = nn.h helpers.h tensorOps.h
+OBJ = nn.o helpers.o tensorOps.o
 
 all: neural-net
 
@@ -11,6 +11,12 @@ all: neural-net
 
 neural-net: $(OBJ)
 	gcc -o $@ $^ $(CFLAGS)
+
+c_double: neural-net
+
+c_float: 
+
+asm_double:
 
 clean:
 	rm -rf *.o *~

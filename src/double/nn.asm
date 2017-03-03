@@ -52,6 +52,7 @@ section .text
 	push r12
 	push r13
 	push r14
+	sub rsp, 8
 
 	mov r12, rdi			;r12 = matrix
 	mov r13, rsi			;r13 = matrix2
@@ -71,12 +72,12 @@ section .text
 
 	;Itero sobre todos los pixeles y realizo la operación de SUBPD
 	.ciclo:
-		movdqu xmm1, [r13]	;xmm1 = | px0 | px1 |
-		movdqu xmm2, [r12]	;xmm2 = | px0'| px1'|
+		movupd xmm1, [r12]	;xmm1 = | px0 | px1 |
+		movupd xmm2, [r13]	;xmm2 = | px0'| px1'|
 
-		SUBPD xmm1, xmm2
+		subpd xmm1, xmm2
 
-		movdqu [r14], xmm1
+		movupd [r14], xmm1
 
 		;Avanzo los punteros
 		add r12, 16
@@ -84,6 +85,7 @@ section .text
 		add r14, 16
 		loop .ciclo
 	
+	add rsp, 8
 	pop r14	
 	pop r13
 	pop r12	

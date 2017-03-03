@@ -158,14 +158,6 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
   free(nabla_b_hid_to_out);  
 }
 
-void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta){
-/*TO OPTIMIZE*/
-  for(uint i = 0; i < w_size; i++){
-    w[i] -= (eta/mb_size) * nw[i];
-  }
-}
-
-
 void backprop(Network* net, double* input, int target, double* nw_in_to_hid, double* nb_in_to_hid, double* nw_hid_to_out, double* nb_hid_to_out){
 /*Return a tuple ``(nabla_b, nabla_w)`` representing the
 gradient for the cost function C_x.  ``nabla_b`` and
@@ -266,7 +258,6 @@ to ``self.biases`` and ``self.weights``.*/
 
 }
 
-
 double evaluate(Network* net, Images* test_data){
 /*Return the accuracy over test_data*/
   int hits = 0;
@@ -284,164 +275,6 @@ double evaluate(Network* net, Images* test_data){
   return hits / (double) test_data->size;
 }
 
-int max_arg(double* vector, uint n) {
-  int maxIndex = 0;
-  double maxValue = vector[maxIndex]; 
-  for(int i = 1; i < n; i++){
-    if(maxValue < vector[i]) {
-      maxIndex = i;
-      maxValue = vector[i];
-    }
-  }
-  return maxIndex;
-}
-
-void transpose(double* matrix, uint n, uint m, double* output){
-  /* NOTA: n y m no tienen que coincidir forzosamente con la cantidad de 
-           filas y columnas real de matrix. Por ejemplo, si matrix es pxm
-           con n < p, output sera la matriz que tenga por columnas las 
-           primeras n filas de matrix. Esto es util a la hora de usar mini 
-           batches.
-  */
-  for(uint i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-      output[j * n + i] = matrix[i * m + j];
-    }
-  }
-}
-
-void hadamardProduct(double* matrix1, double* matrix2, uint n, uint m, double* output){
-/* matrix1 and matrix2 are nxm*/
-  for(uint i = 0; i < n; i++){
-    for(uint j = 0; j < m; j++){
-      output[i * m + j] = matrix1[i * m + j] * matrix2[i * m + j];
-    }
-  }
-}
-
-/*
-void cost_derivative(double* matrix, double* matrix2, uint n, uint m, double* output) {
-//Return the vector of partial derivatives \partial C_x /
-//partial a for the output activations.
-// Normalmente m = 1
-  for(uint i = 0; i < n; i++){
-    for(uint j = 0; j < m; j++){
-      output[i * m + j] = matrix[i * m + j] - matrix2[i * m + j];
-    }
-  }
-}
-*/
-
-double sigmoid(double number){
-/*The sigmoid function.*/
-  return 1/(1 + exp(-number));
-}
-
-void sigmoid_v(double* matrix, uint n, uint m, double* output){
-/*The sigmoid function.*/
-  for(uint i = 0; i < n; i++){
-    for(uint j = 0; j < m; j++) {
-      output[i * m + j] = sigmoid(matrix[i * m + j]);
-    }
-  }
-}
-
-double sigmoid_prime(double number){
-  double sig = sigmoid(number); 
-  return sig * (1 - sig);
-}
-
-
-void sigmoid_prime_v(double* matrix, uint n, uint m, double* output){
-  double sig;
-  double minusOneSig;
-  for(uint i = 0; i < n; i++){ 
-    for(uint j = 0; j < m; j++){
-      sig = sigmoid(matrix[i * m + j]);
-      minusOneSig = 1 - sig;
-      output[i * m + j] = minusOneSig * sig;
-    }
-  }
-}
-
-
-
-void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output){
-// |vector| == n
-
-  for(int i = 0; i < n; i++){
-    for(uint j = 0; j < m; j++){
-      output[i * m + j] = vector[i] + matrix[i * m + j];
-    }
-  }
-}
-
-void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, double* output){
-/* matrix1 is nxm */
-/* matrix2 is mxl */
-/* output is nxl */
-  for(uint i = 0; i < n; i++) {
-    for(uint j = 0; j < l; j++){
-      output[i * l + j] = 0;
-      for(uint k = 0; k < m; k++){
-        output[i * l + j] += matrix1[i * m + k] * matrix2[k * l + j];
-      }
-    }
-  }
-}
-
-
-void random_shuffle(Images* batch) {
-  size_t n = IMGS_NUM;
-  if (n > 1) {
-    size_t i;
-    for (i = 0; i < n - 1; i++) {
-      size_t j = i + rand() / (RAND_MAX / (n - i) + 1);
-
-      // printImg(&batch->mat[i * 784]);
-      // printImg(&batch->mat[j * 784]);
-      
-      // We permute the rows of batch.mat
-      double temp_pixel;
-      for(uint k = 0; k < 784; k++) {
-        temp_pixel = batch->mat[j * 784 + k];
-        batch->mat[j * 784 + k] = batch->mat[i * 784 + k];
-        batch->mat[i * 784 + k] = temp_pixel;
-      }
-
-      // Finally, let's permute the targets
-      int temp_res = batch->res[j];
-      batch->res[j] = batch->res[i];
-      batch->res[i] = temp_res;
-      // printImg(&batch->mat[i * 784]);
-      // printImg(&batch->mat[j * 784]);
-      // printf("*****************************\n");
-    }
-  }
-}
-
-void printImg(double* img) {
-  for(uint i = 0; i < 28; i++) {
-    for(uint j = 0; j < 28; j++) {
-      if(img[i * 28 + j] >= 0.45) {
-        printf("X");
-      } else {
-        printf(" ");
-      }
-    }
-    printf("\n");
-  }
-}
-
-void printMatrix(double* matrix, int n, int m) {
-  for(int i = 0; i < n; i++) {
-    for(int j = 0; j < m; j++) {
-      printf("%.3f ", matrix[i * m + j]);
-    }
-    printf("\n");
-  }
-}
-
 int main(){
   Images* training_data = trainSetReader();
   Images* test_data = testSetReader();
@@ -456,15 +289,15 @@ int main(){
   //testeo SGD con un mini-batch
   double* res = (double*) malloc(10 * sizeof(double));
   
-  SGD(net, training_data, 28, MINI_BATCH_SIZE, net->eta);
+  SGD(net, training_data, 8, MINI_BATCH_SIZE, net->eta);
 
-  feed_forward(net, &test_data->mat[3 * 784], 1, res);
-  // printImg(&test_data->mat[3 * 784]);
+  feed_forward(net, &test_data->mat[1 * 784], 1, res);
+  printImg(&test_data->mat[1 * 784]);
   // printf("Target: %d\n", test_data->res[3]);
   for(int i = 0; i < 10; i++){
     printf("Valor para %d: %f\n", i, res[i]);
   }
-  printf("Target: %d\n", test_data->res[3]);
+  printf("Target: %d\n", test_data->res[1]);
 
   //testeo feedforward con un 1 artificial
   double input[784] = {[0 ... 783] = 0};
