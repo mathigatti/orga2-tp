@@ -14,3 +14,7 @@ neural-net: $(OBJ)
 
 clean:
 	rm -rf *.o *~
+
+# Para compilar funciones en ASM
+# nasm -f elf64 nn.asm -o nn_asm.o
+# gcc -o neural-net main.c nn_asm.o -std=c99 -lm -g

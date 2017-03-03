@@ -43,31 +43,34 @@ void backprop(Network* net, double* X, int target, double* , double*, double*, d
 
 double evaluate(Network* net, Images* test_data);
 
-int max_arg(double* vector, uint n);
+void printImg(double* img);
 
-void hadamardProduct(double* matrix1, double* matrix2, uint n, uint m, double* output);
+void printMatrix(double* matrix, int n, int m);
 
-// Posiblemente se podria cambiar para que tome un vector directamente
-void cost_derivative(double* output_activations, double* y, uint n, uint m, double* output);
+void random_shuffle(Images* batch);
 
 double sigmoid(double z);
 
-void sigmoid_v(double* matrix, uint n, uint m, double* output);
-
 double sigmoid_prime(double z);
+
+// A implementar en ASM //
+
+void sigmoid_v(double* matrix, uint n, uint m, double* output);
 
 void sigmoid_prime_v(double* matrix, uint n, uint m, double* output);
 
-void random_shuffle(Images* batch);
+void transpose(double* matrix, uint n, uint m, double* output);
+
+int max_arg(double* vector, uint n);
+
+void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, double* output);
+
+void hadamardProduct(double* matrix1, double* matrix2, uint n, uint m, double* output);
 
 // Posiblemente se podria cambiar para que tome un vector directamente
 // i.e. hacer suma de vector-vector
 void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output);
 
-void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, double* output);
+// Posiblemente se podria cambiar para que tome un vector directamente
+extern void cost_derivative(double* matrix, double* matrix2, uint n, uint m, double* output);
 
-void transpose(double* matrix, uint n, uint m, double* output);
-
-void printImg(double* img);
-
-void printMatrix(double* matrix, int n, int m);

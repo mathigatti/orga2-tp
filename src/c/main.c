@@ -1,6 +1,7 @@
 #include "nn.h"
 
-/*The architechture of the network consist of
+/*
+The architechture of the network consist of
 784 input units ---> a custom number of hidden units ---> 10 output units
 in a full-connected style
 */
@@ -318,16 +319,18 @@ void hadamardProduct(double* matrix1, double* matrix2, uint n, uint m, double* o
   }
 }
 
-void cost_derivative(double* matrix, double* y, uint n, uint m, double* output) {
-/*Return the vector of partial derivatives \partial C_x /
-  \partial a for the output activations.*/
-  // En general m = 1
+/*
+void cost_derivative(double* matrix, double* matrix2, uint n, uint m, double* output) {
+//Return the vector of partial derivatives \partial C_x /
+//partial a for the output activations.
+// Normalmente m = 1
   for(uint i = 0; i < n; i++){
     for(uint j = 0; j < m; j++){
-      output[i * m + j] = matrix[i * m + j] - y[i * m + j];
+      output[i * m + j] = matrix[i * m + j] - matrix2[i * m + j];
     }
   }
 }
+*/
 
 double sigmoid(double number){
 /*The sigmoid function.*/
@@ -361,8 +364,10 @@ void sigmoid_prime_v(double* matrix, uint n, uint m, double* output){
   }
 }
 
+
+
 void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output){
-/* |vector| == n */
+// |vector| == n
 
   for(int i = 0; i < n; i++){
     for(uint j = 0; j < m; j++){
