@@ -107,7 +107,7 @@ void printImg(double* img) {
   for(uint i = 0; i < 28; i++) {
     for(uint j = 0; j < 28; j++) {
       if(img[i * 28 + j] >= 0.45) {
-        printf("X");
+        printf("O");
       } else {
         printf(" ");
       }
