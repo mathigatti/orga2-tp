@@ -53,10 +53,6 @@ void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, doubl
 
 int max_arg(double* vector, uint n);
 
-// Posiblemente se podria cambiar para que tome un vector directamente
-// i.e. hacer suma de vector-vector
-void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output);
-
 void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta);
 
 #endif

@@ -201,15 +201,6 @@ void sigmoid_prime_v(double* matrix, uint n, uint m, double* output){
   }
 }
 
-void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output){
-// |vector| == n
-
-  for(int i = 0; i < n; i++){
-    for(uint j = 0; j < m; j++){
-      output[i * m + j] = vector[i] + matrix[i * m + j];
-    }
-  }
-}
 
 void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, double* output){
 /* matrix1 is nxm */

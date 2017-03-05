@@ -292,7 +292,7 @@ int main(){
   SGD(net, training_data, 8, MINI_BATCH_SIZE, net->eta);
 
   feed_forward(net, &test_data->mat[1 * 784], 1, res);
-  printImg(&test_data->mat[1 * 784]);
+  // printImg(&test_data->mat[1 * 784]);
   // printf("Target: %d\n", test_data->res[3]);
   for(int i = 0; i < 10; i++){
     printf("Valor para %d: %f\n", i, res[i]);

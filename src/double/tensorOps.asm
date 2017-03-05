@@ -6,6 +6,7 @@
 ; inputs floats: xmm0, xmm1, ..., xmm7
 
 	global cost_derivative
+	global mat_plus_vec
 
 ; YA IMPLEMENTADAS EN C
 	extern fprintf
@@ -50,7 +51,7 @@ section .text
 	push rbp
 	mov rbp, rsp
 
-	;Calculo la cantidad de pixeles total
+	;Calculo la cantidad de elementos total
 	xor rax, rax
 	mov eax, edx
 	mul ecx					;eax = low(n*m) ;edx = high(n*m)
@@ -61,12 +62,71 @@ section .text
 	mov rcx, rax
 	shr rcx, 1				;Proceso de a 2 pixeles
 
-	;Itero sobre todos los pixeles y realizo la operación de SUBPD
+	;Itero sobre todos los elementos y realizo la operación de SUBPD
 	.ciclo:
 		movupd xmm1, [rdi]	;xmm1 = | px0 | px1 |
 		movupd xmm2, [rsi]	;xmm2 = | px0'| px1'|
 
 		subpd xmm1, xmm2
+
+		movupd [r8], xmm1
+
+		;Avanzo los punteros
+		add rdi, 16
+		add rsi, 16
+		add r8, 16
+		loop .ciclo
+	
+	pop rbp
+   	ret
+
+	;void mat_plus_vec(
+	;	double* matrix, (rdi) 
+	; double* vector, (rsi)
+	; uint n, (rdx)
+	; uint m, (rcx)
+	; double* output (r8)
+	; )
+	mat_plus_vec:
+	push rbp
+	mov rbp, rsp
+
+	;Calculo la cantidad de pixeles total
+	xor rax, rax
+	mov eax, edx
+	mul ecx					;eax = low(n*m) ;edx = high(n*m)
+	shl rdx, 32
+	add rax, rdx			;rax = #elementos
+
+	;Chequeo si la cantidad de elementos es par
+	xor rdx, rdx
+	inc rdx
+	and dl, al
+	cmp dl, 0
+	jz .even_case
+
+	.odd_case:
+	;Caso impar: opero sobre el primer elemento por separado
+	movd xmm1, [rdi]
+	movd xmm2, [rsi]
+	addsd xmm1, xmm2
+	movd [r8], xmm1
+	add rdi, 8
+	add rsi, 8
+	add r8, 8	
+	dec rax
+
+	;Inicializo el contador
+	.even_case:
+	mov rcx, rax
+	shr rcx, 1				;Proceso de a 2 pixeles, 
+
+	;Itero sobre todos los pixeles y realizo la operación de SUBPD
+	.ciclo:
+		movupd xmm1, [rdi]	;xmm1 = | px0 | px1 |
+		movupd xmm2, [rsi]	;xmm2 = | px0'| px1'|
+
+		addpd xmm1, xmm2
 
 		movupd [r8], xmm1
 
