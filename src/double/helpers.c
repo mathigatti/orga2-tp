@@ -7,6 +7,7 @@ Images* trainSetReader() {
 
   Images* Img = (Images*) malloc(sizeof(Images));
   Img->mat = (double*) malloc(IMGS_NUM * IMG_SIZE * sizeof(double));
+  Img->res = (int*) malloc(IMGS_NUM * sizeof(double));
   Img->size = IMGS_NUM;
 
   FILE *fstream = fopen("../data/train_set.txt","r");
@@ -41,6 +42,7 @@ Images* testSetReader() {
 
   Images* Img = (Images*) malloc(sizeof(Images));
   Img->mat = (double*) malloc(TEST_IMGS_NUM * IMG_SIZE * sizeof(double));
+  Img->res = (int*) malloc(TEST_IMGS_NUM * sizeof(double));
   Img->size = TEST_IMGS_NUM;
 
   FILE *fstream = fopen("../data/test_set.txt","r");
@@ -50,7 +52,7 @@ Images* testSetReader() {
   }
 
   for(int i = 0; i<TEST_IMGS_NUM; i++){
-    //printf("Imagen %d\n",i);
+    // printf("Imagen %d\n",i);
     for(int j = 0; j<IMG_SIZE; j++){
       line=fgets(buffer,sizeof(buffer),fstream);
       record = strtok(line,"\n");
@@ -71,11 +73,12 @@ Images* testSetReader() {
 
 void imagesDestructor(Images* imgs) {
   free(imgs->mat);
+  free(imgs->res);
   free(imgs);
 }
 
 void random_shuffle(Images* batch) {
-  size_t n = IMGS_NUM;
+  size_t n = batch->size;
   if (n > 1) {
     size_t i;
     for (i = 0; i < n - 1; i++) {

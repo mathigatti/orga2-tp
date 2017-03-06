@@ -17,7 +17,7 @@ typedef unsigned int uint;
 
 typedef struct Images {
   double* mat;
-  int res[IMGS_NUM];
+  int* res;
   int size; //Number of images
 } Images;
 
