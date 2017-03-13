@@ -1,8 +1,10 @@
 CC=gcc 
 # Quitar -g (opcion de debugeo)
-CFLAGS=-std=c99 -lm -O3 -g 
+CFLAGS=-std=c99 -lm -O3
 DEPS = nn.h helpers.h tensorOps.h
 OBJ = nn.o helpers.o 
+
+all: clean c_version asm_version
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

@@ -56,6 +56,8 @@ Probar regularizar pesos de la red
 
 Testeo automatico de implementaciones en ASM con la version en C
 
+Fijarnos si no tenemos disponible AVX (registros ymm en vez de xmm). Aparentemente por lo que lei deberiamos tenerlos.
+
 
 */
 
@@ -67,5 +69,7 @@ Testeo automatico de implementaciones en ASM con la version en C
 Experimentar performance temporal funcion por funcion
 Probar variante en funciones, loop unrolling
 Multithreading
+Ver si hay ciertos parametros para los cuales la optimizacion
+con SIMD es aun mayor (por ej, numeros multiplos de 4)
 
 */

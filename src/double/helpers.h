@@ -53,6 +53,5 @@ void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, doubl
 
 int max_arg(double* vector, uint n);
 
-void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta);
 
 #endif

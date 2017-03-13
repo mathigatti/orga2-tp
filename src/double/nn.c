@@ -1,4 +1,6 @@
 #include "nn.h"
+#include <time.h>
+
 
 /*
 The architechture of the network consist of
@@ -144,12 +146,11 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
   free(dnw_hid_to_out);
   free(dnb_hid_to_out);
 
-  uint mb_size = end-start;
-  double eta = net->eta;
-  update_weight(net->w_in_to_hid, nabla_w_in_to_hid, h * 784, mb_size, eta);
-  update_weight(net->bias_in_to_hid, nabla_b_in_to_hid, h, mb_size, eta);
-  update_weight(net->w_hid_to_out, nabla_w_hid_to_out, 10 * h, mb_size, eta);
-  update_weight(net->bias_hid_to_out, nabla_b_hid_to_out, 10, mb_size, eta);
+  double c = net->eta / MINI_BATCH_SIZE; //Esto se puede calcular una sola vez para toda la red
+  update_weight(net->w_in_to_hid, nabla_w_in_to_hid, h * 784, c);
+  update_weight(net->bias_in_to_hid, nabla_b_in_to_hid, h, c);
+  update_weight(net->w_hid_to_out, nabla_w_hid_to_out, 10 * h, c);
+  update_weight(net->bias_hid_to_out, nabla_b_hid_to_out, 10, c);
 
   // Free memory for nablas
   free(nabla_w_in_to_hid);
@@ -210,7 +211,7 @@ to ``self.biases`` and ``self.weights``.*/
   y[target] = 1;
 
   // (y - t)
-  cost_derivative(activation2, y, outputUnits, 1, resProduct1); 
+  cost_derivative(activation2, y, resProduct1); 
 
   resProduct2 = (double*) malloc(outputUnits * cant_img * sizeof(double));
 
@@ -319,6 +320,63 @@ int main(){
   destructor_net(net);
   imagesDestructor(training_data);
   imagesDestructor(test_data);
+  
+  clock_t start, end;
+  double cpu_time_used = 0;
+  
+  int size = 5000;
+
+  double v[size];
+  double w[size];
+  double u[size];
+
+  double x[10];
+  double y[10];
+  double z[10];
+
+  srand(time(NULL));
+
+  for(int i = 0; i < 1000000; i++){
+    for(int j = 0; j < 10; j++){
+      x[j] = rand() / RAND_MAX;
+      y[j] = rand() / RAND_MAX;
+    }
+    start = clock();
+    cost_derivative(x, y, z);
+    end = clock();
+    cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
+  }
+  //cpu_time_used /= 1000000.0;
+  printf("Total time cost_derivative: %f\n", cpu_time_used);
+
+
+  cpu_time_used = 0;
+  for(int i = 0; i < 50000; i++){
+    for(int j = 0; j < size; j++){
+      v[j] = rand() / RAND_MAX;
+      w[j] = rand() / RAND_MAX;
+    }
+    start = clock();
+    mat_plus_vec(v, w, size, 1, u);
+    end = clock();
+    cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
+  }
+  //cpu_time_used /= 1000000.0;
+  printf("Total time mat_plus_vec: %f\n", cpu_time_used);
+
+  cpu_time_used = 0;
+  for(int i = 0; i < 100000; i++){
+    for(int j = 0; j < size; j++){
+      v[j] = rand() / RAND_MAX;
+      w[j] = rand() / RAND_MAX;
+    }
+    start = clock();
+    update_weight(v, w, size, 0.3);
+    end = clock();
+    cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
+  }
+  //cpu_time_used /= 1000000.0;
+  printf("Total time update_weight: %f\n", cpu_time_used);
 
   return 0;
 }

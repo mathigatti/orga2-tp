@@ -141,13 +141,6 @@ double sigmoid_prime(double number){
 
 // A Implementar en ASM
 
-void update_weight(double* w, double* nw, uint w_size, uint mb_size, double eta){
-/*TO OPTIMIZE*/
-  for(uint i = 0; i < w_size; i++){
-    w[i] -= (eta/mb_size) * nw[i];
-  }
-}
-
 int max_arg(double* vector, uint n) {
   int maxIndex = 0;
   double maxValue = vector[maxIndex]; 
