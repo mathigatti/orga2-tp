@@ -25,6 +25,51 @@ void update_weight_c(double* w, double* nw, uint w_size, double c){
   }
 }
 
+void transpose_c(double* matrix, uint n, uint m, double* output){
+  /* NOTA: n y m no tienen que coincidir forzosamente con la cantidad de 
+           filas y columnas real de matrix. Por ejemplo, si matrix es pxm
+           con n < p, output sera la matriz que tenga por columnas las 
+           primeras n filas de matrix. Esto es util a la hora de usar mini 
+           batches.
+  */
+  for(uint i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      output[j * n + i] = matrix[i * m + j];
+    }
+  }
+}
+
+void hadamardProduct_c(double* matrix1, double* matrix2, uint n, uint m, double* output){
+/* matrix1 and matrix2 are nxm*/
+  for(uint i = 0; i < n; i++){
+    for(uint j = 0; j < m; j++){
+      output[i * m + j] = matrix1[i * m + j] * matrix2[i * m + j];
+    }
+  }
+}
+
+void sigmoid_v_c(double* matrix, uint n, uint m, double* output){
+/*The sigmoid function.*/
+  for(uint i = 0; i < n; i++){
+    for(uint j = 0; j < m; j++) {
+      output[i * m + j] = sigmoid(matrix[i * m + j]);
+    }
+  }
+}
+
+void sigmoid_prime_v_c(double* matrix, uint n, uint m, double* output){
+  double sig;
+  double minusOneSig;
+  for(uint i = 0; i < n; i++){
+    for(uint j = 0; j < m; j++){
+      sig = sigmoid(matrix[i * m + j]);
+      minusOneSig = 1 - sig;
+      output[i * m + j] = minusOneSig * sig;
+    }
+  }
+}
+
+///////////// HELPERS ///////////////////////////
 
 void printMatrix(double* matrix, int n, int m) {
   for(int i = 0; i < n; i++) {
@@ -60,3 +105,12 @@ void vecCopy(double* dst, double const * src, uint size){
 
 }
 
+double sigmoid(double number){
+/*The sigmoid function.*/
+  return 1/(1 + exp(-number));
+}
+
+double sigmoid_prime(double number){
+  double sig = sigmoid(number); 
+  return sig * (1 - sig);
+}
