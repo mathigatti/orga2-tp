@@ -40,13 +40,7 @@ double evaluate(Network* net, Images* test_data);
 
 // Para arreglar:
 
-/*
-
-Los errores que esta tirando valgrind (conditional jump...) se deben 
-a algun problema con la inicializacion de z1 y z2 en backpropagation. 
-Efectivamente el error se soluciona usando calloc en vez de malloc, pero en teoria esto no deberia ser necesario porque se supone que SI estamos inicializando los valores.
-
-*/
+/* Nada por ahora :) */
 
 // Ideas en general
 

@@ -37,6 +37,8 @@ void printMatrix(double* matrix, int n, int m);
 
 void random_shuffle(Images* batch);
 
+int max_arg(double* vector, uint n);
+
 // A implementar en asm
 
 //MATHI
@@ -49,9 +51,8 @@ void transpose(double* matrix, uint n, uint m, double* output);
 void hadamardProduct(double* matrix1, double* matrix2, uint n, uint m, double* output);
 
 //MANU
-void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, double* output);
 
-int max_arg(double* vector, uint n);
+
 
 
 #endif

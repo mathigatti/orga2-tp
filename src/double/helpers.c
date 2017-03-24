@@ -198,17 +198,5 @@ void sigmoid_prime_v(double* matrix, uint n, uint m, double* output){
 }
 
 
-void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, double* output){
-/* matrix1 is nxm */
-/* matrix2 is mxl */
-/* output is nxl */
-  for(uint i = 0; i < n; i++) {
-    for(uint j = 0; j < l; j++){
-      output[i * l + j] = 0;
-      for(uint k = 0; k < m; k++){
-        output[i * l + j] += matrix1[i * m + k] * matrix2[k * l + j];
-      }
-    }
-  }
-}
+
 
