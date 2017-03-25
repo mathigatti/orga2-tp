@@ -39,20 +39,12 @@ void random_shuffle(Images* batch);
 
 int max_arg(float* vector, uint n);
 
-// A implementar en asm
-
-//MATHI
 void sigmoid_v(float* matrix, uint n, uint m, float* output);
 
 void sigmoid_prime_v(float* matrix, uint n, uint m, float* output);
 
 void transpose(float* matrix, uint n, uint m, float* output);
 
-void hadamardProduct(float* matrix1, float* matrix2, uint n, uint m, float* output);
-
-//MANU
-
-
-
+void matrix_prod(float* matrix1, float* matrix2, uint n, uint m, uint l, float* output);
 
 #endif

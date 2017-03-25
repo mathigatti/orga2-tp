@@ -8,7 +8,8 @@
 	global cost_derivative
 	global mat_plus_vec
 	global update_weight
-	global matrix_prod
+	global hadamardProduct
+	;global matrix_prod
 
 ; YA IMPLEMENTADAS EN C
 	extern fprintf
@@ -83,67 +84,57 @@ section .text
 	pop rbp
   ret
 
-;;;;;;;;;;;;;;;;;STOP;;;;;;;;;;;;;;;;;;;;;;;
-	;void mat_plus_vec(
-	;	double* matrix, (rdi) 
-	; double* vector, (rsi)
-	; uint n, 				(rdx)
-	; uint m, 				(rcx)
-	; double* output 	(r8)
-	; )
-	; mat_plus_vec:
-	; push rbp
-	; mov rbp, rsp
+  hadamardProduct:
+	push rbp
+	mov rbp, rsp
 
-	; ;Calculo la cantidad de elementos total
-	; xor rax, rax
-	; mov eax, edx
-	; mul ecx					;eax = low(n*m) ;edx = high(n*m)
-	; shl rdx, 32
-	; add rax, rdx			;rax = #elementos
+	;Calculo la cantidad de pixeles total
+	xor rax, rax
+	mov eax, edx
+	mul ecx					;eax = low(n*m) ;edx = high(n*m)
+	shl rdx, 32
+	add rax, rdx			;rax = #elementos
 
-	; ;Chequeo si la cantidad de elementos es multiplo de 4
-	; mov rdx, 3
-	; and dx, ax
-	; jz .multiple_of_4
+	;Chequeo si la cantidad de elementos es par
+	mov rdx, 0x1
+	and rdx, rax
+	jz .A
 
-	; .not_multiple_of_4:
-	; ;Caso impar: opero sobre el primer elemento por separado
-	; movd xmm1, [rdi]
-	; movd xmm2, [rsi]
-	; addsd xmm1, xmm2
-	; movd [r8], xmm1
-	; add rdi, 8
-	; add rsi, 8
-	; add r8, 8	
-	; dec rdx
-	; jnz .not_multiple_of_4
-	; and al, 0xFC		;Seteo en 0 los dos ultimos bits de rax
+	.B:
+	;Caso impar: opero sobre el primer elemento por separado
+	movd xmm1, [rdi]
+	movd xmm2, [rsi]
 
-	; ;Inicializo el contador
-	; .multiple_of_4:
-	; ;shr rax, 2				;Proceso de a 4 elementos 
+	mulpd xmm1, xmm2
 
-	; ;Itero sobre todos los pixeles y realizo la operación de SUBPD
-	; .ciclo:
-	; 	vmovupd ymm1, [rdi]	;xmm1 = | px0 | px1 |
-	; 	vmovupd ymm2, [rsi]	;xmm2 = | px0'| px1'|
+	movd [r8], xmm1
+	add rdi, 8
+	add rsi, 8
+	add r8, 8	
+	dec rdx
+	jnz .B
 
-	; 	vaddpd ymm1, ymm2
+	;Inicializo el contador
+	.A:
+	and al, 0xFE
+	;Itero sobre todos los pixeles y realizo la operación de SUBPD
+	.ciclo:
+		movupd xmm1, [rdi]	;xmm1 = | px0 | px1 |
+		movupd xmm2, [rsi]	;xmm2 = | px0'| px1'|
 
-	; 	vmovupd [r8], ymm1
+		mulpd xmm1, xmm2
 
-	; 	;Avanzo los punteros
-	; 	add rdi, 32
-	; 	add rsi, 32
-	; 	add r8, 32
-	; 	sub rax, 4
-	; 	jnz .ciclo
+		movupd [r8], xmm1
+
+		;Avanzo los punteros
+		add rdi, 16
+		add rsi, 16
+		add r8, 16
+		sub rax, 2
+		jnz .ciclo
 	
-	; pop rbp
- ;  ret
-
-; inputs: rdi, rsi, rdx, rcx, r8, r9
+	pop rbp
+  ret
 
  mat_plus_vec:
 	push rbp
@@ -240,6 +231,136 @@ section .text
 	
 	pop rbp
   ret
+
+  matrix_prod:
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+
+	;Salvo las dimensiones 
+	; mov r10, rdx ; r10 = n
+	; mov r11, rcx ; r11 = m
+	; mov r12, r8  ; r12 = l
+	mov r13, rdx ; En r13 guardo la cte n (en rdx) pues voy a necesitar rdx para multiplicar
+	xor r10, r10
+	;La cantidad de iteraciones internas es m = rcx
+	.i:
+		xor r12, r12
+
+		; Calculo desplazamiento en matrix1
+		mov rax, r10
+		mul ecx
+		shl rdx, 32
+		;mov edx, eax ; rdx = i * m
+		lea r14, [rdx + rax] ; r14 = i * m
+		
+		.j:
+			xor r11, r11
+			pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
+
+			; Calculo desplazamiento en matrix2
+			mov r15, r12
+			.k:
+				movd xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
+				movd xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
+				mulsd xmm1, xmm2
+				addsd xmm3, xmm1
+				
+				inc r14 	;Voy del primer al ultimo elemento de la fila
+				add r15, r8
+				inc r11
+				cmp r11, rcx
+				jne .k
+			sub r14, rcx
+
+			; Calculo desplazamiento en output
+			mov rax, r10
+			mul r8d
+			shl rdx, 32
+			;mov edx, eax ; rdx = i * m
+			lea r15, [rdx + rax]
+			add r15, r12
+			
+			movd [r9 + 8 * r15], xmm3
+			inc r12
+			cmp r12, r8
+			jne .j
+		inc r10
+		cmp r10, r13
+		jne .i
+
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
+
+
+;;;;;;;;;;;;;;;;;STOP;;;;;;;;;;;;;;;;;;;;;;;
+	;void mat_plus_vec(
+	;	double* matrix, (rdi) 
+	; double* vector, (rsi)
+	; uint n, 				(rdx)
+	; uint m, 				(rcx)
+	; double* output 	(r8)
+	; )
+	; mat_plus_vec:
+	; push rbp
+	; mov rbp, rsp
+
+	; ;Calculo la cantidad de elementos total
+	; xor rax, rax
+	; mov eax, edx
+	; mul ecx					;eax = low(n*m) ;edx = high(n*m)
+	; shl rdx, 32
+	; add rax, rdx			;rax = #elementos
+
+	; ;Chequeo si la cantidad de elementos es multiplo de 4
+	; mov rdx, 3
+	; and dx, ax
+	; jz .multiple_of_4
+
+	; .not_multiple_of_4:
+	; ;Caso impar: opero sobre el primer elemento por separado
+	; movd xmm1, [rdi]
+	; movd xmm2, [rsi]
+	; addsd xmm1, xmm2
+	; movd [r8], xmm1
+	; add rdi, 8
+	; add rsi, 8
+	; add r8, 8	
+	; dec rdx
+	; jnz .not_multiple_of_4
+	; and al, 0xFC		;Seteo en 0 los dos ultimos bits de rax
+
+	; ;Inicializo el contador
+	; .multiple_of_4:
+	; ;shr rax, 2				;Proceso de a 4 elementos 
+
+	; ;Itero sobre todos los pixeles y realizo la operación de SUBPD
+	; .ciclo:
+	; 	vmovupd ymm1, [rdi]	;xmm1 = | px0 | px1 |
+	; 	vmovupd ymm2, [rsi]	;xmm2 = | px0'| px1'|
+
+	; 	vaddpd ymm1, ymm2
+
+	; 	vmovupd [r8], ymm1
+
+	; 	;Avanzo los punteros
+	; 	add rdi, 32
+	; 	add rsi, 32
+	; 	add r8, 32
+	; 	sub rax, 4
+	; 	jnz .ciclo
+	
+	; pop rbp
+ ;  ret
+
+; inputs: rdi, rsi, rdx, rcx, r8, r9
 
 
 ;int max_arg(
@@ -361,74 +482,6 @@ section .text
 ; uint l, 				 (r8)	
 ; double* output   (r9)
 ;)
-
-matrix_prod:
-	push rbp
-	mov rbp, rsp
-	push r12
-	push r13
-	push r14
-	push r15
-
-	;Salvo las dimensiones 
-	; mov r10, rdx ; r10 = n
-	; mov r11, rcx ; r11 = m
-	; mov r12, r8  ; r12 = l
-	mov r13, rdx ; En r13 guardo la cte n (en rdx) pues voy a necesitar rdx para multiplicar
-	xor r10, r10
-	;La cantidad de iteraciones internas es m = rcx
-	.i:
-		xor r12, r12
-
-		; Calculo desplazamiento en matrix1
-		mov rax, r10
-		mul ecx
-		shl rdx, 32
-		;mov edx, eax ; rdx = i * m
-		lea r14, [rdx + rax] ; r14 = i * m
-		
-		.j:
-			xor r11, r11
-			pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
-
-			; Calculo desplazamiento en matrix2
-			mov r15, r12
-			.k:
-				movd xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
-				movd xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
-				mulsd xmm1, xmm2
-				addsd xmm3, xmm1
-				
-				inc r14 	;Voy del primer al ultimo elemento de la fila
-				add r15, r8
-				inc r11
-				cmp r11, rcx
-				jne .k
-			sub r14, rcx
-
-			; Calculo desplazamiento en output
-			mov rax, r10
-			mul r8d
-			shl rdx, 32
-			;mov edx, eax ; rdx = i * m
-			lea r15, [rdx + rax]
-			add r15, r12
-			
-			movd [r9 + 8 * r15], xmm3
-			inc r12
-			cmp r12, r8
-			jne .j
-		inc r10
-		cmp r10, r13
-		jne .i
-
-	pop r15
-	pop r14
-	pop r13
-	pop r12
-	pop rbp
-	ret
-
 
 ;Version de atras para adelante
 

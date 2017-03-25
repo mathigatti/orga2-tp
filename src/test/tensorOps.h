@@ -14,7 +14,7 @@ typedef unsigned int uint;
 
 void cost_derivative_c_double(double* vector, double* target, double* output);
 
-void mat_plus_vec_c_double(double* matrix, double* vector, uint n, uint m, double* output);
+void mat_plus_vec_c_double(double* matrix, double* vector, uint n, double* output);
 
 void update_weight_c_double(double* w, double* nw, uint w_size, double c);
 
@@ -24,7 +24,7 @@ void hadamardProduct_c_double(double* matrix1, double* matrix2, uint n, uint m, 
 
 extern void cost_derivative_asm_double(double* vector, double* target, double* output);
 
-extern void mat_plus_vec_asm_double(double* matrix, double* vector, uint n, uint m, double* output);
+extern void mat_plus_vec_asm_double(double* matrix, double* vector, uint n, double* output);
 
 extern void update_weight_asm_double(double* w, double* nw, uint w_size, double c);
 
@@ -34,7 +34,7 @@ extern void hadamardProduct_asm_double(double* matrix1, double* matrix2, uint n,
 
 void cost_derivative_c_float(float* vector, float* target, float* output);
 
-void mat_plus_vec_c_float(float* matrix, float* vector, uint n, uint m, float* output);
+void mat_plus_vec_c_float(float* matrix, float* vector, uint n, float* output);
 
 void update_weight_c_float(float* w, float* nw, uint w_size, float c);
 
@@ -44,7 +44,7 @@ void hadamardProduct_c_float(float* matrix1, float* matrix2, uint n, uint m, flo
 
 extern void cost_derivative_asm_float(float* vector, float* target, float* output);
 
-extern void mat_plus_vec_asm_float(float* matrix, float* vector, uint n, uint m, float* output);
+extern void mat_plus_vec_asm_float(float* matrix, float* vector, uint n, float* output);
 
 extern void update_weight_asm_float(float* w, float* nw, uint w_size, float c);
 

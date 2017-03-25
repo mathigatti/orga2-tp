@@ -39,9 +39,6 @@ void random_shuffle(Images* batch);
 
 int max_arg(double* vector, uint n);
 
-// A implementar en asm
-
-//MATHI
 void sigmoid_v(double* matrix, uint n, uint m, double* output);
 
 void sigmoid_prime_v(double* matrix, uint n, uint m, double* output);
@@ -49,10 +46,5 @@ void sigmoid_prime_v(double* matrix, uint n, uint m, double* output);
 void transpose(double* matrix, uint n, uint m, double* output);
 
 void hadamardProduct(double* matrix1, double* matrix2, uint n, uint m, double* output);
-
-//MANU
-
-
-
 
 #endif

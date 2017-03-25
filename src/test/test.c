@@ -42,8 +42,8 @@ int main(){
     randomVector_double(SIZE, v, randMax);
     randomVector_double(SIZE, y, randMax);
 
-    mat_plus_vec_c_double(v, y, SIZE, 1, res_c);
-    mat_plus_vec_asm_double(v, y, SIZE, 1, res_asm);
+    mat_plus_vec_c_double(v, y, SIZE, res_c);
+    mat_plus_vec_asm_double(v, y, SIZE, res_asm);
 
     assert(equalVectors_double(res_c,res_asm,SIZE));
 
@@ -119,8 +119,8 @@ int main(){
     randomVector_float(SIZE, v_float, randMax);
     randomVector_float(SIZE, y_float, randMax);
 
-    mat_plus_vec_c_float(v_float, y_float, SIZE, 1, res_c_float);
-    mat_plus_vec_asm_float(v_float, y_float, SIZE, 1, res_asm_float);
+    mat_plus_vec_c_float(v_float, y_float, SIZE, res_c_float);
+    mat_plus_vec_asm_float(v_float, y_float, SIZE, res_asm_float);
 
     assert(equalVectors_float(res_c_float,res_asm_float,SIZE));
 
@@ -156,15 +156,13 @@ int main(){
     update_weight_asm_float(w_asm_float, y_float, SIZE, c);
 
     printMatrix_float(w_c_float, 1, SIZE);
-    printMatrix_float(w_c_float, 1, SIZE);
+    printMatrix_float(w_asm_float, 1, SIZE);
 
     assert(equalVectors_float(w_c_float, w_asm_float, SIZE));
 
   }
 
   printf("%s\n", "\t\tTests pasados exitosamente por update_weight");
-
-
 
   printf("TODOS LOS TESTS DE FLOAT PASARON EXITOSAMENTE\n\n");
 

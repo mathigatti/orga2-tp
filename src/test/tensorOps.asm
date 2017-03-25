@@ -89,18 +89,12 @@ section .text
 	pop rbp
   ret
 
-  mat_plus_vec_asm_double:
+ mat_plus_vec_asm_double:
 	push rbp
 	mov rbp, rsp
 
-	;Calculo la cantidad de pixeles total
-	xor rax, rax
-	mov eax, edx
-	mul ecx					;eax = low(n*m) ;edx = high(n*m)
-	shl rdx, 32
-	add rax, rdx			;rax = #elementos
-
 	;Chequeo si la cantidad de elementos es par
+	mov rax, rdx
 	mov rdx, 0x1
 	and rdx, rax
 	jz .A
@@ -110,10 +104,10 @@ section .text
 	movd xmm1, [rdi]
 	movd xmm2, [rsi]
 	addsd xmm1, xmm2
-	movd [r8], xmm1
+	movd [rcx], xmm1
 	add rdi, 8
 	add rsi, 8
-	add r8, 8	
+	add rcx, 8	
 	dec rdx
 	jnz .B
 
@@ -127,12 +121,12 @@ section .text
 
 		addpd xmm1, xmm2
 
-		movupd [r8], xmm1
+		movupd [rcx], xmm1
 
 		;Avanzo los punteros
 		add rdi, 16
 		add rsi, 16
-		add r8, 16
+		add rcx, 16
 		sub rax, 2
 		jnz .ciclo
 	
@@ -289,47 +283,40 @@ section .text
 	push rbp
 	mov rbp, rsp
 
-	;Calculo la cantidad de pixeles total
-	xor rax, rax
-	mov eax, edx
-	mul ecx					;eax = low(n*m) ;edx = high(n*m)
-	shl rdx, 32
-	add rax, rdx			;rax = #elementos
-
-	;Chequeo si la cantidad de elementos es par
-	xor rdx, rdx
-	inc rdx
+	;Chequeo si la cantidad de elementos es multiplo de 4
+	mov rax, rdx
+	mov rdx, 0x3
 	and rdx, rax
 	jz .A
 
 	.B:
-	;Caso impar: opero sobre el primer elemento por separado
+	;Caso multiplo de 4: opero sobre el primer elemento por separado
 	movd xmm1, [rdi]
 	movd xmm2, [rsi]
 	addss xmm1, xmm2
-	movd [r8], xmm1
+	movd [rcx], xmm1
 	add rdi, 4
 	add rsi, 4
-	add r8, 4	
+	add rcx, 4	
 	dec rdx
 	jnz .B
 
 	;Inicializo el contador
 	.A:
-	and al, 0xFE
+	and al, 0xFC
 	;Itero sobre todos los pixeles y realizo la operación de SUBPD
 	.ciclo:
-		movupd xmm1, [rdi]	;xmm1 = | px0 | px1 |
-		movupd xmm2, [rsi]	;xmm2 = | px0'| px1'|
+		movupd xmm1, [rdi]	;xmm1 = | px0 | px1 | px2 | px3 |
+		movupd xmm2, [rsi]	;xmm2 = | px0'| px1'| px2'| px3'|
 
 		addps xmm1, xmm2
 
-		movupd [r8], xmm1
+		movupd [rcx], xmm1
 
 		;Avanzo los punteros
 		add rdi, 16
 		add rsi, 16
-		add r8, 16
+		add rcx, 16
 		sub rax, 4
 		jnz .ciclo
 	
@@ -348,13 +335,13 @@ section .text
 	shl rdx, 32
 	add rax, rdx			;rax = #elementos
 
-	;Chequeo si la cantidad de elementos es par
-	mov rdx, 0x1
+	;Chequeo si la cantidad de elementos es multiplo de 4
+	mov rdx, 0x3
 	and rdx, rax
 	jz .A
 
 	.B:
-	;Caso impar: opero sobre el primer elemento por separado
+	;Caso multiplo de 4: opero sobre el primer elemento por separado
 	movd xmm1, [rdi]
 	movd xmm2, [rsi]
 
@@ -369,7 +356,7 @@ section .text
 
 	;Inicializo el contador
 	.A:
-	and al, 0xFE
+	and al, 0xFC
 	;Itero sobre todos los pixeles y realizo la operación de SUBPD
 	.ciclo:
 		movupd xmm1, [rdi]	;xmm1 = | px0 | px1 |

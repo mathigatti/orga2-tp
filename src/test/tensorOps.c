@@ -11,13 +11,10 @@ void cost_derivative_c_double(double* res_vec, double* target_vec, double* outpu
   }
 }
 
-void mat_plus_vec_c_double(double* matrix, double* vector, uint n, uint m, double* output){
+void mat_plus_vec_c_double(double* matrix, double* vector, uint n, double* output){
 // |vector| == n
-
   for(uint i = 0; i < n; i++){
-    for(uint j = 0; j < m; j++){
-      output[i * m + j] = vector[i] + matrix[i * m + j];
-    }
+    output[i] = vector[i] + matrix[i];
   }
 }
 
@@ -47,12 +44,10 @@ void cost_derivative_c_float(float* res_vec, float* target_vec, float* output) {
   }
 }
 
-void mat_plus_vec_c_float(float* matrix, float* vector, uint n, uint m, float* output){
+void mat_plus_vec_c_float(float* matrix, float* vector, uint n, float* output){
 // |vector| == n
   for(uint i = 0; i < n; i++){
-    for(uint j = 0; j < m; j++){
-      output[i * m + j] = vector[i] + matrix[i * m + j];
-    }
+    output[i] = vector[i] + matrix[i];
   }
 }
 

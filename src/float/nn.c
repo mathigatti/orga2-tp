@@ -62,7 +62,7 @@ void feed_forward(Network* net, float* input, uint cant_img, float* output) {
   matrix_prod(net->w_in_to_hid, input_tr, rows, cols, cant_img, resProduct1);
 
   float* z = (float*) malloc(rows * cant_img * sizeof(float));
-  mat_plus_vec(resProduct1, net->bias_in_to_hid, rows, cant_img, z);
+  mat_plus_vec(resProduct1, net->bias_in_to_hid, rows, z);
 
   float* hidden_state = (float*) malloc(rows * cant_img * sizeof(float));
 
@@ -80,7 +80,7 @@ void feed_forward(Network* net, float* input, uint cant_img, float* output) {
   z = (float*) malloc(rows * cant_img * sizeof(float));
 
   matrix_prod(net->w_hid_to_out, hidden_state, rows, cols, cant_img, resProduct2);
-  mat_plus_vec(resProduct2, net->bias_hid_to_out, rows, cant_img, z);
+  mat_plus_vec(resProduct2, net->bias_hid_to_out, rows, z);
 
   sigmoid_v(z, rows, cant_img, output);
  
@@ -134,10 +134,10 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
   
   for(uint i = start; i < end; i++){
     backprop(net, &minibatch->mat[i*784], minibatch->res[i], dnw_in_to_hid, dnb_in_to_hid, dnw_hid_to_out, dnb_hid_to_out);
-    mat_plus_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 784, 1, nabla_w_in_to_hid);
-    mat_plus_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, 1, nabla_b_in_to_hid);
-    mat_plus_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, 1, nabla_w_hid_to_out);
-    mat_plus_vec(nabla_b_hid_to_out, dnb_hid_to_out, 10, 1, nabla_b_hid_to_out);
+    mat_plus_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 784, nabla_w_in_to_hid);
+    mat_plus_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, nabla_b_in_to_hid);
+    mat_plus_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, nabla_w_hid_to_out);
+    mat_plus_vec(nabla_b_hid_to_out, dnb_hid_to_out, 10, nabla_b_hid_to_out);
   }
 
   // Free memory for delta nablas
@@ -181,7 +181,7 @@ to ``self.biases`` and ``self.weights``.*/
   matrix_prod(net->w_in_to_hid, activation0, h, inputUnits, cant_img, resProduct1);
 
   float* z1 = (float*) malloc(h * cant_img * sizeof(float));
-  mat_plus_vec(resProduct1, net->bias_in_to_hid, h, cant_img, z1);
+  mat_plus_vec(resProduct1, net->bias_in_to_hid, h, z1);
 
   float* activation1 = (float*) malloc(h * cant_img * sizeof(float));
   sigmoid_v(z1, h, cant_img, activation1);
@@ -194,7 +194,7 @@ to ``self.biases`` and ``self.weights``.*/
   matrix_prod(net->w_hid_to_out, activation1, outputUnits, h, cant_img, resProduct2);
 
   float* z2 = (float*) malloc(outputUnits * cant_img * sizeof(float));
-  mat_plus_vec(resProduct2, net->bias_hid_to_out, outputUnits, cant_img, z2);
+  mat_plus_vec(resProduct2, net->bias_hid_to_out, outputUnits, z2);
 
   float* activation2 = (float*) malloc(outputUnits * cant_img * sizeof(float));
   sigmoid_v(z2, outputUnits, cant_img, activation2);  
@@ -357,7 +357,7 @@ int main(){
       w[j] = rand() / RAND_MAX;
     }
     start = clock();
-    mat_plus_vec(v, w, size, 1, u);
+    mat_plus_vec(v, w, size, u);
     end = clock();
     cpu_time_used += ((float) end - start) / CLOCKS_PER_SEC;
   }
