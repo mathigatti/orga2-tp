@@ -1,6 +1,8 @@
 #include "tensorOps.h"
 
-void cost_derivative_c(double* res_vec, double* target_vec, double* output) {
+///////////// VERSION C DOUBLE /////////////
+
+void cost_derivative_c_double(double* res_vec, double* target_vec, double* output) {
 //Return the vector of partial derivatives \partial C_x /
 //partial a for the output activations.
 // Normalmente m = 1
@@ -9,37 +11,23 @@ void cost_derivative_c(double* res_vec, double* target_vec, double* output) {
   }
 }
 
-void mat_plus_vec_c(double* matrix, double* vector, uint n, uint m, double* output){
+void mat_plus_vec_c_double(double* matrix, double* vector, uint n, uint m, double* output){
 // |vector| == n
 
-  for(int i = 0; i < n; i++){
+  for(uint i = 0; i < n; i++){
     for(uint j = 0; j < m; j++){
       output[i * m + j] = vector[i] + matrix[i * m + j];
     }
   }
 }
 
-void update_weight_c(double* w, double* nw, uint w_size, double c){
+void update_weight_c_double(double* w, double* nw, uint w_size, double c){
   for(uint i = 0; i < w_size; i++){
     w[i] -= c * nw[i];
   }
 }
 
-void transpose_c(double* matrix, uint n, uint m, double* output){
-  /* NOTA: n y m no tienen que coincidir forzosamente con la cantidad de 
-           filas y columnas real de matrix. Por ejemplo, si matrix es pxm
-           con n < p, output sera la matriz que tenga por columnas las 
-           primeras n filas de matrix. Esto es util a la hora de usar mini 
-           batches.
-  */
-  for(uint i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-      output[j * n + i] = matrix[i * m + j];
-    }
-  }
-}
-
-void hadamardProduct_c(double* matrix1, double* matrix2, uint n, uint m, double* output){
+void hadamardProduct_c_double(double* matrix1, double* matrix2, uint n, uint m, double* output){
 /* matrix1 and matrix2 are nxm*/
   for(uint i = 0; i < n; i++){
     for(uint j = 0; j < m; j++){
@@ -48,32 +36,46 @@ void hadamardProduct_c(double* matrix1, double* matrix2, uint n, uint m, double*
   }
 }
 
-void sigmoid_v_c(double* matrix, uint n, uint m, double* output){
-/*The sigmoid function.*/
-  for(uint i = 0; i < n; i++){
-    for(uint j = 0; j < m; j++) {
-      output[i * m + j] = sigmoid(matrix[i * m + j]);
-    }
+///////////// VERSION C FLOAT /////////////
+
+void cost_derivative_c_float(float* res_vec, float* target_vec, float* output) {
+//Return the vector of partial derivatives \partial C_x /
+//partial a for the output activations.
+// Normalmente m = 1
+  for(uint i = 0; i < 10; i++){
+      output[i] = res_vec[i] - target_vec[i];
   }
 }
 
-void sigmoid_prime_v_c(double* matrix, uint n, uint m, double* output){
-  double sig;
-  double minusOneSig;
+void mat_plus_vec_c_float(float* matrix, float* vector, uint n, uint m, float* output){
+// |vector| == n
   for(uint i = 0; i < n; i++){
     for(uint j = 0; j < m; j++){
-      sig = sigmoid(matrix[i * m + j]);
-      minusOneSig = 1 - sig;
-      output[i * m + j] = minusOneSig * sig;
+      output[i * m + j] = vector[i] + matrix[i * m + j];
     }
   }
 }
 
-///////////// HELPERS ///////////////////////////
+void update_weight_c_float(float* w, float* nw, uint w_size, float c){
+  for(uint i = 0; i < w_size; i++){
+    w[i] -= c * nw[i];
+  }
+}
 
-void printMatrix(double* matrix, int n, int m) {
-  for(int i = 0; i < n; i++) {
-    for(int j = 0; j < m; j++) {
+void hadamardProduct_c_float(float* matrix1, float* matrix2, uint n, uint m, float* output){
+/* matrix1 and matrix2 are nxm*/
+  for(uint i = 0; i < n; i++){
+    for(uint j = 0; j < m; j++){
+      output[i * m + j] = matrix1[i * m + j] * matrix2[i * m + j];
+    }
+  }
+}
+
+///////////// HELPERS DOUBLE /////////////
+
+void printMatrix_double(double* matrix, int n, int m) {
+  for(uint i = 0; i < n; i++) {
+    for(uint j = 0; j < m; j++) {
       printf("%.3f ", matrix[i * m + j]);
     }
     printf("\n");
@@ -81,36 +83,57 @@ void printMatrix(double* matrix, int n, int m) {
 }
 
 
-int equalVectors(double* v1, double* v2, uint size){
+int equalVectors_double(double* v1, double* v2, uint size){
   for (uint i = 0; i < size; i++){
     if (v1[i] != v2[i]){
       return 0;
     }
   }
   return 1;
-};
+}
 
-void randomVector(uint size, double* vector, uint randMax){
+void randomVector_double(uint size, double* vector, uint randMax){
 
   for (uint i = 0; i < size; i++){
       vector[i] = (double) rand() / RAND_MAX;
   }
+}
 
-};
-
-void vecCopy(double* dst, double const * src, uint size){
+void vecCopy_double(double* dst, double const * src, uint size){
   for (uint i = 0; i < size; i++){
       dst[i] = src[i];
   }
-
 }
 
-double sigmoid(double number){
-/*The sigmoid function.*/
-  return 1/(1 + exp(-number));
+///////////// HELPERS FLOAT /////////////
+
+void printMatrix_float(float* matrix, int n, int m) {
+  for(uint i = 0; i < n; i++) {
+    for(uint j = 0; j < m; j++) {
+      printf("%.3f ", matrix[i * m + j]);
+    }
+    printf("\n");
+  }
 }
 
-double sigmoid_prime(double number){
-  double sig = sigmoid(number); 
-  return sig * (1 - sig);
+
+int equalVectors_float(float* v1, float* v2, uint size){
+  for (uint i = 0; i < size; i++){
+    if (v1[i] != v2[i]){
+      return 0;
+    }
+  }
+  return 1;
+}
+
+void randomVector_float(uint size, float* vector, uint randMax){
+  for (uint i = 0; i < size; i++){
+      vector[i] = (float) rand() / RAND_MAX;
+  }
+}
+
+void vecCopy_float(float* dst, float const * src, uint size){
+  for (uint i = 0; i < size; i++){
+      dst[i] = src[i];
+  }
 }

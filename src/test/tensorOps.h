@@ -10,43 +10,65 @@
 
 typedef unsigned int uint;
 
-void vecCopy(double* dst, double const * src, uint size);
+///////////////////////////// VERSION C DOUBLE /////////////////////////////
 
-void printMatrix(double* matrix, int n, int m);
+void cost_derivative_c_double(double* vector, double* target, double* output);
 
-int equalVectors(double* v1, double* v2, uint size);
+void mat_plus_vec_c_double(double* matrix, double* vector, uint n, uint m, double* output);
 
-void randomVector(uint size, double* vector, uint randMax);
+void update_weight_c_double(double* w, double* nw, uint w_size, double c);
 
-double sigmoid(double z);
+void hadamardProduct_c_double(double* matrix1, double* matrix2, uint n, uint m, double* output);
 
-double sigmoid_prime(double z);
+///////////////////////////// ASM DOUBlE /////////////////////////////
 
+extern void cost_derivative_asm_double(double* vector, double* target, double* output);
 
-////////////////// VERSION C /////////////////////
+extern void mat_plus_vec_asm_double(double* matrix, double* vector, uint n, uint m, double* output);
 
-void cost_derivative_c(double* vector, double* target, double* output);
+extern void update_weight_asm_double(double* w, double* nw, uint w_size, double c);
 
-void mat_plus_vec_c(double* matrix, double* vector, uint n, uint m, double* output);
+extern void hadamardProduct_asm_double(double* matrix1, double* matrix2, uint n, uint m, double* output);
 
-void update_weight_c(double* w, double* nw, uint w_size, double c);
+///////////////////////////// VERSION C FLOAT /////////////////////////////
 
-void sigmoid_v_c(double* matrix, uint n, uint m, double* output);
+void cost_derivative_c_float(float* vector, float* target, float* output);
 
-void sigmoid_prime_v_c(double* matrix, uint n, uint m, double* output);
+void mat_plus_vec_c_float(float* matrix, float* vector, uint n, uint m, float* output);
 
-void transpose_c(double* matrix, uint n, uint m, double* output);
+void update_weight_c_float(float* w, float* nw, uint w_size, float c);
 
-void hadamardProduct_c(double* matrix1, double* matrix2, uint n, uint m, double* output);
+void hadamardProduct_c_float(float* matrix1, float* matrix2, uint n, uint m, float* output);
 
-///////////////// VERSION ASM /////////////////////////////
+///////////////////////////// ASM FLOAT /////////////////////////////
 
-extern void cost_derivative_asm(double* vector, double* target, double* output);
+extern void cost_derivative_asm_float(float* vector, float* target, float* output);
 
-extern void mat_plus_vec_asm(double* matrix, double* vector, uint n, uint m, double* output);
+extern void mat_plus_vec_asm_float(float* matrix, float* vector, uint n, uint m, float* output);
 
-extern void update_weight_asm(double* w, double* nw, uint w_size, double c);
+extern void update_weight_asm_float(float* w, float* nw, uint w_size, float c);
 
-extern void hadamardProduct_asm(double* matrix1, double* matrix2, uint n, uint m, double* output);
+extern void hadamardProduct_asm_float(float* matrix1, float* matrix2, uint n, uint m, float* output);
+
+///////////////////////////// HELPERS DOUBLE /////////////////////////////
+
+void vecCopy_double(double* dst, double const * src, uint size);
+
+void printMatrix_double(double* matrix, int n, int m);
+
+int equalVectors_double(double* v1, double* v2, uint size);
+
+void randomVector_double(uint size, double* vector, uint randMax);
+
+///////////////////////////// HELPERS FLOAT /////////////////////////////
+
+void vecCopy_float(float* dst, float const * src, uint size);
+
+void printMatrix_float(float* matrix, int n, int m);
+
+int equalVectors_float(float* v1, float* v2, uint size);
+
+void randomVector_float(uint size, float* vector, uint randMax);
+
 
 #endif
