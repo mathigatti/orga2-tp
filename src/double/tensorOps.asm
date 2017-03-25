@@ -143,18 +143,14 @@ section .text
 	; pop rbp
  ;  ret
 
+; inputs: rdi, rsi, rdx, rcx, r8, r9
+
  mat_plus_vec:
 	push rbp
 	mov rbp, rsp
 
-	;Calculo la cantidad de pixeles total
-	xor rax, rax
-	mov eax, edx
-	mul ecx					;eax = low(n*m) ;edx = high(n*m)
-	shl rdx, 32
-	add rax, rdx			;rax = #elementos
-
 	;Chequeo si la cantidad de elementos es par
+	mov rax, rdx
 	mov rdx, 0x1
 	and rdx, rax
 	jz .A
@@ -164,10 +160,10 @@ section .text
 	movd xmm1, [rdi]
 	movd xmm2, [rsi]
 	addsd xmm1, xmm2
-	movd [r8], xmm1
+	movd [rcx], xmm1
 	add rdi, 8
 	add rsi, 8
-	add r8, 8	
+	add rcx, 8	
 	dec rdx
 	jnz .B
 
@@ -181,12 +177,12 @@ section .text
 
 		addpd xmm1, xmm2
 
-		movupd [r8], xmm1
+		movupd [rcx], xmm1
 
 		;Avanzo los punteros
 		add rdi, 16
 		add rsi, 16
-		add r8, 16
+		add rcx, 16
 		sub rax, 2
 		jnz .ciclo
 	
@@ -203,48 +199,47 @@ section .text
 	push rbp
 	mov rbp, rsp
 
-	;Calculo w_size mod 8
-	mov rcx, 7
-	and cl, dl						;rcx = w_size mod 8
-	jz .multiple_of_8
+	;Calculo w_size mod 4
+	xor rcx, rcx
+	inc cl
+	and cl, dl						;rcx = w_size mod 4
+	cmp cl, 0
+	jz .multiple_of_4
 
-	;Caso no-multiplo: Notar que este ciclo tiene como mucho 7 iteraciones
-	.not_multiple_of_8:
-		movd xmm2, [rsi]		;xmm2 = nw_0
+	;Caso no-multiplo
+	.not_multiple_of_4:
 		movd xmm1, [rdi]		;xmm1 = w_0
+		movd xmm2, [rsi]		;xmm2 = nw_0
 		mulsd xmm2, xmm0		;xmm2 = c * nw_0
 		subsd xmm1, xmm2		;xmm1 = w_0 - c * nw_0
-		add rsi, 8
 		movd [rdi], xmm1
 		add rdi, 8
-		dec rcx
-		jnz .not_multiple_of_8
-		and dl, 0xF8
+		add rsi, 8
+		;loop .not_multiple_of_4
+		;dec rcx 						;rcx = w_size - 1
 
 	;Inicializo el contador
-	.multiple_of_8:
-		;Quiero determinar si la cantidad de iteraciones es par
-		vbroadcastsd ymm0, xmm0	;ymm0 = c | c | c | c
+	.multiple_of_4:
+	mov rcx, rdx 						;rcx = w_size
+	shr rcx, 1						;Proceso de a 4 elementos
+	unpcklpd xmm0, xmm0
 
-		;Itero sobre todos los pesos y realizo la actualizacion
-		.ciclo:
-			%rep UNROLL_AMT
-			vmovupd ymm2, [rsi]	;xmm2 = | nw_i| nw_i+1|
-			vmovupd ymm1, [rdi]	;xmm1 = | w_i | w_i+1 |
+	;Itero sobre todos los pesos y realizo la actualizacion
+	.ciclo:
+		movupd xmm1, [rdi]	;xmm1 = | w_i | w_i+1 |
+		movupd xmm2, [rsi]	;xmm2 = | nw_i| nw_i+1|
 
-			vmulpd ymm2, ymm0
-			vsubpd ymm1, ymm2
-			add rsi, 32
-			vmovupd [rdi], ymm1
+		mulpd xmm2, xmm0
+		subpd xmm1, xmm2
+		movupd [rdi], xmm1
 
-			;Avanzo los punteros
-			add rdi, 32
-			%endrep
-			sub rdx, 8
-			jnz .ciclo
-
-		pop rbp
-	  ret
+		;Avanzo los punteros
+		add rdi, 16
+		add rsi, 16
+		loop .ciclo
+	
+	pop rbp
+  ret
 
 
 ;int max_arg(
