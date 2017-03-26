@@ -101,10 +101,10 @@ section .text
 
 	.B:
 	;Caso impar: opero sobre el primer elemento por separado
-	movd xmm1, [rdi]
-	movd xmm2, [rsi]
+	movq xmm1, [rdi]
+	movq xmm2, [rsi]
 	addsd xmm1, xmm2
-	movd [rcx], xmm1
+	movq [rcx], xmm1
 	add rdi, 8
 	add rsi, 8
 	add rcx, 8	
@@ -152,12 +152,12 @@ section .text
 
 	.B:
 	;Caso impar: opero sobre el primer elemento por separado
-	movd xmm1, [rdi]
-	movd xmm2, [rsi]
+	movq xmm1, [rdi]
+	movq xmm2, [rsi]
 
 	mulpd xmm1, xmm2
 
-	movd [r8], xmm1
+	movq [r8], xmm1
 	add rdi, 8
 	add rsi, 8
 	add r8, 8	
@@ -199,11 +199,11 @@ section .text
 
 	;Caso no-multiplo
 	.not_multiple_of_4:
-		movd xmm1, [rdi]		;xmm1 = w_0
-		movd xmm2, [rsi]		;xmm2 = nw_0
+		movq xmm1, [rdi]		;xmm1 = w_0
+		movq xmm2, [rsi]		;xmm2 = nw_0
 		mulsd xmm2, xmm0		;xmm2 = c * nw_0
 		subsd xmm1, xmm2		;xmm1 = w_0 - c * nw_0
-		movd [rdi], xmm1
+		movq [rdi], xmm1
 		add rdi, 8
 		add rsi, 8
 		;loop .not_multiple_of_4
@@ -256,12 +256,12 @@ section .text
 
 	;Itero sobre todos los elementos y realizo la operación de SUBPD
 	%rep 2
-		movupd xmm1, [rdi]	;xmm1 = | x0 | x1 | x2 | x3 |
-		movupd xmm2, [rsi]	;xmm2 = | y0 | y1 | y2 | y3 |
+		movups xmm1, [rdi]	;xmm1 = | x0 | x1 | x2 | x3 |
+		movups xmm2, [rsi]	;xmm2 = | y0 | y1 | y2 | y3 |
 
 		subps xmm1, xmm2
 
-		movupd [rdx], xmm1
+		movups [rdx], xmm1
 
 		;Avanzo los punteros
 		add rdi, 16
@@ -269,12 +269,12 @@ section .text
 		add rdx, 16
 	%endrep
 
-	movupd xmm1, [rdi]	;xmm1 = | x0 | x1 |
-	movupd xmm2, [rsi]	;xmm2 = | y0 | y1 |
+	movq xmm1, [rdi]	;xmm1 = | x0 | x1 |
+	movq xmm2, [rsi]	;xmm2 = | y0 | y1 |
 
 	subps xmm1, xmm2
 
-	movupd [rdx], xmm1
+	movq [rdx], xmm1
 
 	pop rbp
   ret
@@ -401,14 +401,16 @@ section .text
 
 	;Inicializo el contador
 	.multiple_of_4:
-	mov rcx, rdx 						;rcx = w_size
+	mov rcx, rdx 					;rcx = w_size
 	shr rcx, 2						;Proceso de a 4 elementos
+
+	unpcklps xmm0, xmm0
 	unpcklps xmm0, xmm0
 
 	;Itero sobre todos los pesos y realizo la actualizacion
 	.ciclo:
-		movups xmm1, [rdi]	;xmm1 = | w_i | w_i+1 |
-		movups xmm2, [rsi]	;xmm2 = | nw_i| nw_i+1|
+		movups xmm1, [rdi]	;xmm1 = | w_i | w_i+1 | w_i+2 | w_i+3 |
+		movups xmm2, [rsi]	;xmm2 = | nw_i| nw_i+1| nw_i+2| nw_i+3|
 
 		mulps xmm2, xmm0
 		subps xmm1, xmm2

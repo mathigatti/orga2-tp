@@ -201,5 +201,3 @@ void matrix_prod(float* matrix1, float* matrix2, uint n, uint m, uint l, float* 
     }
   }
 }
-
-

@@ -378,6 +378,20 @@ int main(){
   //cpu_time_used /= 1000000.0;
   printf("Total time update_weight: %f\n", cpu_time_used);
 
+  cpu_time_used = 0;
+  for(int i = 0; i < 50000; i++){
+    for(int j = 0; j < size; j++){
+      v[j] = rand() / RAND_MAX;
+      w[j] = rand() / RAND_MAX;
+    }
+    start = clock();
+    hadamardProduct(v, w, size, 1, u);
+    end = clock();
+    cpu_time_used += ((float) end - start) / CLOCKS_PER_SEC;
+  }
+  //cpu_time_used /= 1000000.0;
+  printf("Total time hadamardProduct: %f\n", cpu_time_used);
+
   return 0;
 }
 

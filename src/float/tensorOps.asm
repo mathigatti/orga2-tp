@@ -8,7 +8,7 @@
 	global cost_derivative
 	global mat_plus_vec
 	global update_weight
-	;global hadamardProduct
+	global hadamardProduct
 	;global matrix_prod
 
 ; YA IMPLEMENTADAS EN C
@@ -48,7 +48,7 @@ section .text
 ;	double* output	(rdx)
 ; )
 ;NOTA: cost_derivative es bastante mas eficiente con SSE2 que con AVR
-	cost_derivative:
+  cost_derivative:
 	push rbp
 	mov rbp, rsp
 
@@ -61,12 +61,12 @@ section .text
 
 	;Itero sobre todos los elementos y realizo la operación de SUBPD
 	%rep 2
-		movupd xmm1, [rdi]	;xmm1 = | x0 | x1 | x2 | x3 |
-		movupd xmm2, [rsi]	;xmm2 = | y0 | y1 | y2 | y3 |
+		movups xmm1, [rdi]	;xmm1 = | x0 | x1 | x2 | x3 |
+		movups xmm2, [rsi]	;xmm2 = | y0 | y1 | y2 | y3 |
 
 		subps xmm1, xmm2
 
-		movupd [rdx], xmm1
+		movups [rdx], xmm1
 
 		;Avanzo los punteros
 		add rdi, 16
@@ -74,16 +74,15 @@ section .text
 		add rdx, 16
 	%endrep
 
-	movupd xmm1, [rdi]	;xmm1 = | x0 | x1 |
-	movupd xmm2, [rsi]	;xmm2 = | y0 | y1 |
+	movq xmm1, [rdi]	;xmm1 = | x0 | x1 |
+	movq xmm2, [rsi]	;xmm2 = | y0 | y1 |
 
 	subps xmm1, xmm2
 
-	movupd [rdx], xmm1
+	movq [rdx], xmm1
 
 	pop rbp
   ret
-
 
  mat_plus_vec:
 	push rbp
@@ -161,14 +160,16 @@ section .text
 
 	;Inicializo el contador
 	.multiple_of_4:
-	mov rcx, rdx 						;rcx = w_size
+	mov rcx, rdx 					;rcx = w_size
 	shr rcx, 2						;Proceso de a 4 elementos
+
+	unpcklps xmm0, xmm0
 	unpcklps xmm0, xmm0
 
 	;Itero sobre todos los pesos y realizo la actualizacion
 	.ciclo:
-		movups xmm1, [rdi]	;xmm1 = | w_i | w_i+1 |
-		movups xmm2, [rsi]	;xmm2 = | nw_i| nw_i+1|
+		movups xmm1, [rdi]	;xmm1 = | w_i | w_i+1 | w_i+2 | w_i+3 |
+		movups xmm2, [rsi]	;xmm2 = | nw_i| nw_i+1| nw_i+2| nw_i+3|
 
 		mulps xmm2, xmm0
 		subps xmm1, xmm2
@@ -181,6 +182,9 @@ section .text
 	
   	pop rbp
   ret
+
+; inputs: rdi, rsi, rdx, rcx, r8
+; float* matrix1, float* matrix2, uint n, uint m, float* output
 
   hadamardProduct:
 	push rbp
@@ -217,8 +221,8 @@ section .text
 	and al, 0xFC
 	;Itero sobre todos los pixeles y realizo la operación de SUBPD
 	.ciclo:
-		movupd xmm1, [rdi]	;xmm1 = | px0 | px1 |
-		movupd xmm2, [rsi]	;xmm2 = | px0'| px1'|
+		movupd xmm1, [rdi]	;xmm1 = | px0 | px1 | px2 | px3 |
+		movupd xmm2, [rsi]	;xmm2 = | px0'| px1'| px2'| px3'|
 
 		mulps xmm1, xmm2
 

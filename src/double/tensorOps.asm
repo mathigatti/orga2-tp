@@ -102,12 +102,12 @@ section .text
 
 	.B:
 	;Caso impar: opero sobre el primer elemento por separado
-	movd xmm1, [rdi]
-	movd xmm2, [rsi]
+	movq xmm1, [rdi]
+	movq xmm2, [rsi]
 
 	mulpd xmm1, xmm2
 
-	movd [r8], xmm1
+	movq [r8], xmm1
 	add rdi, 8
 	add rsi, 8
 	add r8, 8	
@@ -148,10 +148,10 @@ section .text
 
 	.B:
 	;Caso impar: opero sobre el primer elemento por separado
-	movd xmm1, [rdi]
-	movd xmm2, [rsi]
+	movq xmm1, [rdi]
+	movq xmm2, [rsi]
 	addsd xmm1, xmm2
-	movd [rcx], xmm1
+	movq [rcx], xmm1
 	add rdi, 8
 	add rsi, 8
 	add rcx, 8	
@@ -199,11 +199,11 @@ section .text
 
 	;Caso no-multiplo
 	.not_multiple_of_4:
-		movd xmm1, [rdi]		;xmm1 = w_0
-		movd xmm2, [rsi]		;xmm2 = nw_0
+		movq xmm1, [rdi]		;xmm1 = w_0
+		movq xmm2, [rsi]		;xmm2 = nw_0
 		mulsd xmm2, xmm0		;xmm2 = c * nw_0
 		subsd xmm1, xmm2		;xmm1 = w_0 - c * nw_0
-		movd [rdi], xmm1
+		movq [rdi], xmm1
 		add rdi, 8
 		add rsi, 8
 		;loop .not_multiple_of_4
@@ -264,8 +264,8 @@ section .text
 			; Calculo desplazamiento en matrix2
 			mov r15, r12
 			.k:
-				movd xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
-				movd xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
+				movq xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
+				movq xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
 				mulsd xmm1, xmm2
 				addsd xmm3, xmm1
 				
@@ -284,7 +284,7 @@ section .text
 			lea r15, [rdx + rax]
 			add r15, r12
 			
-			movd [r9 + 8 * r15], xmm3
+			movq [r9 + 8 * r15], xmm3
 			inc r12
 			cmp r12, r8
 			jne .j

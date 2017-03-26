@@ -16,6 +16,7 @@ void mat_plus_vec(float* matrix, float* vector, uint n, float* output){
   }
 }
 
+
 void update_weight(float* w, float* nw, uint w_size, float c){
   for(uint i = 0; i < w_size; i++){
     w[i] -= c * nw[i];

@@ -155,8 +155,8 @@ int main(){
     update_weight_c_float(w_c_float, y_float, SIZE, c);
     update_weight_asm_float(w_asm_float, y_float, SIZE, c);
 
-    printMatrix_float(w_c_float, 1, SIZE);
-    printMatrix_float(w_asm_float, 1, SIZE);
+    //printMatrix_float(w_c_float, 1, SIZE);
+    //printMatrix_float(w_asm_float, 1, SIZE);
 
     assert(equalVectors_float(w_c_float, w_asm_float, SIZE));
 
