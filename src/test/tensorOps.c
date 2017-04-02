@@ -33,6 +33,20 @@ void hadamardProduct_c_double(double* matrix1, double* matrix2, uint n, uint m, 
   }
 }
 
+void matrix_prod_c_double(double* matrix1, double* matrix2, uint n, uint m, uint l, double* output){
+// matrix1 is nxm
+// matrix2 is mxl
+// output is nxl
+  for(uint i = 0; i < n; i++) {
+    for(uint j = 0; j < l; j++){
+      output[i * l + j] = 0.0;
+      for(uint k = 0; k < m; k++){
+        output[i * l + j] += matrix1[i * m + k] * matrix2[k * l + j];
+      }
+    }
+  }
+}
+
 ///////////// VERSION C FLOAT /////////////
 
 void cost_derivative_c_float(float* res_vec, float* target_vec, float* output) {
@@ -87,10 +101,29 @@ int equalVectors_double(double* v1, double* v2, uint size){
   return 1;
 }
 
+int equalMatrix_double(double* A, double* B, uint n, uint m){
+  for (uint i = 0; i < n; i++){
+    for (uint j = 0; j < m; j++) {
+      if (fabs(A[i * m + j] - B[i * m + j]) > 0.0000000001){
+        return 0;
+      }
+    }
+  }
+  return 1;
+}
+
 void randomVector_double(uint size, double* vector, uint randMax){
 
   for (uint i = 0; i < size; i++){
       vector[i] = (double) rand() / RAND_MAX;
+  }
+}
+
+void randomMatrix_double(double* matrix, uint n, uint m){
+  for (uint i = 0; i < n; i++){
+    for (uint j = 0; j < m; j++){
+      matrix[i * m + j] = (double) rand() / RAND_MAX;
+    }
   }
 }
 

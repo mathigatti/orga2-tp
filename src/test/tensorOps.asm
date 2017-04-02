@@ -9,6 +9,7 @@
 	global mat_plus_vec_asm_double
 	global update_weight_asm_double
 	global hadamardProduct_asm_double
+	global matrix_prod_asm_double
 	global cost_derivative_asm_float
 	global mat_plus_vec_asm_float
 	global update_weight_asm_float
@@ -606,3 +607,137 @@ section .text
 ; 	pop rbp
 ;    	ret
 
+matrix_prod_asm_double:
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+
+	mov r10, rdx ; r10 = n
+
+	; Calculo desplazamiento del ultimo elemento
+	; de la fila (r10-1) [numerando las filas del 0 al n-1]
+	mov rax, r10
+	mul ecx
+	shl rdx, 32
+	;mov edx, eax ; rdx = i * m
+	lea r14, [rdx + rax - 1] ; r14 = i * m
+
+	;Precomputo el offset del ultimo elemento de la anteultima fila de matrix2
+	lea rax, [rcx - 1]
+	mul r8d
+	shl rdx, 32
+	;mov edx, eax ; rdx = i * m
+	lea r13, [rdx + rax - 1]
+
+	.i:
+		mov r12, r8
+		.j:
+			mov r11, rcx		;Uso r11 como contador unicamente
+			
+			pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
+
+			; Calculo desplazamiento en matrix2
+			lea r15, [r13 + r12]
+
+			.k:
+				movq xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
+				movq xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
+				mulsd xmm1, xmm2
+				addsd xmm3, xmm1
+				sub r15, r8 ;Voy del ultimo al primer elemento de la columna
+				dec r14 		;Voy del ultimo al primer elemento de la fila
+				dec r11
+				jnz .k
+			add r14, rcx	;Hago esto para situarme de vuelta
+										;al final de la fila r10-1
+			; Calculo desplazamiento en output
+			lea rax, [r10 - 1]
+			mul r8d
+			shl rdx, 32
+			;mov edx, eax ; rdx = i * m
+			lea r15, [rdx + rax]
+			lea r15, [r15 + r12 - 1]
+			
+			movq [r9 + 8 * r15], xmm3
+			dec r12
+			jnz .j
+		sub r14d, ecx
+		dec r10
+		jnz .i
+
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
+
+	fafafa_matrix_prod_asm_double:
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+
+	;Salvo las dimensiones 
+	; mov r10, rdx ; r10 = n
+	; mov r11, rcx ; r11 = m
+	; mov r12, r8  ; r12 = l
+	mov r13, rdx ; En r13 guardo la cte n (en rdx) pues voy a necesitar rdx para multiplicar
+	xor r10, r10
+	;La cantidad de iteraciones internas es m = rcx
+	.i:
+		xor r12, r12
+
+		; Calculo desplazamiento en matrix1
+		mov rax, r10
+		mul ecx
+		shl rdx, 32
+		;mov edx, eax ; rdx = i * m
+		lea r14, [rdx + rax] ; r14 = i * m
+		
+		.j:
+			xor r11, r11
+			pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
+
+			; Calculo desplazamiento en matrix2
+			mov r15, r12
+			.k:
+				movq xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
+				movq xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
+				mulsd xmm1, xmm2
+				addsd xmm3, xmm1
+				
+				inc r14 	;Voy del primer al ultimo elemento de la fila
+				add r15, r8
+				inc r11
+				cmp r11, rcx
+				jne .k
+			sub r14, rcx
+
+			; Calculo desplazamiento en output
+			mov rax, r10
+			mul r8d
+			shl rdx, 32
+			;mov edx, eax ; rdx = i * m
+			lea r15, [rdx + rax]
+			add r15, r12
+			
+			movq [r9 + 8 * r15], xmm3
+			inc r12
+			cmp r12, r8
+			jne .j
+		inc r10
+		cmp r10, r13
+		jne .i
+
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret

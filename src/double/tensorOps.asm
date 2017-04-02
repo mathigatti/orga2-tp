@@ -9,7 +9,7 @@
 	global mat_plus_vec
 	global update_weight
 	global hadamardProduct
-	;global matrix_prod
+	global matrix_prod
 
 ; YA IMPLEMENTADAS EN C
 	extern fprintf
@@ -190,114 +190,128 @@ section .text
 	push rbp
 	mov rbp, rsp
 
-	;Calculo w_size mod 4
-	xor rcx, rcx
-	inc cl
-	and cl, dl						;rcx = w_size mod 4
-	cmp cl, 0
-	jz .multiple_of_4
+	;Calculo w_size mod 8
+	mov rcx, 7
+	and cl, dl						;rcx = w_size mod 8
+	jz .multiple_of_8
 
-	;Caso no-multiplo
-	.not_multiple_of_4:
-		movq xmm1, [rdi]		;xmm1 = w_0
+	;Caso no-multiplo: Notar que este ciclo tiene como mucho 7 iteraciones
+	.not_multiple_of_8:
 		movq xmm2, [rsi]		;xmm2 = nw_0
+		movq xmm1, [rdi]		;xmm1 = w_0
 		mulsd xmm2, xmm0		;xmm2 = c * nw_0
 		subsd xmm1, xmm2		;xmm1 = w_0 - c * nw_0
+		add rsi, 8
 		movq [rdi], xmm1
 		add rdi, 8
-		add rsi, 8
-		;loop .not_multiple_of_4
-		;dec rcx 						;rcx = w_size - 1
+		dec rcx
+		jnz .not_multiple_of_8
+		and dl, 0xF8
 
 	;Inicializo el contador
-	.multiple_of_4:
-	mov rcx, rdx 						;rcx = w_size
-	shr rcx, 1						;Proceso de a 4 elementos
-	unpcklpd xmm0, xmm0
+	.multiple_of_8:
+		;Quiero determinar si la cantidad de iteraciones es par
+		vbroadcastsd ymm0, xmm0	;ymm0 = c | c | c | c
 
-	;Itero sobre todos los pesos y realizo la actualizacion
-	.ciclo:
-		movupd xmm1, [rdi]	;xmm1 = | w_i | w_i+1 |
-		movupd xmm2, [rsi]	;xmm2 = | nw_i| nw_i+1|
+		;Itero sobre todos los pesos y realizo la actualizacion
+		.ciclo:
+			%rep UNROLL_AMT
+			vmovupd ymm2, [rsi]	;xmm2 = | nw_i| nw_i+1|
+			vmovupd ymm1, [rdi]	;xmm1 = | w_i | w_i+1 |
 
-		mulpd xmm2, xmm0
-		subpd xmm1, xmm2
-		movupd [rdi], xmm1
+			vmulpd ymm2, ymm0
+			vsubpd ymm1, ymm2
+			add rsi, 32
+			vmovupd [rdi], ymm1
 
-		;Avanzo los punteros
-		add rdi, 16
-		add rsi, 16
-		loop .ciclo
-	
-	pop rbp
-  ret
+			;Avanzo los punteros
+			add rdi, 32
+			%endrep
+			sub rdx, 8
+			jnz .ciclo
 
-  matrix_prod:
-	push rbp
-	mov rbp, rsp
-	push r12
-	push r13
-	push r14
-	push r15
+		pop rbp
+	  ret
 
-	;Salvo las dimensiones 
+ ;  matrix_prod:
+	; push rbp
+	; mov rbp, rsp
+	; push r12
+	; push r13
+	; push r14
+	; push r15
+
+	; ;Salvo las dimensiones 
 	; mov r10, rdx ; r10 = n
-	; mov r11, rcx ; r11 = m
-	; mov r12, r8  ; r12 = l
-	mov r13, rdx ; En r13 guardo la cte n (en rdx) pues voy a necesitar rdx para multiplicar
-	xor r10, r10
-	;La cantidad de iteraciones internas es m = rcx
-	.i:
-		xor r12, r12
+	; ;lea r11, [rcx - 1] ; r11 = m
+	; ;lea r12, [r8 - 1]  ; r12 = l
+	; ;mov r13, rdx ; En r13 guardo la cte n (en rdx) pues voy a necesitar rdx para multiplicar
+	; ;xor r10, r10
+	; ;La cantidad de iteraciones internas es m = rcx
 
-		; Calculo desplazamiento en matrix1
-		mov rax, r10
-		mul ecx
-		shl rdx, 32
-		;mov edx, eax ; rdx = i * m
-		lea r14, [rdx + rax] ; r14 = i * m
+	; mov r10, rdx ; r10 = n
+
+	; ;Calculo principio de la ultima fila de matrix2
+	; lea rax, [rcx - 1]
+	; mul r8
+	; shl rdx, 32
+	; lea r13, [rdx + rax] ; r13 = i * l
+
+	; .i:
+	; 	;xor r12, r12
+	; 	mov r12, r8  ; r12 = l
+
+	; 	; Calculo desplazamiento en matrix1
+	; 	mov rax, r10
+	; 	mul ecx
+	; 	shl rdx, 32
+	; 	;mov edx, eax ; rdx = i * m
+	; 	lea r14, [rdx + rax] ; r14 = i * m
 		
-		.j:
-			xor r11, r11
-			pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
+	; 	.j:
+	; 		;xor r11, r11
+	; 		mov r11, rcx ; r11 = m
+	; 		pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
 
-			; Calculo desplazamiento en matrix2
-			mov r15, r12
-			.k:
-				movq xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
-				movq xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
-				mulsd xmm1, xmm2
-				addsd xmm3, xmm1
+	; 		; Calculo desplazamiento en matrix2
+	; 		;mov r15, r12
+
+	; 		lea r15, [r13 + r12] 	; Ultima fila, Columna r12 de matrix2
+	; 		.k:
+	; 			movq xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
+	; 			movq xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
+	; 			mulsd xmm1, xmm2
+	; 			addsd xmm3, xmm1
 				
-				inc r14 	;Voy del primer al ultimo elemento de la fila
-				add r15, r8
-				inc r11
-				cmp r11, rcx
-				jne .k
-			sub r14, rcx
+	; 			dec r14 			;Voy del primer al ultimo elemento de la fila
+	; 			sub r15, r8 	; Retrocedo una fila
+	; 			dec r11
+	; 			;cmp r11, rcx
+	; 			jnz .k
+	; 		add r14, rcx
 
-			; Calculo desplazamiento en output
-			mov rax, r10
-			mul r8d
-			shl rdx, 32
-			;mov edx, eax ; rdx = i * m
-			lea r15, [rdx + rax]
-			add r15, r12
+	; 		; Calculo desplazamiento en output
+	; 		lea rax, [r10 - 1]
+	; 		mul r8d
+	; 		shl rdx, 32
+	; 		;mov edx, eax ; rdx = i * m
+	; 		lea r15, [rdx + rax]
+	; 		add r15, r12
 			
-			movq [r9 + 8 * r15], xmm3
-			inc r12
-			cmp r12, r8
-			jne .j
-		inc r10
-		cmp r10, r13
-		jne .i
+	; 		movq [r9 + 8 * r15], xmm3
+	; 		dec r12
+	; 		;cmp r12, r8
+	; 		jnz .j
+	; 	dec r10
+	; 	;cmp r10, r13
+	; 	jnz .i
 
-	pop r15
-	pop r14
-	pop r13
-	pop r12
-	pop rbp
-	ret
+	; pop r15
+	; pop r14
+	; pop r13
+	; pop r12
+	; pop rbp
+	; ret
 
 
 ;;;;;;;;;;;;;;;;;STOP;;;;;;;;;;;;;;;;;;;;;;;
@@ -485,68 +499,70 @@ section .text
 
 ;Version de atras para adelante
 
-; matrix_prod:
-; 	push rbp
-; 	mov rbp, rsp
-; 	push r12
-; 	push r13
-; 	push r14
-; 	push r15
+matrix_prod:
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
 
-; 	;Salvo las dimensiones 
-; 	mov r10, rdx ; r10 = n
-; 	mov r11, rcx ; r11 = m
-; 	mov r12, r8  ; r12 = l
-; 	mov r13, rdx ; En r13 guardo la cte n (en rdx) pues voy a necesitar rdx para multiplicar
+	mov r10, rdx ; r10 = n
 
-; 	;La cantidad de iteraciones internas es m = rcx
-; 	.i:
-; 		mov r12, r8
+	; Calculo desplazamiento del ultimo elemento
+	; de matrix1
+	mov rax, r10
+	mul ecx
+	shl rdx, 32
+	;mov edx, eax ; rdx = i * m
+	lea r14, [rdx + rax - 1] ; r14 = i * m
 
-; 		; Calculo desplazamiento en matrix1
-; 		mov rax, r10
-; 		mul ecx
-; 		shl rdx, 32
-; 		;mov edx, eax ; rdx = i * m
-; 		lea r14, [rdx + rax] ; r14 = i * m
-		
-; 		.j:
-; 			mov r11, rcx
-; 			pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
-; 			.k:
-; 				dec r14 	;Voy del ultimo al primer elemento de la fila
-; 				; Calculo desplazamiento en matrix2
-; 				lea rax, [r11 - 1]  ;Quiero llegar al final de la fila anterior a la que me interesa
-; 				mul r8d
-; 				shl rdx, 32
-; 				;mov edx, eax ; rdx = i * m
-; 				lea r15, [rdx + rax]
-; 				lea r15, [r12 - 1]
+	;Precomputo el offset del ultimo elemento de la anteultima fila de matrix2
+	lea rax, [rcx - 1]
+	mul r8d
+	shl rdx, 32
+	;mov edx, eax ; rdx = i * m
+	lea r13, [rdx + rax - 1]
 
-; 				movd xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
-; 				movd xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
-; 				mulsd xmm1, xmm2
-; 				addsd xmm3, xmm1
-; 				dec r11
-; 				jnz .k
-
-; 			; Calculo desplazamiento en output
-; 			lea rax, [r10 - 1]
-; 			mul r8d
-; 			shl rdx, 32
-; 			;mov edx, eax ; rdx = i * m
-; 			lea r15, [rdx + rax]
-; 			lea r15, [r12 - 1]
+	.i:
+		mov r12, r8
+		.j:
+			mov r11, rcx		;Uso r11 como contador unicamente
 			
-; 			movd [r9 + 8 * r15], xmm3
-; 			dec r12
-; 			jnz .j
-; 		dec r10
-; 		jnz .i
+			pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
 
-; 	pop r15
-; 	pop r14
-; 	pop r13
-; 	pop r12
-; 	pop rbp
-; 	ret
+			; Calculo desplazamiento en matrix2
+			lea r15, [r13 + r12]
+
+			.k:
+				movq xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
+				movq xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
+				mulsd xmm1, xmm2
+				addsd xmm3, xmm1
+				sub r15, r8 ;Voy del ultimo al primer elemento de la columna
+				dec r14 		;Voy del ultimo al primer elemento de la fila
+				dec r11
+				jnz .k
+			add r14, rcx	;Hago esto para situarme de vuelta
+										;al final de la fila r10-1
+			; Calculo desplazamiento en output
+			lea rax, [r10 - 1]
+			mul r8d
+			shl rdx, 32
+			;mov edx, eax ; rdx = i * m
+			lea r15, [rdx + rax]
+			lea r15, [r15 + r12 - 1]
+			
+			movq [r9 + 8 * r15], xmm3
+			dec r12
+			jnz .j
+		sub r14d, ecx
+		dec r10
+		jnz .i
+
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret

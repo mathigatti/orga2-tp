@@ -17,7 +17,35 @@ int main(){
   double res_c[SIZE] = {[0 ... SIZE-1] = 0};
   double res_asm[SIZE] = {[0 ... SIZE-1] = 0};
 
+  uint n = 200;
+  uint m = 100;
+  uint l = 150;
+  double A[n * m];
+  double B[m * l];
+  double C_c[n * l];
+  double C_asm[n * l];
+
   srand(time(NULL));
+
+  printf("%s\n", "\tTesteo matrix_prod...");
+
+  for(uint i = 0; i < 10000; i++){
+
+    randomMatrix_double(A, n, m);
+    randomMatrix_double(B, m, l);
+
+    matrix_prod_c_double(A, B, n, m, l, C_c);
+    matrix_prod_asm_double(A, B, n, m, l, C_asm);
+
+    assert(equalMatrix_double(C_c, C_asm, n, m));
+    //Dato copado: usando un criterio de != el assert falla,
+    //pero con un umbral de 10^(-10) [y posiblemente bastante menos tambien]
+    //pasa los test exitosamente. Esto se debe casi seguro a diferencias 
+    //por underflow (debido a que el orden de las sumas varia en c y asm)
+
+  }
+
+  printf("%s\n", "\t\tTests pasados exitosamente por mat_plus_vec");
 
   printf("%s\n", "\tTesteo cost_derivative...");
 
