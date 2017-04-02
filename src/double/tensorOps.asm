@@ -233,85 +233,85 @@ section .text
 		pop rbp
 	  ret
 
- ;  matrix_prod:
-	; push rbp
-	; mov rbp, rsp
-	; push r12
-	; push r13
-	; push r14
-	; push r15
+;void matrix_prod(
+;	double* matrix1, (rdi) 
+;	double* matrix2, (rsi)
+; uint n, 				 (rdx)				
+;	uint m, 				 (rcx)
+; uint l, 				 (r8)	
+; double* output   (r9)
+;)
+;Version backward
+matrix_prod:
+	;TODO: pasar a xmm (y posteriormente a ymm). Para eso la comprobacion que tengo que hacer es que m sea divisible por 2 (luego por 4).
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
 
-	; ;Salvo las dimensiones 
-	; mov r10, rdx ; r10 = n
-	; ;lea r11, [rcx - 1] ; r11 = m
-	; ;lea r12, [r8 - 1]  ; r12 = l
-	; ;mov r13, rdx ; En r13 guardo la cte n (en rdx) pues voy a necesitar rdx para multiplicar
-	; ;xor r10, r10
-	; ;La cantidad de iteraciones internas es m = rcx
+	mov r10, rdx ; r10 = n
 
-	; mov r10, rdx ; r10 = n
+	; Calculo desplazamiento del ultimo elemento
+	; de matrix1
+	mov rax, r10
+	mul ecx
+	shl rdx, 32
+	;mov edx, eax ; rdx = i * m
+	lea r14, [rdx + rax - 1] ; r14 = i * m
 
-	; ;Calculo principio de la ultima fila de matrix2
-	; lea rax, [rcx - 1]
-	; mul r8
-	; shl rdx, 32
-	; lea r13, [rdx + rax] ; r13 = i * l
+	;Precomputo el offset del ultimo elemento de la anteultima fila de matrix2
+	lea rax, [rcx - 1]
+	mul r8d
+	shl rdx, 32
+	;mov edx, eax ; rdx = i * m
+	lea r13, [rdx + rax - 1]
 
-	; .i:
-	; 	;xor r12, r12
-	; 	mov r12, r8  ; r12 = l
+	;TODO: Aca voy a verificar la divisibilidad de rcx (m). El remainder lo voy a guardar en algun otro registro. Luego deberia ser bastante simple la cosa.
 
-	; 	; Calculo desplazamiento en matrix1
-	; 	mov rax, r10
-	; 	mul ecx
-	; 	shl rdx, 32
-	; 	;mov edx, eax ; rdx = i * m
-	; 	lea r14, [rdx + rax] ; r14 = i * m
-		
-	; 	.j:
-	; 		;xor r11, r11
-	; 		mov r11, rcx ; r11 = m
-	; 		pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
-
-	; 		; Calculo desplazamiento en matrix2
-	; 		;mov r15, r12
-
-	; 		lea r15, [r13 + r12] 	; Ultima fila, Columna r12 de matrix2
-	; 		.k:
-	; 			movq xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
-	; 			movq xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
-	; 			mulsd xmm1, xmm2
-	; 			addsd xmm3, xmm1
-				
-	; 			dec r14 			;Voy del primer al ultimo elemento de la fila
-	; 			sub r15, r8 	; Retrocedo una fila
-	; 			dec r11
-	; 			;cmp r11, rcx
-	; 			jnz .k
-	; 		add r14, rcx
-
-	; 		; Calculo desplazamiento en output
-	; 		lea rax, [r10 - 1]
-	; 		mul r8d
-	; 		shl rdx, 32
-	; 		;mov edx, eax ; rdx = i * m
-	; 		lea r15, [rdx + rax]
-	; 		add r15, r12
+	.i:
+		mov r12, r8
+		.j:
+			mov r11, rcx		;Uso r11 como contador unicamente
 			
-	; 		movq [r9 + 8 * r15], xmm3
-	; 		dec r12
-	; 		;cmp r12, r8
-	; 		jnz .j
-	; 	dec r10
-	; 	;cmp r10, r13
-	; 	jnz .i
+			pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
 
-	; pop r15
-	; pop r14
-	; pop r13
-	; pop r12
-	; pop rbp
-	; ret
+			; Calculo desplazamiento en matrix2
+			lea r15, [r13 + r12]
+
+			.k:
+				movq xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
+				movq xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
+				mulsd xmm1, xmm2
+				addsd xmm3, xmm1
+				sub r15, r8 ;Voy del ultimo al primer elemento de la columna
+				dec r14 		;Voy del ultimo al primer elemento de la fila
+				dec r11
+				jnz .k
+			add r14, rcx	;Hago esto para situarme de vuelta
+										;al final de la fila r10-1
+			; Calculo desplazamiento en output
+			lea rax, [r10 - 1]
+			mul r8d
+			shl rdx, 32
+			;mov edx, eax ; rdx = i * m
+			lea r15, [rdx + rax]
+			lea r15, [r15 + r12 - 1]
+			
+			movq [r9 + 8 * r15], xmm3
+			dec r12
+			jnz .j
+		sub r14d, ecx
+		dec r10
+		jnz .i
+
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
 
 
 ;;;;;;;;;;;;;;;;;STOP;;;;;;;;;;;;;;;;;;;;;;;
@@ -376,18 +376,6 @@ section .text
 
 ; inputs: rdi, rsi, rdx, rcx, r8, r9
 
-
-;int max_arg(
-;	double* vector, (rdi) 
-; uint n 					(rsi)
-;)
-;	max_arg:
-;	push rbp
-;	mov rbp, rsp
-
-
-;	pop rbp
-;	ret
 
 ;;;;;;;;;;;;;; Version XMM de mat_plus_vec ;;;;;;;;;;;;;;;;;;;
 ; mat_plus_vec:
@@ -487,82 +475,3 @@ section .text
 	
 ; 	pop rbp
 ;    	ret
-
-;void matrix_prod(
-;	double* matrix1, (rdi) 
-;	double* matrix2, (rsi)
-; uint n, 				 (rdx)				
-;	uint m, 				 (rcx)
-; uint l, 				 (r8)	
-; double* output   (r9)
-;)
-
-;Version de atras para adelante
-
-matrix_prod:
-	push rbp
-	mov rbp, rsp
-	push r12
-	push r13
-	push r14
-	push r15
-
-	mov r10, rdx ; r10 = n
-
-	; Calculo desplazamiento del ultimo elemento
-	; de matrix1
-	mov rax, r10
-	mul ecx
-	shl rdx, 32
-	;mov edx, eax ; rdx = i * m
-	lea r14, [rdx + rax - 1] ; r14 = i * m
-
-	;Precomputo el offset del ultimo elemento de la anteultima fila de matrix2
-	lea rax, [rcx - 1]
-	mul r8d
-	shl rdx, 32
-	;mov edx, eax ; rdx = i * m
-	lea r13, [rdx + rax - 1]
-
-	.i:
-		mov r12, r8
-		.j:
-			mov r11, rcx		;Uso r11 como contador unicamente
-			
-			pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
-
-			; Calculo desplazamiento en matrix2
-			lea r15, [r13 + r12]
-
-			.k:
-				movq xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
-				movq xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
-				mulsd xmm1, xmm2
-				addsd xmm3, xmm1
-				sub r15, r8 ;Voy del ultimo al primer elemento de la columna
-				dec r14 		;Voy del ultimo al primer elemento de la fila
-				dec r11
-				jnz .k
-			add r14, rcx	;Hago esto para situarme de vuelta
-										;al final de la fila r10-1
-			; Calculo desplazamiento en output
-			lea rax, [r10 - 1]
-			mul r8d
-			shl rdx, 32
-			;mov edx, eax ; rdx = i * m
-			lea r15, [rdx + rax]
-			lea r15, [r15 + r12 - 1]
-			
-			movq [r9 + 8 * r15], xmm3
-			dec r12
-			jnz .j
-		sub r14d, ecx
-		dec r10
-		jnz .i
-
-	pop r15
-	pop r14
-	pop r13
-	pop r12
-	pop rbp
-	ret
