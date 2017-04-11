@@ -68,6 +68,8 @@ void randomVector_double(uint size, double* vector, uint randMax);
 
 void randomMatrix_double(double* matrix, uint n, uint m);
 
+void noRandomMatrix_double(double* matrix, uint n, uint m, double value);
+
 ///////////////////////////// HELPERS FLOAT /////////////////////////////
 
 void vecCopy_float(float* dst, float const * src, uint size);

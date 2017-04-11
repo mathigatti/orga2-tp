@@ -608,30 +608,38 @@ section .text
 ; 	pop rbp
 ;    	ret
 
+;;;;;STOP;;;;;
 matrix_prod_asm_double:
+	;TODO: pasar a xmm (y posteriormente a ymm). Para eso la comprobacion que tengo que hacer es que m sea divisible por 2 (luego por 4).
 	push rbp
 	mov rbp, rsp
 	push r12
 	push r13
 	push r14
 	push r15
+	push rbx
+	push rbx ; Cambiar esto por el sub correspondiente
 
 	mov r10, rdx ; r10 = n
 
 	; Calculo desplazamiento del ultimo elemento
-	; de la fila (r10-1) [numerando las filas del 0 al n-1]
+	; de matrix1
 	mov rax, r10
 	mul ecx
 	shl rdx, 32
-	;mov edx, eax ; rdx = i * m
 	lea r14, [rdx + rax - 1] ; r14 = i * m
 
 	;Precomputo el offset del ultimo elemento de la anteultima fila de matrix2
 	lea rax, [rcx - 1]
 	mul r8d
 	shl rdx, 32
-	;mov edx, eax ; rdx = i * m
 	lea r13, [rdx + rax - 1]
+
+	;Calculo m mod 2
+	mov rbx, 1			
+	and rbx, rcx						;rbx = m mod 2
+	jnz .i
+	dec r14
 
 	.i:
 		mov r12, r8
@@ -643,17 +651,44 @@ matrix_prod_asm_double:
 			; Calculo desplazamiento en matrix2
 			lea r15, [r13 + r12]
 
+			;Calculo m mod 2
+			mov rbx, 1			
+			and rbx, rcx						;rbx = m mod 2			
+			; Hago rbx operaciones por separado
+
+			.not_multiple_of_2:
+			jz .k
+			movsd xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
+			movsd xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
+			mulsd xmm1, xmm2
+			addsd xmm3, xmm1
+			sub r15, r8 ;Voy del ultimo al primer elemento de la columna
+			dec r14 		;Voy del ultimo al primer elemento de la fila
+			dec r11
+			jz .ready
+			dec rbx
+			jmp .not_multiple_of_2
+
 			.k:
-				movq xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
-				movq xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
-				mulsd xmm1, xmm2
-				addsd xmm3, xmm1
+				movdqu xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
+				movsd xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
 				sub r15, r8 ;Voy del ultimo al primer elemento de la columna
-				dec r14 		;Voy del ultimo al primer elemento de la fila
-				dec r11
+				movsd xmm4, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
+				unpcklpd xmm4, xmm2
+				mulpd xmm1, xmm4
+				addpd xmm3, xmm1
+				sub r15, r8 ;Voy del ultimo al primer elemento de la columna
+				sub r14, 2 		;Voy del ultimo al primer elemento de la fila
+				sub r11, 2
 				jnz .k
+
+			.ready:
 			add r14, rcx	;Hago esto para situarme de vuelta
 										;al final de la fila r10-1
+			
+			movdqu xmm1, xmm3
+			unpckhpd xmm3, xmm3
+			addsd xmm3, xmm1
 			; Calculo desplazamiento en output
 			lea rax, [r10 - 1]
 			mul r8d
@@ -669,6 +704,8 @@ matrix_prod_asm_double:
 		dec r10
 		jnz .i
 
+	pop rbx ; Cambiar esto por el add correspondiente 
+	pop rbx
 	pop r15
 	pop r14
 	pop r13

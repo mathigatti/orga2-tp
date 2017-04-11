@@ -119,10 +119,21 @@ void randomVector_double(uint size, double* vector, uint randMax){
   }
 }
 
+
+
 void randomMatrix_double(double* matrix, uint n, uint m){
   for (uint i = 0; i < n; i++){
     for (uint j = 0; j < m; j++){
       matrix[i * m + j] = (double) rand() / RAND_MAX;
+    }
+  }
+}
+
+
+void noRandomMatrix_double(double* matrix, uint n, uint m, double value){
+  for (uint i = 0; i < n; i++){
+    for (uint j = 0; j < m; j++){
+      matrix[i * m + j] = value;
     }
   }
 }
