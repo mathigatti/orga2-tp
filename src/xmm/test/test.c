@@ -25,39 +25,20 @@ int main(){
   double C_c[n * l];
   double C_asm[n * l];
 
-  uint n_2 = 3;
-  uint m_2 = 2;
-  uint l_2 = 5;
-  double A_2[n * m];
-  double B_2[m * l];
-  double C_c_2[n * l];
-  double C_asm_2[n * l];
-
   srand(time(NULL));
 
   printf("%s\n", "\tTesteo matrix_prod...");
 
-  for(uint i = 0; i < 1; i++){
+  for(uint i = 0; i < 500; i++){
 
-    noRandomMatrix_double(A_2, n_2, m_2, 5);
+    randomMatrix_double(A, n, m);
 
-    noRandomMatrix_double(B_2, m_2, l_2, 2);
+    randomMatrix_double(B, m, l);
 
+    matrix_prod_c_double(A, B, n, m, l, C_c);
+    matrix_prod_asm_double(A, B, n, m, l, C_asm);
 
-    matrix_prod_c_double(A_2, B_2, n_2, m_2, l_2, C_c_2);
-    matrix_prod_asm_double(A_2, B_2, n_2, m_2, l_2, C_asm_2);
-
-    printMatrix_double(A_2, n_2, m_2);
-
-    printf("\n");
-
-    printMatrix_double(B_2, m_2, l_2);
-
-    printf("\n");
-
-    printMatrix_double(C_asm_2, n_2, l_2);
-
-    assert(equalMatrix_double(C_c_2, C_asm_2, n_2, l_2));
+    assert(equalMatrix_double(C_c, C_asm, n, l));
     //Dato copado: usando un criterio de != el assert falla,
     //pero con un umbral de 10^(-10) [y posiblemente bastante menos tambien]
     //pasa los test exitosamente. Esto se debe casi seguro a diferencias 

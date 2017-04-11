@@ -9,7 +9,7 @@
 	global mat_plus_vec
 	global update_weight
 	global hadamardProduct
-	;global matrix_prod
+	global matrix_prod
 
 ; YA IMPLEMENTADAS EN C
 	extern fprintf
