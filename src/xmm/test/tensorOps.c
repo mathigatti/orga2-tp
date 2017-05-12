@@ -80,6 +80,20 @@ void hadamardProduct_c_float(float* matrix1, float* matrix2, uint n, uint m, flo
   }
 }
 
+void matrix_prod_c_float(float* matrix1, float* matrix2, uint n, uint m, uint l, float* output){
+// matrix1 is nxm
+// matrix2 is mxl
+// output is nxl
+  for(uint i = 0; i < n; i++) {
+    for(uint j = 0; j < l; j++){
+      output[i * l + j] = 0;
+      for(uint k = 0; k < m; k++){
+        output[i * l + j] += matrix1[i * m + k] * matrix2[k * l + j];
+      }
+    }
+  }
+}
+
 ///////////// HELPERS DOUBLE /////////////
 
 void printMatrix_double(double* matrix, int n, int m) {
@@ -104,6 +118,17 @@ int equalVectors_double(double* v1, double* v2, uint size){
 int equalMatrix_double(double* A, double* B, uint n, uint m){
   for (uint i = 0; i < n; i++){
     for (uint j = 0; j < m; j++) {
+      if (fabs(A[i * m + j] - B[i * m + j]) > 0.00000000001){
+        return 0;
+      }
+    }
+  }
+  return 1;
+}
+
+int equalMatrix_float(float* A, float* B, uint n, uint m){
+  for (uint i = 0; i < n; i++){
+    for (uint j = 0; j < m; j++) {
       if (fabs(A[i * m + j] - B[i * m + j]) > 0.0000000001){
         return 0;
       }
@@ -118,8 +143,6 @@ void randomVector_double(uint size, double* vector, uint randMax){
       vector[i] = (double) rand() / RAND_MAX;
   }
 }
-
-
 
 void randomMatrix_double(double* matrix, uint n, uint m){
   for (uint i = 0; i < n; i++){
@@ -170,6 +193,24 @@ void randomVector_float(uint size, float* vector, uint randMax){
       vector[i] = (float) rand() / RAND_MAX;
   }
 }
+
+void randomMatrix_float(float* matrix, uint n, uint m){
+  for (uint i = 0; i < n; i++){
+    for (uint j = 0; j < m; j++){
+      matrix[i * m + j] = (float) rand() / RAND_MAX;
+    }
+  }
+}
+
+
+void noRandomMatrix_float(float* matrix, uint n, uint m, float value){
+  for (uint i = 0; i < n; i++){
+    for (uint j = 0; j < m; j++){
+      matrix[i * m + j] = value;
+    }
+  }
+}
+
 
 void vecCopy_float(float* dst, float const * src, uint size){
   for (uint i = 0; i < size; i++){

@@ -44,6 +44,8 @@ void update_weight_c_float(float* w, float* nw, uint w_size, float c);
 
 void hadamardProduct_c_float(float* matrix1, float* matrix2, uint n, uint m, float* output);
 
+void matrix_prod_c_float(float* matrix1, float* matrix2, uint n, uint m, uint l, float* output);
+
 ///////////////////////////// ASM FLOAT /////////////////////////////
 
 extern void cost_derivative_asm_float(float* vector, float* target, float* output);
@@ -53,6 +55,8 @@ extern void mat_plus_vec_asm_float(float* matrix, float* vector, uint n, float* 
 extern void update_weight_asm_float(float* w, float* nw, uint w_size, float c);
 
 extern void hadamardProduct_asm_float(float* matrix1, float* matrix2, uint n, uint m, float* output);
+
+extern void matrix_prod_asm_float(float* matrix1, float* matrix2, uint n, uint m, uint l, float* output);
 
 ///////////////////////////// HELPERS DOUBLE /////////////////////////////
 
@@ -78,7 +82,11 @@ void printMatrix_float(float* matrix, int n, int m);
 
 int equalVectors_float(float* v1, float* v2, uint size);
 
+int equalMatrix_float(float* A, float* B, uint n, uint m);
+
 void randomVector_float(uint size, float* vector, uint randMax);
 
+void randomMatrix_float(float* matrix, uint n, uint m);
 
+void noRandomMatrix_float(float* matrix, uint n, uint m, float value);
 #endif

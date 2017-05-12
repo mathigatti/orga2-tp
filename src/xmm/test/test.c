@@ -17,9 +17,9 @@ int main(){
   double res_c[SIZE] = {[0 ... SIZE-1] = 0};
   double res_asm[SIZE] = {[0 ... SIZE-1] = 0};
 
-  uint n = 200;
-  uint m = 100;
-  uint l = 150;
+  uint n = 1;
+  uint m = 5;
+  uint l = 1;
   double A[n * m];
   double B[m * l];
   double C_c[n * l];
@@ -29,16 +29,20 @@ int main(){
 
   printf("%s\n", "\tTesteo matrix_prod...");
 
-  for(uint i = 0; i < 500; i++){
+  for(uint i = 0; i < 1; i++){
 
     randomMatrix_double(A, n, m);
 
     randomMatrix_double(B, m, l);
 
+
     matrix_prod_c_double(A, B, n, m, l, C_c);
     matrix_prod_asm_double(A, B, n, m, l, C_asm);
+    
+    printMatrix_double(C_c,n,l);
+    printMatrix_double(C_asm,n,l);
 
-    assert(equalMatrix_double(C_c, C_asm, n, l));
+//    assert(equalMatrix_double(C_c, C_asm, n, l));
     //Dato copado: usando un criterio de != el assert falla,
     //pero con un umbral de 10^(-10) [y posiblemente bastante menos tambien]
     //pasa los test exitosamente. Esto se debe casi seguro a diferencias 
@@ -124,7 +128,29 @@ int main(){
   float res_c_float[SIZE] = {[0 ... SIZE-1] = 0};
   float res_asm_float[SIZE] = {[0 ... SIZE-1] = 0};
 
+  float Af[n * m];
+  float Bf[m * l];
+  float Cf_c[n * l];
+  float Cf_asm[n * l];
+
   srand(time(NULL));
+
+    printf("%s\n", "\tTesteo matrix_prod...");
+
+  for(uint i = 0; i < 500; i++){
+
+    randomMatrix_float(Af, n, m);
+
+    randomMatrix_float(Bf, m, l);
+
+    matrix_prod_c_float(Af, Bf, n, m, l, Cf_c);
+    matrix_prod_asm_float(Af, Bf, n, m, l, Cf_asm);
+
+    printMatrix_float(Cf_c,n,l);
+    printMatrix_float(Cf_asm,n,l);
+
+    assert(equalMatrix_float(Cf_c, Cf_asm, n, l));
+  }
 
   printf("%s\n", "\tTesteo cost_derivative...");
 
