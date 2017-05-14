@@ -17,9 +17,9 @@ int main(){
   double res_c[SIZE] = {[0 ... SIZE-1] = 0};
   double res_asm[SIZE] = {[0 ... SIZE-1] = 0};
 
-  uint n = 1;
-  uint m = 5;
-  uint l = 1;
+  uint n = 10;
+  uint m = 20;
+  uint l = 30;
   double A[n * m];
   double B[m * l];
   double C_c[n * l];
@@ -29,7 +29,7 @@ int main(){
 
   printf("%s\n", "\tTesteo matrix_prod...");
 
-  for(uint i = 0; i < 1; i++){
+  for(uint i = 0; i < 100; i++){
 
     randomMatrix_double(A, n, m);
 
@@ -39,10 +39,10 @@ int main(){
     matrix_prod_c_double(A, B, n, m, l, C_c);
     matrix_prod_asm_double(A, B, n, m, l, C_asm);
     
-    printMatrix_double(C_c,n,l);
-    printMatrix_double(C_asm,n,l);
+//    printMatrix_double(C_c,n,l);
+//    printMatrix_double(C_asm,n,l);
 
-//    assert(equalMatrix_double(C_c, C_asm, n, l));
+    assert(equalMatrix_double(C_c, C_asm, n, l));
     //Dato copado: usando un criterio de != el assert falla,
     //pero con un umbral de 10^(-10) [y posiblemente bastante menos tambien]
     //pasa los test exitosamente. Esto se debe casi seguro a diferencias 
@@ -128,27 +128,33 @@ int main(){
   float res_c_float[SIZE] = {[0 ... SIZE-1] = 0};
   float res_asm_float[SIZE] = {[0 ... SIZE-1] = 0};
 
-  float Af[n * m];
-  float Bf[m * l];
-  float Cf_c[n * l];
-  float Cf_asm[n * l];
+  uint nf = 30;
+  uint mf = 784;
+  uint lf = 1;
+
+  float Af[nf * mf];
+  float Bf[mf * lf];
+  float Cf_c[nf * lf];
+  float Cf_asm[nf * lf];
 
   srand(time(NULL));
 
     printf("%s\n", "\tTesteo matrix_prod...");
 
-  for(uint i = 0; i < 500; i++){
+  for(uint i = 0; i < 1; i++){
 
-    randomMatrix_float(Af, n, m);
+    randomMatrix_float(Af, nf, mf);
 
-    randomMatrix_float(Bf, m, l);
+    randomMatrix_float(Bf, mf, lf);
 
-    matrix_prod_c_float(Af, Bf, n, m, l, Cf_c);
-    matrix_prod_asm_float(Af, Bf, n, m, l, Cf_asm);
+    //printf("Las dimensiones son %d x %d x %d\n",nf,mf,lf);
 
-    printMatrix_float(Cf_c,n,l);
-    printMatrix_float(Cf_asm,n,l);
+    matrix_prod_c_float(Af, Bf, nf, mf, lf, Cf_c);
+    matrix_prod_asm_float(Af, Bf, nf, mf, lf, Cf_asm);
 
+    printMatrix_float(Cf_c,nf,lf);
+    printf("%s", "<----linea divisoria---->\n");
+    printMatrix_float(Cf_asm,nf,lf);
     assert(equalMatrix_float(Cf_c, Cf_asm, n, l));
   }
 

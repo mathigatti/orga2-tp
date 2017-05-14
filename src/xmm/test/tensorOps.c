@@ -118,7 +118,8 @@ int equalVectors_double(double* v1, double* v2, uint size){
 int equalMatrix_double(double* A, double* B, uint n, uint m){
   for (uint i = 0; i < n; i++){
     for (uint j = 0; j < m; j++) {
-      if (fabs(A[i * m + j] - B[i * m + j]) > 0.00000000001){
+      double value = fabs(A[i * m + j] - B[i * m + j]);
+      if (value > 0.00000000001){
         return 0;
       }
     }
@@ -129,7 +130,9 @@ int equalMatrix_double(double* A, double* B, uint n, uint m){
 int equalMatrix_float(float* A, float* B, uint n, uint m){
   for (uint i = 0; i < n; i++){
     for (uint j = 0; j < m; j++) {
-      if (fabs(A[i * m + j] - B[i * m + j]) > 0.0000000001){
+      float value = fabs(A[i * m + j] - B[i * m + j]);
+      if (value > 0.01){
+        printf("Error %f en vez de %f\n", A[i * m + j],B[i * m + j]);
         return 0;
       }
     }

@@ -529,6 +529,16 @@ matrix_prod_asm_double:
   	pop rbp
   ret
 
+;void matrix_prod(
+;	double* matrix1, (rdi) 
+;	double* matrix2, (rsi)
+; uint n, 				 (rdx)				
+;	uint m, 				 (rcx)
+; uint l, 				 (r8)	
+; double* output   (r9)
+;)
+;Version backward
+
 matrix_prod_asm_float:
 	;TODO: pasar a xmm (y posteriormente a ymm). Para eso la comprobacion que tengo que hacer es que m sea divisible por 2 (luego por 4).
 	push rbp
@@ -547,7 +557,7 @@ matrix_prod_asm_float:
 	mov rax, r10
 	mul ecx
 	shl rdx, 32
-	lea r14, [rdx + rax - 1] ; r14 = n * m
+	lea r14, [rdx + rax - 1] ; r14 = n * m - 1
 
 	;Precomputo el offset del ultimo elemento de la anteultima fila de matrix2
 	lea rax, [rcx - 1]
@@ -557,10 +567,13 @@ matrix_prod_asm_float:
 
 	;Calculo m mod 2
 	mov rbx, 3			
-	and rbx, rcx						;rbx = m mod 2
-	jnz .i
-	sub r14, 3
+	and rbx, rcx						;rbx = m mod 4
 
+	cmp rcx,4
+	jl .s
+	sub r14, 3
+	.s:
+	jnz .i
 	.i:
 		mov r12, r8
 		.j:
@@ -579,12 +592,12 @@ matrix_prod_asm_float:
 			.not_multiple_of_4:
 			jz .k
 
-			movss xmm1, [rdi + 4 * r14]		;xmm1 = matrix1[r10][r11]
+			movss xmm1, [rdi + 4 * r14]	;xmm1 = matrix1[r10][r11]
 			movss xmm2, [rsi + 4 * r15] ;xmm2 = matrix2[r11][r12]
 			mulss xmm1, xmm2
 			addss xmm3, xmm1
 			sub r15, r8 ;Voy del ultimo al primer elemento de la columna
-			dec r14 		;Voy del ultimo al primer elemento de la fila
+			dec r14 	;Voy del ultimo al primer elemento de la fila
 			dec r11
 			jz .ready
 			dec rbx
@@ -620,7 +633,7 @@ matrix_prod_asm_float:
 
 			.ready:
 			add r14, rcx	;Hago esto para situarme de vuelta
-										;al final de la fila r10-1
+							;al final de la fila r10-1
 			
 			movdqu xmm1, xmm3
 			psrldq xmm3, 4
