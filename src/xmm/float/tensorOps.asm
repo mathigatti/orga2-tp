@@ -256,7 +256,7 @@ matrix_prod:
 	mov rax, r10
 	mul ecx
 	shl rdx, 32
-	lea r14, [rdx + rax - 1] ; r14 = n * m
+	lea r14, [rdx + rax - 1] ; r14 = n * m - 1
 
 	;Precomputo el offset del ultimo elemento de la anteultima fila de matrix2
 	lea rax, [rcx - 1]
@@ -266,10 +266,11 @@ matrix_prod:
 
 	;Calculo m mod 2
 	mov rbx, 3			
-	and rbx, rcx						;rbx = m mod 2
-	jnz .i
-	sub r14, 3
+	and rbx, rcx						;rbx = m mod 4
 
+	cmp rcx,4
+	jl .i
+	sub r14, 3
 	.i:
 		mov r12, r8
 		.j:
@@ -286,21 +287,19 @@ matrix_prod:
 			; Hago rbx operaciones por separado
 
 			.not_multiple_of_4:
-			jz .etiquetanueva
+			jz .k
 
-			movss xmm1, [rdi + 4 * r14]		;xmm1 = matrix1[r10][r11]
+			movss xmm1, [rdi + 4 * r14]	;xmm1 = matrix1[r10][r11]
 			movss xmm2, [rsi + 4 * r15] ;xmm2 = matrix2[r11][r12]
 			mulss xmm1, xmm2
 			addss xmm3, xmm1
 			sub r15, r8 ;Voy del ultimo al primer elemento de la columna
-			dec r14 		;Voy del ultimo al primer elemento de la fila
+			dec r14 	;Voy del ultimo al primer elemento de la fila
 			dec r11
 			jz .ready
 			dec rbx
 			jmp .not_multiple_of_4
 
-			.etiquetanueva:
-			sub r14, 3
 			.k:
 				movdqu xmm1, [rdi + 4 * r14]		;xmm1 = matrix1[r10][r11]
 
@@ -331,7 +330,7 @@ matrix_prod:
 
 			.ready:
 			add r14, rcx	;Hago esto para situarme de vuelta
-										;al final de la fila r10-1
+							;al final de la fila r10-1
 			
 			movdqu xmm1, xmm3
 			psrldq xmm3, 4

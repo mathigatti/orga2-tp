@@ -45,4 +45,8 @@ void sigmoid_prime_v(float* matrix, uint n, uint m, float* output);
 
 void transpose(float* matrix, uint n, uint m, float* output);
 
+void randomVector(uint size, float* vector, uint randMax);
+
+void randomMatrix(float* matrix, uint n, uint m);
+
 #endif

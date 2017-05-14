@@ -187,3 +187,18 @@ void sigmoid_prime_v(float* matrix, uint n, uint m, float* output){
     }
   }
 }
+
+void randomVector(uint size, float* vector, uint randMax){
+
+  for (uint i = 0; i < size; i++){
+      vector[i] = (float) rand() / RAND_MAX;
+  }
+}
+
+void randomMatrix(float* matrix, uint n, uint m){
+  for (uint i = 0; i < n; i++){
+    for (uint j = 0; j < m; j++){
+      matrix[i * m + j] = (float) rand() / RAND_MAX;
+    }
+  }
+}
