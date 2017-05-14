@@ -35,6 +35,10 @@ void printImg(double* img);
 
 void printMatrix(double* matrix, int n, int m);
 
+void randomVector(uint size, double* vector, uint randMax);
+
+void randomMatrix(double* matrix, uint n, uint m);
+
 void random_shuffle(Images* batch);
 
 int max_arg(double* vector, uint n);

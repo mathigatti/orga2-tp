@@ -1,6 +1,10 @@
 #include "nn.h"
 #include <time.h>
 
+#define SIZE 5000
+#define randMax 10
+#define ITERACIONES 50000
+
 
 /*
 The architechture of the network consist of
@@ -323,26 +327,27 @@ int main(){
   
   clock_t start, end;
   double cpu_time_used = 0;
-  
-  int size = 5000;
 
-  double v[size];
-  double w[size];
-  double u[size];
 
-  double x[10];
-  double y[10];
-  double z[10];
+  double v[SIZE];
+  double w[SIZE];
+  double u[SIZE];
+
+  uint n = 10;
+  uint m = 20;
+  uint l = 30;
+
+  double m1[n*m];
+  double m2[m*l];
+  double m_res[n*l];
 
   srand(time(NULL));
 
-  for(int i = 0; i < 1000000; i++){
-    for(int j = 0; j < 10; j++){
-      x[j] = rand() / RAND_MAX;
-      y[j] = rand() / RAND_MAX;
-    }
+  for(int i = 0; i < ITERACIONES; i++){
+    randomVector(SIZE, v, randMax);
+    randomVector(SIZE, w, randMax);
     start = clock();
-    cost_derivative(x, y, z);
+    cost_derivative(v, w, u);
     end = clock();
     cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
   }
@@ -351,13 +356,11 @@ int main(){
 
 
   cpu_time_used = 0;
-  for(int i = 0; i < 50000; i++){
-    for(int j = 0; j < size; j++){
-      v[j] = rand() / RAND_MAX;
-      w[j] = rand() / RAND_MAX;
-    }
+  for(int i = 0; i < ITERACIONES; i++){
+    randomVector(SIZE, v, randMax);
+    randomVector(SIZE, w, randMax);
     start = clock();
-    mat_plus_vec(v, w, size, u);
+    mat_plus_vec(v, w, SIZE, u);
     end = clock();
     cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
   }
@@ -365,13 +368,11 @@ int main(){
   printf("Total time mat_plus_vec: %f\n", cpu_time_used);
 
   cpu_time_used = 0;
-  for(int i = 0; i < 100000; i++){
-    for(int j = 0; j < size; j++){
-      v[j] = rand() / RAND_MAX;
-      w[j] = rand() / RAND_MAX;
-    }
+  for(int i = 0; i < ITERACIONES; i++){
+    randomVector(SIZE, v, randMax);
+    randomVector(SIZE, w, randMax);
     start = clock();
-    update_weight(v, w, size, 0.3);
+    update_weight(v, w, SIZE, 0.3);
     end = clock();
     cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
   }
@@ -379,18 +380,28 @@ int main(){
   printf("Total time update_weight: %f\n", cpu_time_used);
 
   cpu_time_used = 0;
-  for(int i = 0; i < 50000; i++){
-    for(int j = 0; j < size; j++){
-      v[j] = rand() / RAND_MAX;
-      w[j] = rand() / RAND_MAX;
-    }
+  for(int i = 0; i < ITERACIONES; i++){
+    randomVector(SIZE, v, randMax);
+    randomVector(SIZE, w, randMax);
     start = clock();
-    hadamardProduct(v, w, size, 1, u);
+    hadamardProduct(v, w, SIZE, 1, u);
     end = clock();
     cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
   }
   //cpu_time_used /= 1000000.0;
   printf("Total time hadamardProduct: %f\n", cpu_time_used);
+
+  cpu_time_used = 0;
+  for(int i = 0; i < ITERACIONES; i++){
+    randomMatrix(m1, n, m);
+    randomMatrix(m2, m, l);
+    start = clock();
+    matrix_prod(m1, m2, n, m, l, m_res);
+    end = clock();
+    cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
+  }
+  //cpu_time_used /= 1000000.0;
+  printf("Total time matrix_prod: %f\n", cpu_time_used);
 
   return 0;
 }
