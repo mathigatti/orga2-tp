@@ -1,0 +1,35 @@
+
+Hacer un cuadro de resultados comparando la implementacón contra la mejor compilación con gcc -03, para diferentes casos de algoritmos
+
+
+\begin{center}
+        \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+                \hline
+    Task & \multicolumn{4}{c |}{Waiting-time} & \multicolumn{4}{c |}{Latencia} & \multicolumn{4}{c |}{Turnaround} \\
+                \cline{2-13}
+          & RR & FIFO & SJF & RSJF & RR & FIFO & SJF & RSJF & RR & FIFO & SJF & RSJF \\
+                \hline
+    0 &       39 &   1 &   1 &  20 &        1 &   1 &   1 &   1 &       44 &  11 &  11 &  30 \\
+    1 &       37 &  12 &  30 &  35 &        6 &  12 &  30 &  31 &       57 &  32 &  50 &  55 \\
+    2 &       28 &  29 &   8 &   2 &        7 &  29 &   8 &   2 &       33 &  34 &  13 &   7 \\
+    3 &       30 &  35 &  14 &   8 &       12 &  35 &  14 &   8 &       35 &  40 &  19 &  13 \\
+    4 &       32 &  46 &  20 &  14 &       17 &  46 &  20 &  14 &       37 &  46 &  25 &  19 \\
+                \hline
+        \end{tabular}
+\end{center}
+\captionof{table}{ Cuadro Choreado 1 }
+
+\begin{center}
+        \begin{tabular}{| l | c | c | c |}
+                \hline
+    Scheduler & Waiting-time & Latencia & Turnaround \\
+                \hline
+    RR   &    33.5 &  8.6 & 41.2 \\
+    FIFO &    24.6 & 24.6 & 32.6 \\
+    SJF  &    14.6 & 14.6 & 23.6 \\
+    RSJF &    15.8 & 11.2 & 24.8 \\
+                \hline
+			
+        \end{tabular}
+\end{center}
+\captionof{table}{ Cuadro Choreado 2 }

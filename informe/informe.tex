@@ -1,0 +1,111 @@
+\documentclass[hidelinks,a4paper,12pt, nofootinbib]{article}
+\usepackage[nounderscore]{syntax}
+\usepackage[left=3cm, top=2.5cm, right=2cm, left=2.5cm]{geometry}
+\usepackage[spanish, es-tabla]{babel} %es-tabla es para que ponga Tabla en vez de Cuadro en el caption
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{xspace}
+\usepackage{xargs}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{caratula}
+\usepackage[bottom]{footmisc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{array}
+\usepackage{xcolor,colortbl}
+\usepackage{amsthm}
+\usepackage{listings}
+\usepackage{soul}
+\usepackage[titletoc]{appendix}
+\usepackage{pgf}
+\usepackage{graphicx}
+\usepackage{sidecap}
+\usepackage{amsmath}
+\usepackage{wrapfig}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+
+
+%\usepackage{minted}
+
+%Formato de los links
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks   = true, %Colours links instead of ugly boxes
+  urlcolor     = blue, %Colour for external hyperlinks
+  linkcolor    = blue, %Colour of internal links
+  citecolor   = red %Colour of citations
+}
+
+\usepackage{comment}
+%Bibliografia
+\usepackage[
+  backend=bibtex,
+  style=alphabetic
+]{biblatex}
+\addbibresource{bibliografia.bib}
+
+
+\captionsetup[table]{labelsep=space}
+
+
+\setlength{\parindent}{4em}
+\setlength{\parskip}{0.5em}
+
+
+%%fancyhdr
+\pagestyle{fancy}
+\thispagestyle{fancy}
+\addtolength{\headheight}{1pt}
+\lhead{Organización del Computador II - Trabajo Final}
+\rhead{$2º$ cuatrimestre de 2017}
+\cfoot{\thepage\ / \pageref{LastPage}}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\labelitemi}{$\bullet$}
+\setcounter{section}{-1}
+
+%%caratula
+\materia{Organización del Computador II}
+\titulo{Trabajo Final}
+%\subtitulo{}
+%\grupo{Nombre del grupo}
+\integrante{Costa, Manuel}{COMPLETAR}{COMPLETAR}
+\integrante{Gatti, Mathias}{477/14}{mathigatti@gmail.com}
+
+\fecha{30 de julio de 2017}
+
+\usepackage{etoolbox}
+\AtBeginEnvironment{tikzpicture}{\shorthandoff{>}\shorthandoff{<}}{}{}
+\newcommand{\cupdot}{\mathbin{\mathaccent\cdot\cup}}
+\title{tp-leng}
+\begin{document}
+\maketitle
+
+\tableofcontents
+\newpage
+
+
+\section{Introducción}
+\input{intro.tex}
+\newpage
+
+\section{Tópicos Teóricos}
+\input{topicos_teoricos.tex}
+\newpage
+
+\section{Resultados}
+\input{resultados.tex}
+\newpage
+
+\section{Conclusiones}
+\input{conclusion.tex}
+\newpage
+
+% the \\ insures the section title is centered below the phrase: AppendixA
+
+\end{document}
