@@ -295,7 +295,7 @@ int main(){
   //testeo SGD con un mini-batch
   float* res = (float*) malloc(10 * sizeof(float));
   
-  SGD(net, training_data, 4, MINI_BATCH_SIZE, net->eta);
+  SGD(net, training_data, 8, MINI_BATCH_SIZE, net->eta);
 
   feed_forward(net, &test_data->mat[1 * 784], 1, res);
   // printImg(&test_data->mat[1 * 784]);
@@ -325,7 +325,7 @@ int main(){
   destructor_net(net);
   imagesDestructor(training_data);
   imagesDestructor(test_data);
-  /*
+
   clock_t start, end;
   float cpu_time_used = 0;
   
@@ -403,7 +403,7 @@ int main(){
   }
   //cpu_time_used /= 1000000.0;
   printf("Total time matrix_prod: %f\n", cpu_time_used);
-  */
+
   return 0;
 }
 

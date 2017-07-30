@@ -128,9 +128,17 @@ int main(){
   float res_c_float[SIZE] = {[0 ... SIZE-1] = 0};
   float res_asm_float[SIZE] = {[0 ... SIZE-1] = 0};
 
-  uint nf = 30;
-  uint mf = 784;
+//  uint nf = 30;
+//  uint mf = 784;
+//  uint lf = 1;
+
+  uint nf = 10;
+  uint mf = 30;
   uint lf = 1;
+
+//  uint nf = 10;
+//  uint mf = 3;
+//  uint lf = 10;
 
   float Af[nf * mf];
   float Bf[mf * lf];

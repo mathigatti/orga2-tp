@@ -581,15 +581,16 @@ matrix_prod_asm_float:
 			; Calculo desplazamiento en matrix2
 			lea r15, [r13 + r12]
 
-			;rdx 1
-			;rcx 4
-			;r8 2
-			;r14 3 -> 2
-			;r13 5
+			;rdx 10
+			;r10 10
+			;rcx 1
+			;r8 30
+			;r14 9 -> 2
+			;r13 -1
 			;rbx 1 -> 0
-			;r12 2 -> 1
-			;r11 4 -> 4
-			;r15 7 -> 8
+			;r12 30 -> 29
+			;r11 1 -> 0
+			;r15 29 -> 8
 
 			;Calculo m mod 4
 			mov rbx, 3
@@ -605,7 +606,7 @@ matrix_prod_asm_float:
 				sub r15, r8 ;Voy del ultimo al primer elemento de la columna
 				dec r14 	;Voy del ultimo al primer elemento de la fila
 				dec r11
-				jz .ready
+				jz .nm4
 				dec rbx
 				jz .p
 				jmp .not_multiple_of_4
@@ -641,15 +642,15 @@ matrix_prod_asm_float:
 				jmp .k
 
 			.ready:
-				add r14, rcx	;Hago esto para situarme de vuelta
 				dec r14
-								;al final de la fila r10-1
 
 				mov rbx, 3
 				and rbx, rcx						;rbx = m mod 4
 				jnz .nm4
 					sub r14,3
 				.nm4:
+				add r14, rcx	;Hago esto para situarme de vuelta
+								;al final de la fila r10-1
 
 				movdqu xmm1, xmm3
 				psrldq xmm3, 4
