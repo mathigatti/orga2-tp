@@ -129,7 +129,7 @@ int main(){
   float res_asm_float[SIZE] = {[0 ... SIZE-1] = 0};
 
   uint nf = 1;
-  uint mf = 5;
+  uint mf = 7;
   uint lf = 1;
 
   float Af[nf * mf];
