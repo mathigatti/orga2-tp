@@ -277,15 +277,16 @@ matrix_prod:
 
 			; Calculo desplazamiento en matrix2
 			lea r15, [r13 + r12]
+
 			;rdx 1
-			;rcx 5
-			;r8 1
-			;r14 4 -> 3
-			;r13 3
+			;rcx 4
+			;r8 2
+			;r14 3 -> 2
+			;r13 5
 			;rbx 1 -> 0
-			;r12 1
-			;r11 5 -> 4
-			;r15 4 -> 3
+			;r12 2 -> 1
+			;r11 4 -> 4
+			;r15 7 -> 8
 
 			;Calculo m mod 4
 			mov rbx, 3
@@ -313,7 +314,7 @@ matrix_prod:
 				movss xmm6, [rsi + 4 * r15]
 				movss xmm2, xmm6		;xmm2 = matrix2[r11][r12]
 				sub r15, r8 ;Voy del ultimo al primer elemento de la columna
-				pslldq xmm2,4
+				pslldq xmm2, 4
 
 				movss xmm6, [rsi + 4 * r15]
 				movss xmm2, xmm6		;xmm2 = matrix2[r11][r12]
@@ -331,14 +332,22 @@ matrix_prod:
 
 				mulps xmm1, xmm2
 				addps xmm3, xmm1
-				sub r14, 4 		;Voy del ultimo al primer elemento de la fila
 				sub r11, 4
-				jnz .k
+				jz .ready
+				sub r14, 4 		;Voy del ultimo al primer elemento de la fila
+				jmp .k
 
 			.ready:
 				add r14, rcx	;Hago esto para situarme de vuelta
+				dec r14
 								;al final de la fila r10-1
-				
+
+				mov rbx, 3
+				and rbx, rcx						;rbx = m mod 4
+				jnz .nm4
+					sub r14,3
+				.nm4:
+
 				movdqu xmm1, xmm3
 				psrldq xmm3, 4
 				addss xmm1, xmm3

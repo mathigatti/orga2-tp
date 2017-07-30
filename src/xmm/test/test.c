@@ -128,8 +128,8 @@ int main(){
   float res_c_float[SIZE] = {[0 ... SIZE-1] = 0};
   float res_asm_float[SIZE] = {[0 ... SIZE-1] = 0};
 
-  uint nf = 1;
-  uint mf = 7;
+  uint nf = 30;
+  uint mf = 784;
   uint lf = 1;
 
   float Af[nf * mf];
@@ -139,13 +139,13 @@ int main(){
 
   srand(time(NULL));
 
-    printf("%s\n", "\tTesteo matrix_prod...");
+  printf("%s\n", "\tTesteo matrix_prod...");
 
   for(uint i = 0; i < 1; i++){
 
-    noRandomMatrix_float(Af, nf, mf,2);
+    randomMatrix_float(Af, nf, mf);
 
-    noRandomMatrix_float(Bf, mf, lf,3);
+    randomMatrix_float(Bf, mf, lf);
 
     //printf("Las dimensiones son %d x %d x %d\n",nf,mf,lf);
 
