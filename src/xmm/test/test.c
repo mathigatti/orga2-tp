@@ -128,8 +128,8 @@ int main(){
   float res_c_float[SIZE] = {[0 ... SIZE-1] = 0};
   float res_asm_float[SIZE] = {[0 ... SIZE-1] = 0};
 
-  uint nf = 30;
-  uint mf = 784;
+  uint nf = 1;
+  uint mf = 5;
   uint lf = 1;
 
   float Af[nf * mf];
@@ -143,9 +143,9 @@ int main(){
 
   for(uint i = 0; i < 1; i++){
 
-    randomMatrix_float(Af, nf, mf);
+    noRandomMatrix_float(Af, nf, mf,2);
 
-    randomMatrix_float(Bf, mf, lf);
+    noRandomMatrix_float(Bf, mf, lf,3);
 
     //printf("Las dimensiones son %d x %d x %d\n",nf,mf,lf);
 
@@ -155,7 +155,7 @@ int main(){
     printMatrix_float(Cf_c,nf,lf);
     printf("%s", "<----linea divisoria---->\n");
     printMatrix_float(Cf_asm,nf,lf);
-    assert(equalMatrix_float(Cf_c, Cf_asm, n, l));
+    assert(equalMatrix_float(Cf_c, Cf_asm, nf, lf));
   }
 
   printf("%s\n", "\tTesteo cost_derivative...");

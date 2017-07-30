@@ -540,7 +540,6 @@ matrix_prod_asm_double:
 ;Version backward
 
 matrix_prod_asm_float:
-	;TODO: pasar a xmm (y posteriormente a ymm). Para eso la comprobacion que tengo que hacer es que m sea divisible por 2 (luego por 4).
 	push rbp
 	mov rbp, rsp
 	push r12
@@ -560,20 +559,17 @@ matrix_prod_asm_float:
 	lea r14, [rdx + rax - 1] ; r14 = n * m - 1
 
 	;Precomputo el offset del ultimo elemento de la anteultima fila de matrix2
-	lea rax, [rcx - 1]
+	xor rax, rax
+	lea eax, [ecx - 1]
 	mul r8d
 	shl rdx, 32
 	lea r13, [rdx + rax - 1]
 
-	;Calculo m mod 2
+	;Calculo m mod 4
 	mov rbx, 3			
 	and rbx, rcx						;rbx = m mod 4
-
-	cmp rcx,4
-	jl .s
-	sub r14, 3
-	.s:
 	jnz .i
+	sub r14, 3
 	.i:
 		mov r12, r8
 		.j:
@@ -584,9 +580,9 @@ matrix_prod_asm_float:
 			; Calculo desplazamiento en matrix2
 			lea r15, [r13 + r12]
 
-			;Calculo m mod 2
-			mov rbx, 3		
-			and rbx, rcx						;rbx = m mod 2			
+			;Calculo m mod 4
+			mov rbx, 3
+			and rbx, rcx						;rbx = m mod 4
 			; Hago rbx operaciones por separado
 
 			.not_multiple_of_4:
