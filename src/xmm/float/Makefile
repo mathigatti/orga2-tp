@@ -21,14 +21,7 @@ c_version: $(OBJ) tensorOps_c.o
 asm_version: $(OBJ) tensorOps_asm.o
 	gcc -o $@ $^ $(CFLAGS)
 	
-#nasm -f elf64 tensorOps.asm -o tensorOps.o
-#gcc -c helpers.c -o helpers.o -std=c99 -O3 -lm
-#gcc -o neural-net nn.c tensorOps.o helpers.o -std=c99 -O3 -lm -g
-
 clean:
 	rm -f *.o *~
 	rm -f c_version
 	rm -f asm_version
-# Para compilar funciones en ASM
-# 
-# gcc -o neural-net main.c nn_asm.o -std=c99 -lm -g
