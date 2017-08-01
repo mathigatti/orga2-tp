@@ -39,15 +39,7 @@ int main(){
     matrix_prod_c_double(A, B, n, m, l, C_c);
     matrix_prod_asm_double(A, B, n, m, l, C_asm);
     
-//    printMatrix_double(C_c,n,l);
-//    printMatrix_double(C_asm,n,l);
-
     assert(equalMatrix_double(C_c, C_asm, n, l));
-    //Dato copado: usando un criterio de != el assert falla,
-    //pero con un umbral de 10^(-10) [y posiblemente bastante menos tambien]
-    //pasa los test exitosamente. Esto se debe casi seguro a diferencias 
-    //por underflow (debido a que el orden de las sumas varia en c y asm)
-
   }
 
   printf("%s\n", "\t\tTests pasados exitosamente por matrix_prod");
@@ -155,8 +147,6 @@ int main(){
 
     randomMatrix_float(Bf, mf, lf);
 
-    //printf("Las dimensiones son %d x %d x %d\n",nf,mf,lf);
-
     matrix_prod_c_float(Af, Bf, nf, mf, lf, Cf_c);
     matrix_prod_asm_float(Af, Bf, nf, mf, lf, Cf_asm);
 
@@ -224,9 +214,6 @@ int main(){
     update_weight_c_float(w_c_float, y_float, SIZE, c);
     update_weight_asm_float(w_asm_float, y_float, SIZE, c);
 
-    //printMatrix_float(w_c_float, 1, SIZE);
-    //printMatrix_float(w_asm_float, 1, SIZE);
-
     assert(equalVectors_float(w_c_float, w_asm_float, SIZE));
 
   }
@@ -238,19 +225,3 @@ int main(){
 
   return 0;
 }
-
-/*
-  ALTAS CHANCES de que todos los valores que hay en las matrices de pesos 
-  sean 0 despues del entrenamiento. Eso explicaria porque siempre se 
-  obtiene el mismo resultado independientemente del input.
-  Siempre se estaria obteniendo el bias de hidden to output layer.
-
-  UPDATE: Los pesos son distintos a 0. Logre avanzar un poco, y llegue a la
-  conclusión de que los pesos son tan grandes en la capa de entrada que provocan que el hidden state siempre sea 1.0 para todas las unidades. Eso 
-  explicaria el por que no se depende del input. Lo que habria que ver entonces es porque no aprende pesos acordes a esto.
-
-  Finalmente resulto ser que el codigo estaba bien. El problema en realidad 
-  era que los valores con los que se inicializaban las matrices de pesos eran muy grandes (pese a ser random). Sospecho que la razon de que este problema no surgiera con la version de python es la diferencia en la calidad del sampleo. Mi solucion "artesanal" fue reescalar las valores sampleados, dividiendolos por 10.0
-  Este cambio permitio replicar el accuracy expuesto por el autor del algoritmo en python
-
-*/

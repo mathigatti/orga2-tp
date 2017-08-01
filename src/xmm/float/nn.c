@@ -13,11 +13,6 @@ in a full-connected style
 
 void initialize_net(Network* net, uint num_of_hid_units, float eta){
   srand(time(NULL));
-  /*
-  for(uint i = 0; i < 1000; i++){
-    printf("%f\n", (float) rand() / RAND_MAX);
-  }
-  */
   net->eta = eta;
   net->num_of_hid_units = num_of_hid_units;
   net->bias_in_to_hid = (float*) malloc(num_of_hid_units*sizeof(float));
@@ -129,8 +124,6 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
   float* nabla_w_hid_to_out = (float*) calloc(h * 10, sizeof(float));     // 10 x h
   float* nabla_b_hid_to_out = (float*) calloc(10, sizeof(float)); // 10 x 1
 
-  // dnb = delta nabla b
-  // dnw = delta nabla w
   float* dnw_in_to_hid = (float*) malloc(h * 784 * sizeof(float));    // h x 784
   float* dnb_in_to_hid = (float*) malloc(h * sizeof(float));   // h x 1
   float* dnw_hid_to_out = (float*) malloc(h * 10 * sizeof(float));     // 10 x h
@@ -232,7 +225,6 @@ to ``self.biases`` and ``self.weights``.*/
   // xy(1-y)(y-t)
   matrix_prod(nb_hid_to_out, activation1, outputUnits, 1, h, nw_hid_to_out);
 
-  // Hasta aca me cierra bien
   // Ciclo 2
 
   resProduct1 = (float*) malloc(h * cant_img * sizeof(float));
@@ -298,8 +290,7 @@ int main(){
   SGD(net, training_data, 8, MINI_BATCH_SIZE, net->eta);
 
   feed_forward(net, &test_data->mat[1 * 784], 1, res);
-  // printImg(&test_data->mat[1 * 784]);
-  // printf("Target: %d\n", test_data->res[3]);
+
   for(int i = 0; i < 10; i++){
     printf("Valor para %d: %f\n", i, res[i]);
   }
@@ -352,7 +343,7 @@ int main(){
     end = clock();
     cpu_time_used += ((float) end - start) / CLOCKS_PER_SEC;
   }
-  //cpu_time_used /= 1000000.0;
+
   printf("Total time cost_derivative: %f\n", cpu_time_used);
 
 
@@ -365,7 +356,7 @@ int main(){
     end = clock();
     cpu_time_used += ((float) end - start) / CLOCKS_PER_SEC;
   }
-  //cpu_time_used /= 1000000.0;
+
   printf("Total time mat_plus_vec: %f\n", cpu_time_used);
 
   cpu_time_used = 0;
@@ -377,7 +368,7 @@ int main(){
     end = clock();
     cpu_time_used += ((float) end - start) / CLOCKS_PER_SEC;
   }
-  //cpu_time_used /= 1000000.0;
+
   printf("Total time update_weight: %f\n", cpu_time_used);
 
   cpu_time_used = 0;
@@ -389,7 +380,7 @@ int main(){
     end = clock();
     cpu_time_used += ((float) end - start) / CLOCKS_PER_SEC;
   }
-  //cpu_time_used /= 1000000.0;
+
   printf("Total time hadamardProduct: %f\n", cpu_time_used);
 
   cpu_time_used = 0;
@@ -406,19 +397,3 @@ int main(){
 
   return 0;
 }
-
-/*
-  ALTAS CHANCES de que todos los valores que hay en las matrices de pesos 
-  sean 0 despues del entrenamiento. Eso explicaria porque siempre se 
-  obtiene el mismo resultado independientemente del input.
-  Siempre se estaria obteniendo el bias de hidden to output layer.
-
-  UPDATE: Los pesos son distintos a 0. Logre avanzar un poco, y llegue a la
-  conclusión de que los pesos son tan grandes en la capa de entrada que provocan que el hidden state siempre sea 1.0 para todas las unidades. Eso 
-  explicaria el por que no se depende del input. Lo que habria que ver entonces es porque no aprende pesos acordes a esto.
-
-  Finalmente resulto ser que el codigo estaba bien. El problema en realidad 
-  era que los valores con los que se inicializaban las matrices de pesos eran muy grandes (pese a ser random). Sospecho que la razon de que este problema no surgiera con la version de python es la diferencia en la calidad del sampleo. Mi solucion "artesanal" fue reescalar las valores sampleados, dividiendolos por 10.0
-  Este cambio permitio replicar el accuracy expuesto por el autor del algoritmo en python
-
-*/

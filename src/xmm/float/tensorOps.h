@@ -2,8 +2,7 @@
 #define tensorOps_h
 #include "helpers.h"
 
-// Implementar en ASM
-// Posiblemente se podria cambiar para que tome un vector directamente
+// Metodos implementados tanto en C como en ASSEMBLER
 void cost_derivative(float* vector, float* target, float* output);
 
 void mat_plus_vec(float* matrix, float* vector, uint n, float* output);

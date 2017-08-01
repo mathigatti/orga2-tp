@@ -1,8 +1,8 @@
 ; RECORDATORIOS
 ; inputs: rdi, rsi, rdx, rcx, r8, r9
-; preservar: r12, r13, r14, r15, rbx, 
+; preservar: r12, r13, r14, r15, rbx,
 ; la pila: rbp, rsp
-; devolver cosas por rax o xmmo 
+; devolver cosas por rax o xmmo
 ; inputs floats: xmm0, xmm1, ..., xmm7
 
 	global cost_derivative_asm_double
@@ -30,19 +30,7 @@
 	
 	%define LF			10
 
-
-section .rodata
-	UNROLL_AMT  equ   2   ; # of times to unroll the loop
-
-
-section .data
-	msg1: DB '%s', LF, 0	;imprimo string con salto de linea y fin de linea
-	msg2: DB 'a',0			;modo append para fopen
-	msg3: DB '<oracionVacia>',0
-	
-
 section .text
-
 
 ;//////////////// FUNCIONES MATRICIALES ////////////////;
 
@@ -63,7 +51,7 @@ section .text
 	; xor rax, rax
 	; mov eax, edx
 	; mul ecx					;eax = low(n*m) ;edx = high(n*m)
-	; shl rdx, 32
+b	; shl rdx, 32
 	; add rax, rdx			;rax = #pixeles
 
 	;Itero sobre todos los elementos y realizo la operación de SUBPD
@@ -109,7 +97,7 @@ section .text
 	movq [rcx], xmm1
 	add rdi, 8
 	add rsi, 8
-	add rcx, 8	
+	add rcx, 8
 	dec rdx
 	jnz .B
 
@@ -235,7 +223,6 @@ section .text
   ret
 
 matrix_prod_asm_double:
-	;TODO: pasar a xmm (y posteriormente a ymm). Para eso la comprobacion que tengo que hacer es que m sea divisible por 2 (luego por 4).
 	push rbp
 	mov rbp, rsp
 	push r12
@@ -347,8 +334,6 @@ matrix_prod_asm_double:
 ;	double* target_vec (rsi)
 ;	double* output	(rdx)
 ; )
-
-;NOTA: cost_derivative es bastante mas eficiente con SSE2 que con AVR
 
   cost_derivative_asm_float:
 	push rbp

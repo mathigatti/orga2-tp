@@ -37,33 +37,3 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end);
 void backprop(Network* net, double* X, int target, double* , double*, double*, double*);
 
 double evaluate(Network* net, Images* test_data);
-
-// Para arreglar:
-
-/* Nada por ahora :) */
-
-// Ideas en general
-
-/*
-
-Probar regularizar pesos de la red
-
-Testeo automatico de implementaciones en ASM con la version en C
-
-Fijarnos si no tenemos disponible AVX (registros ymm en vez de xmm). Aparentemente por lo que lei deberiamos tenerlos.
-
-
-*/
-
-
-// Ideas para experimentacion
-
-/* 
-
-Experimentar performance temporal funcion por funcion
-Probar variante en funciones, loop unrolling
-Multithreading
-Ver si hay ciertos parametros para los cuales la optimizacion
-con SIMD es aun mayor (por ej, numeros multiplos de 4)
-
-*/

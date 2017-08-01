@@ -20,16 +20,16 @@ Images* trainSetReader() {
 		for(int j = 0; j<IMG_SIZE; j++){
 			line=fgets(buffer,sizeof(buffer),fstream);
 			record = strtok(line,"\n");
-			//printf("%s\n",record);
+
       Img->mat[i * IMG_SIZE + j] = atof(record);
 			record = strtok(NULL,"\n");				
 	   	}
 		line=fgets(buffer,sizeof(buffer),fstream);
 		record = strtok(line,"\n");
-		//printf("%s\n",record);
+
 		Img->res[i] = atoi(record);
 		record = strtok(NULL,"\n");
-    //printf("Imagen %d\n",i);
+
   }
   fclose(fstream);
   return Img;
@@ -52,17 +52,17 @@ Images* testSetReader() {
   }
 
   for(int i = 0; i<TEST_IMGS_NUM; i++){
-    // printf("Imagen %d\n",i);
+
     for(int j = 0; j<IMG_SIZE; j++){
       line=fgets(buffer,sizeof(buffer),fstream);
       record = strtok(line,"\n");
-      //printf("%s\n",record);
+
       Img->mat[i * IMG_SIZE + j] = atof(record);
       record = strtok(NULL,"\n");       
       }
     line=fgets(buffer,sizeof(buffer),fstream);
     record = strtok(line,"\n");
-    //printf("%s\n",record);
+
     Img->res[i] = atoi(record);
     record = strtok(NULL,"\n");
   }
@@ -84,9 +84,6 @@ void random_shuffle(Images* batch) {
     for (i = 0; i < n - 1; i++) {
       size_t j = i + rand() / (RAND_MAX / (n - i) + 1);
 
-      // printImg(&batch->mat[i * 784]);
-      // printImg(&batch->mat[j * 784]);
-      
       // We permute the rows of batch.mat
       double temp_pixel;
       for(uint k = 0; k < 784; k++) {
@@ -99,9 +96,6 @@ void random_shuffle(Images* batch) {
       int temp_res = batch->res[j];
       batch->res[j] = batch->res[i];
       batch->res[i] = temp_res;
-      // printImg(&batch->mat[i * 784]);
-      // printImg(&batch->mat[j * 784]);
-      // printf("*****************************\n");
     }
   }
 }

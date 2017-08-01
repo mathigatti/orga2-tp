@@ -19,25 +19,13 @@
 	extern fopen
 
 ; /** DEFINES **/ 
-	%define NULL 		0
-	%define TRUE 		1
-	%define FALSE 		0
+	%define NULL        0
+	%define TRUE        1
+	%define FALSE       0
 	
-	%define LF					10
-
-
-section .rodata
-	UNROLL_AMT  equ   2   ; # of times to unroll the loop
-
-
-section .data
-	msg1: DB '%s', LF, 0	;imprimo string con salto de linea y fin de linea
-	msg2: DB 'a',0			;modo append para fopen
-	msg3: DB '<oracionVacia>',0
-	
+	%define LF          10
 
 section .text
-
 
 ;/** FUNCIONES MATRICIALES **/
 ;-----------------------------------------------------------
@@ -47,7 +35,7 @@ section .text
 ;	double* target_vec (rsi)
 ;	double* output	(rdx)
 ; )
-;NOTA: cost_derivative es bastante mas eficiente con SSE2 que con AVR
+
   cost_derivative:
 	push rbp
 	mov rbp, rsp
