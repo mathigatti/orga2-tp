@@ -128,9 +128,17 @@ int main(){
   float res_c_float[SIZE] = {[0 ... SIZE-1] = 0};
   float res_asm_float[SIZE] = {[0 ... SIZE-1] = 0};
 
-  uint nf = 30;
-  uint mf = 784;
+//  uint nf = 30;
+//  uint mf = 784;
+//  uint lf = 1;
+
+  uint nf = 10;
+  uint mf = 30;
   uint lf = 1;
+
+//  uint nf = 10;
+//  uint mf = 3;
+//  uint lf = 10;
 
   float Af[nf * mf];
   float Bf[mf * lf];
@@ -139,7 +147,7 @@ int main(){
 
   srand(time(NULL));
 
-    printf("%s\n", "\tTesteo matrix_prod...");
+  printf("%s\n", "\tTesteo matrix_prod...");
 
   for(uint i = 0; i < 1; i++){
 
@@ -155,7 +163,7 @@ int main(){
     printMatrix_float(Cf_c,nf,lf);
     printf("%s", "<----linea divisoria---->\n");
     printMatrix_float(Cf_asm,nf,lf);
-    assert(equalMatrix_float(Cf_c, Cf_asm, n, l));
+    assert(equalMatrix_float(Cf_c, Cf_asm, nf, lf));
   }
 
   printf("%s\n", "\tTesteo cost_derivative...");

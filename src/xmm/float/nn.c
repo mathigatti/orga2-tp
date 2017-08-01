@@ -325,7 +325,7 @@ int main(){
   destructor_net(net);
   imagesDestructor(training_data);
   imagesDestructor(test_data);
-  
+
   clock_t start, end;
   float cpu_time_used = 0;
   

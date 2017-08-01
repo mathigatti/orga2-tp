@@ -239,7 +239,6 @@ section .text
   ret
 
 matrix_prod:
-	;TODO: pasar a xmm (y posteriormente a ymm). Para eso la comprobacion que tengo que hacer es que m sea divisible por 2 (luego por 4).
 	push rbp
 	mov rbp, rsp
 	push r12
@@ -259,54 +258,64 @@ matrix_prod:
 	lea r14, [rdx + rax - 1] ; r14 = n * m - 1
 
 	;Precomputo el offset del ultimo elemento de la anteultima fila de matrix2
-	lea rax, [rcx - 1]
+	xor rax, rax
+	lea eax, [ecx - 1]
 	mul r8d
 	shl rdx, 32
-	lea r13, [rdx + rax - 1]
+	lea r13, [rdx + rax - 1] ; r13 = (m-1) * l - 1
 
-	;Calculo m mod 2
-	mov rbx, 3			
-	and rbx, rcx						;rbx = m mod 4
-
-	cmp rcx,4
-	jl .i
+	;Calculo m mod 4
+	mov rbx, 3
+	and rbx, rcx	;rbx = m mod 4
+	jnz .i
 	sub r14, 3
 	.i:
 		mov r12, r8
 		.j:
 			mov r11, rcx		;Uso r11 como contador unicamente
-			
-			pxor xmm3, xmm3													;xmm3 = acumulador para el coef r10, r12
+			pxor xmm3, xmm3		;xmm3 = acumulador para el coef r10, r12
 
 			; Calculo desplazamiento en matrix2
 			lea r15, [r13 + r12]
 
-			;Calculo m mod 2
-			mov rbx, 3		
-			and rbx, rcx						;rbx = m mod 2			
-			; Hago rbx operaciones por separado
+			;rdx 10
+			;r10 10
+			;rcx 1
+			;r8 30
+			;r14 9 -> 2
+			;r13 -1
+			;rbx 1 -> 0
+			;r12 30 -> 29
+			;r11 1 -> 0
+			;r15 29 -> 8
 
-			.not_multiple_of_4:
+			;Calculo m mod 4
+			mov rbx, 3
+			and rbx, rcx						;rbx = m mod 4
 			jz .k
-
-			movss xmm1, [rdi + 4 * r14]	;xmm1 = matrix1[r10][r11]
-			movss xmm2, [rsi + 4 * r15] ;xmm2 = matrix2[r11][r12]
-			mulss xmm1, xmm2
-			addss xmm3, xmm1
-			sub r15, r8 ;Voy del ultimo al primer elemento de la columna
-			dec r14 	;Voy del ultimo al primer elemento de la fila
-			dec r11
-			jz .ready
-			dec rbx
-			jmp .not_multiple_of_4
-
+			
+			; Hago rbx operaciones por separado
+			.not_multiple_of_4:
+				movss xmm1, [rdi + 4 * r14]	;xmm1 = matrix1[r10][r11]
+				movss xmm2, [rsi + 4 * r15] ;xmm2 = matrix2[r11][r12]
+				mulss xmm1, xmm2
+				addss xmm3, xmm1
+				sub r15, r8 ;Voy del ultimo al primer elemento de la columna
+				dec r14 	;Voy del ultimo al primer elemento de la fila
+				dec r11
+				jz .nm4
+				dec rbx
+				jz .p
+				jmp .not_multiple_of_4
+			.p:
+				sub r14, 3
 			.k:
 				movdqu xmm1, [rdi + 4 * r14]		;xmm1 = matrix1[r10][r11]
 
 				movss xmm6, [rsi + 4 * r15]
 				movss xmm2, xmm6		;xmm2 = matrix2[r11][r12]
 				sub r15, r8 ;Voy del ultimo al primer elemento de la columna
-				pslldq xmm2,4
+				pslldq xmm2, 4
 
 				movss xmm6, [rsi + 4 * r15]
 				movss xmm2, xmm6		;xmm2 = matrix2[r11][r12]
@@ -324,32 +333,40 @@ matrix_prod:
 
 				mulps xmm1, xmm2
 				addps xmm3, xmm1
-				sub r14, 4 		;Voy del ultimo al primer elemento de la fila
 				sub r11, 4
-				jnz .k
+				jz .ready
+				sub r14, 4 		;Voy del ultimo al primer elemento de la fila
+				jmp .k
 
 			.ready:
-			add r14, rcx	;Hago esto para situarme de vuelta
-							;al final de la fila r10-1
-			
-			movdqu xmm1, xmm3
-			psrldq xmm3, 4
-			addss xmm1, xmm3
-			psrldq xmm3, 4
-			addss xmm1, xmm3
-			psrldq xmm3, 4
-			addss xmm1, xmm3
-			; Calculo desplazamiento en output
-			lea rax, [r10 - 1]
-			mul r8d
-			shl rdx, 32
-			;mov edx, eax ; rdx = i * m
-			lea r15, [rdx + rax]
-			lea r15, [r15 + r12 - 1]
-			
-			movss [r9 + 4 * r15], xmm1
-			dec r12
-			jnz .j
+				dec r14
+
+				mov rbx, 3
+				and rbx, rcx						;rbx = m mod 4
+				jnz .nm4
+					sub r14,3
+				.nm4:
+				add r14, rcx	;Hago esto para situarme de vuelta
+								;al final de la fila r10-1
+
+				movdqu xmm1, xmm3
+				psrldq xmm3, 4
+				addss xmm1, xmm3
+				psrldq xmm3, 4
+				addss xmm1, xmm3
+				psrldq xmm3, 4
+				addss xmm1, xmm3
+				; Calculo desplazamiento en output
+				lea rax, [r10 - 1]
+				mul r8d
+				shl rdx, 32
+				;mov edx, eax ; rdx = i * m
+				lea r15, [rdx + rax]
+				lea r15, [r15 + r12 - 1]
+				
+				movss [r9 + 4 * r15], xmm1
+				dec r12
+				jnz .j
 		sub r14d, ecx
 		dec r10
 		jnz .i

@@ -287,10 +287,10 @@ matrix_prod:
 			;Calculo m mod 2
 			mov rbx, 1			
 			and rbx, rcx						;rbx = m mod 2			
-			; Hago rbx operaciones por separado
-
-			.not_multiple_of_2:
 			jz .k
+
+			; Hago rbx operaciones por separado
+			.not_multiple_of_2:
 			movsd xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
 			movsd xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
 			mulsd xmm1, xmm2
@@ -300,8 +300,10 @@ matrix_prod:
 			dec r11
 			jz .ready
 			dec rbx
+			jz .p
 			jmp .not_multiple_of_2
-
+			.p:
+				dec r14
 			.k:
 				movdqu xmm1, [rdi + 8 * r14]		;xmm1 = matrix1[r10][r11]
 				movsd xmm2, [rsi + 8 * r15]		;xmm2 = matrix2[r11][r12]
