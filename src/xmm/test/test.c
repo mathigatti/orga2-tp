@@ -150,9 +150,6 @@ int main(){
     matrix_prod_c_float(Af, Bf, nf, mf, lf, Cf_c);
     matrix_prod_asm_float(Af, Bf, nf, mf, lf, Cf_asm);
 
-    printMatrix_float(Cf_c,nf,lf);
-    printf("%s", "<----linea divisoria---->\n");
-    printMatrix_float(Cf_asm,nf,lf);
     assert(equalMatrix_float(Cf_c, Cf_asm, nf, lf));
   }
 

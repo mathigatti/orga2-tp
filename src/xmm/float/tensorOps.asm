@@ -8,7 +8,7 @@
 	global cost_derivative
 	global mat_plus_vec
 	global update_weight
-	global hadamardProduct
+	global hadamard_product
 	global matrix_prod
 
 ; YA IMPLEMENTADAS EN C
@@ -174,7 +174,7 @@ section .text
 ; inputs: rdi, rsi, rdx, rcx, r8
 ; float* matrix1, float* matrix2, uint n, uint m, float* output
 
-  hadamardProduct:
+  hadamard_product:
 	push rbp
 	mov rbp, rsp
 

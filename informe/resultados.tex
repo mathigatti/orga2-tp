@@ -1,35 +1,24 @@
+\subsection{Porcentaje de aciertos de las redes}
 
-Hacer un cuadro de resultados comparando la implementacón contra la mejor compilación con gcc -03, para diferentes casos de algoritmos
+La red neuronal tiene un porcentaje de acierto del 95\% en todas sus versiones. A pesar de que el tipo float tiene una menor capacidad de representación numérica que su contraparte el tipo double su precisión parece ser suficiente para realizar los cálculos necesarios y hacer que la red neuronal llegue a las mismas conclusiones que la red que utiliza double.
 
 
-\begin{center}
-        \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
-                \hline
-    Task & \multicolumn{4}{c |}{Waiting-time} & \multicolumn{4}{c |}{Latencia} & \multicolumn{4}{c |}{Turnaround} \\
-                \cline{2-13}
-          & RR & FIFO & SJF & RSJF & RR & FIFO & SJF & RSJF & RR & FIFO & SJF & RSJF \\
-                \hline
-    0 &       39 &   1 &   1 &  20 &        1 &   1 &   1 &   1 &       44 &  11 &  11 &  30 \\
-    1 &       37 &  12 &  30 &  35 &        6 &  12 &  30 &  31 &       57 &  32 &  50 &  55 \\
-    2 &       28 &  29 &   8 &   2 &        7 &  29 &   8 &   2 &       33 &  34 &  13 &   7 \\
-    3 &       30 &  35 &  14 &   8 &       12 &  35 &  14 &   8 &       35 &  40 &  19 &  13 \\
-    4 &       32 &  46 &  20 &  14 &       17 &  46 &  20 &  14 &       37 &  46 &  25 &  19 \\
-                \hline
-        \end{tabular}
-\end{center}
-\captionof{table}{ Cuadro Choreado 1 }
+\subsection{Tiempos}
+
+Aquí se puede observar un cuadro de resultados comparando nuestras implementaciones de ASSEMBLER contra las de C compiladas con gcc -03.
 
 \begin{center}
-        \begin{tabular}{| l | c | c | c |}
+    \resizebox{\textwidth}{!}{
+        \begin{tabular}{| l | c | c | c | c | c |}
                 \hline
-    Scheduler & Waiting-time & Latencia & Turnaround \\
+    Versión & cost\_derivative & mat\_plus\_vec & update\_weight & hadamard\_product & matrix\_prod \\
                 \hline
-    RR   &    33.5 &  8.6 & 41.2 \\
-    FIFO &    24.6 & 24.6 & 32.6 \\
-    SJF  &    14.6 & 14.6 & 23.6 \\
-    RSJF &    15.8 & 11.2 & 24.8 \\
+    Double C & 0.019694 & 0.323289 & 0.298969 & 0.966852 & 0.841608 \\
+    Double ASM & 0.019881 & 0.338240 & 0.758107 & 0.341586 & 0.498035 \\
+    Float C & 0.019256 & 0.171635 & 0.158144 & 0.922496 & 0.711830 \\
+    Float ASM  & 0.018904 & 0.170835 & 0.381136 & 0.167613 & 0.490826 \\
                 \hline
 			
-        \end{tabular}
+        \end{tabular}}
 \end{center}
-\captionof{table}{ Cuadro Choreado 2 }
+\captionof{table}{ Cuadro de resultados obtenidos en cada método. }

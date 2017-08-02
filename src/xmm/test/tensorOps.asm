@@ -51,7 +51,7 @@ section .text
 	; xor rax, rax
 	; mov eax, edx
 	; mul ecx					;eax = low(n*m) ;edx = high(n*m)
-b	; shl rdx, 32
+	; shl rdx, 32
 	; add rax, rdx			;rax = #pixeles
 
 	;Itero sobre todos los elementos y realizo la operación de SUBPD

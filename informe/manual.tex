@@ -1,13 +1,14 @@
---COMPLETAR MANUAL DE USO DEL PROGRAMA--
-\\
-\\
-* herramientas especiales de desarrollo utilizadas si las hubiese
-\\
-\\
-Cosas que me parece que podriamos poner brevemente
-\\
-\\
-* uso de makefile
-\\
-\\
-* explicacion de tests
+
+\subsection{Uso del programa}
+
+El programa esta formado por un set de datos sobre el cual trabajamos llamado MNIST el cual contiene unas matrices de números enteros las cuales representan imágenes de números centrados y de tamaño fijo. Estas son de 28 pixeles de ancho por 28 pixels de alto en escala de grises.
+
+Este set de datos esta en la carpeta $mnist$ y es convertido a archivos de texto que contienen un pixel por línea con un script de python el cual aloja los archivos en la carpeta $data$. Esto se hace para facilitar la posterior lectura de estos datos por nuestro programa.
+
+Una vez hecho esto se pueden compilar y ejecutar nuestros programas que crean y entrenan una red neuronal para reconocer estos caracteres. Tanto en la carpeta $float$ como en la carpeta $double$ se encontrará el código que implementa dicho programa y las correspondientes herramientas de compilación. Para ejecutar el programa basta compilarlo con el \texttt{Makefile} y luego ejecutar \texttt{asm\_version} o \texttt{c\_version} según la versión que uno desee probar.
+
+\subsection{Tests}
+
+Tanto la versión del programa que recibe Floats como la que recibe Doubles tiene una batería de tests en las funciones que implementamos tanto en ASSEMBLER como C, esto fue para corroborar el buen funcionamiento de lo dessarrollado y ayudarnos a debuguear.
+
+Los test se compilan con el \texttt{Makefile} el cual crea el ejecutable test que corre los mismos.

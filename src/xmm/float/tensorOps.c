@@ -23,7 +23,7 @@ void update_weight(float* w, float* nw, uint w_size, float c){
   }
 }
 
-void hadamardProduct(float* matrix1, float* matrix2, uint n, uint m, float* output){
+void hadamard_product(float* matrix1, float* matrix2, uint n, uint m, float* output){
 // matrix1 and matrix2 are nxm
   for(uint i = 0; i < n; i++){
     for(uint j = 0; j < m; j++){
