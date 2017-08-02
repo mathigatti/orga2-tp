@@ -1,4 +1,4 @@
-# orga2-tp
+# Red Neuronal en Assembler
 Red Neuronal para reconocer digitos númericos hecho con C y SIMD, realizado como trabajo final para la materia Organizacion del Computador 2
 
 # Links de referencia
