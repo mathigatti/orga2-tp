@@ -217,7 +217,7 @@ to ``self.biases`` and ``self.weights``.*/
   sigmoid_prime_v(z2, outputUnits, 1, resProduct2);
 
   // y(1-y)(y-t)
-  hadamardProduct(resProduct1, resProduct2, outputUnits, 1, nb_hid_to_out);
+  hadamard_product(resProduct1, resProduct2, outputUnits, 1, nb_hid_to_out);
 
   free(resProduct1);  
   free(resProduct2);
@@ -239,7 +239,7 @@ to ``self.biases`` and ``self.weights``.*/
   matrix_prod(aux, nb_hid_to_out, h, 10, 1, resProduct2);
   free(aux);
 
-  hadamardProduct(resProduct1, resProduct2, h, 1, nb_in_to_hid);
+  hadamard_product(resProduct1, resProduct2, h, 1, nb_in_to_hid);
 
   free(resProduct1);  
   free(resProduct2);
@@ -376,12 +376,12 @@ int main(){
     randomVector(SIZE, v, randMax);
     randomVector(SIZE, w, randMax);
     start = clock();
-    hadamardProduct(v, w, SIZE, 1, u);
+    hadamard_product(v, w, SIZE, 1, u);
     end = clock();
     cpu_time_used += ((float) end - start) / CLOCKS_PER_SEC;
   }
 
-  printf("Total time hadamardProduct: %f\n", cpu_time_used);
+  printf("Total time hadamard_product: %f\n", cpu_time_used);
 
   cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){
