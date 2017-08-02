@@ -266,17 +266,6 @@ matrix_prod:
 			; Calculo desplazamiento en matrix2
 			lea r15, [r13 + r12]
 
-			;rdx 10
-			;r10 10
-			;rcx 1
-			;r8 30
-			;r14 9 -> 2
-			;r13 -1
-			;rbx 1 -> 0
-			;r12 30 -> 29
-			;r11 1 -> 0
-			;r15 29 -> 8
-
 			;Calculo m mod 4
 			mov rbx, 3
 			and rbx, rcx						;rbx = m mod 4
@@ -296,7 +285,7 @@ matrix_prod:
 				jz .p
 				jmp .not_multiple_of_4
 			.p:
-				sub r14, 3
+				sub r14, 3 ; me posiciono en r10-4
 			.k:
 				movdqu xmm1, [rdi + 4 * r14]		;xmm1 = matrix1[r10][r11]
 
@@ -327,12 +316,13 @@ matrix_prod:
 				jmp .k
 
 			.ready:
-				dec r14
+				dec r14 ; Esto junto con el "add r14, rcx" de mas abajo me posiciona en r10-1
 
 				mov rbx, 3
 				and rbx, rcx						;rbx = m mod 4
 				jnz .nm4
-					sub r14,3
+					sub r14,3 ; Si es multiplo de 4 entonces no se le van a restar 3 para posicionarse en el lugar correcto
+							  ; lo hago ahora entonces para posicionarme en r10-4
 				.nm4:
 				add r14, rcx	;Hago esto para situarme de vuelta
 								;al final de la fila r10-1

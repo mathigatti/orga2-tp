@@ -566,17 +566,6 @@ matrix_prod_asm_float:
 			; Calculo desplazamiento en matrix2
 			lea r15, [r13 + r12]
 
-			;rdx 10
-			;r10 10
-			;rcx 1
-			;r8 30
-			;r14 9 -> 2
-			;r13 -1
-			;rbx 1 -> 0
-			;r12 30 -> 29
-			;r11 1 -> 0
-			;r15 29 -> 8
-
 			;Calculo m mod 4
 			mov rbx, 3
 			and rbx, rcx						;rbx = m mod 4
