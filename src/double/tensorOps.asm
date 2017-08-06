@@ -38,9 +38,6 @@ section .text
 ; )
 ;NOTA: cost_derivative es bastante mas eficiente con SSE2 que con AVR
 	cost_derivative:
-	push rbp
-	mov rbp, rsp
-
 	; ;Calculo la cantidad de elementos total
 	; xor rax, rax
 	; mov eax, edx
@@ -69,14 +66,9 @@ section .text
 	subpd xmm1, xmm2
 
 	movupd [rdx], xmm1
-
-	pop rbp
   ret
 
   hadamardProduct:
-	push rbp
-	mov rbp, rsp
-
 	;Calculo la cantidad de pixeles total
 	xor rax, rax
 	mov eax, edx
@@ -121,14 +113,9 @@ section .text
 		add r8, 16
 		sub rax, 2
 		jnz .ciclo
-	
-	pop rbp
   ret
 
  mat_plus_vec:
-	push rbp
-	mov rbp, rsp
-
 	;Chequeo si la cantidad de elementos es par
 	mov rax, rdx
 	mov rdx, 0x1
@@ -165,8 +152,6 @@ section .text
 		add rcx, 16
 		sub rax, 2
 		jnz .ciclo
-	
-	pop rbp
   ret
 
 ;void update_weight(
@@ -176,18 +161,13 @@ section .text
 ;			double c    	(xmm0)
 ;)
   update_weight:
-	push rbp
-	mov rbp, rsp
-
-	;Calculo w_size mod 4
-	xor rcx, rcx
-	inc cl
-	and cl, dl						;rcx = w_size mod 4
-	cmp cl, 0
-	jz .multiple_of_4
+	;Calculo w_size mod 2
+	mov rcx, 0x1
+	and cl, dl						;rcx = w_size mod 2
+	jz .even
 
 	;Caso no-multiplo
-	.not_multiple_of_4:
+	.odd:
 		movq xmm1, [rdi]		;xmm1 = w_0
 		movq xmm2, [rsi]		;xmm2 = nw_0
 		mulsd xmm2, xmm0		;xmm2 = c * nw_0
@@ -195,13 +175,10 @@ section .text
 		movq [rdi], xmm1
 		add rdi, 8
 		add rsi, 8
-		;loop .not_multiple_of_4
-		;dec rcx 						;rcx = w_size - 1
 
 	;Inicializo el contador
-	.multiple_of_4:
-	mov rcx, rdx 						;rcx = w_size
-	shr rcx, 1						;Proceso de a 4 elementos
+	.even:
+	shr rdx, 1							;Proceso de a 2 elementos
 	unpcklpd xmm0, xmm0
 
 	;Itero sobre todos los pesos y realizo la actualizacion
@@ -216,9 +193,8 @@ section .text
 		;Avanzo los punteros
 		add rdi, 16
 		add rsi, 16
-		loop .ciclo
-	
-	pop rbp
+		dec rdx
+		jnz .ciclo
   ret
 
 ;void matrix_prod(
@@ -232,7 +208,6 @@ section .text
 ;Version backward
 
 matrix_prod:
-	;TODO: pasar a xmm (y posteriormente a ymm). Para eso la comprobacion que tengo que hacer es que m sea divisible por 2 (luego por 4).
 	push rbp
 	mov rbp, rsp
 	push r12

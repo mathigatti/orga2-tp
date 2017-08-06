@@ -37,9 +37,6 @@ section .text
 ; )
 
   cost_derivative:
-	push rbp
-	mov rbp, rsp
-
 	; ;Calculo la cantidad de elementos total
 	; xor rax, rax
 	; mov eax, edx
@@ -68,14 +65,9 @@ section .text
 	subps xmm1, xmm2
 
 	movq [rdx], xmm1
-
-	pop rbp
   ret
 
  mat_plus_vec:
-	push rbp
-	mov rbp, rsp
-
 	;Chequeo si la cantidad de elementos es multiplo de 4
 	mov rax, rdx
 	mov rdx, 0x3
@@ -112,8 +104,6 @@ section .text
 		add rcx, 16
 		sub rax, 4
 		jnz .ciclo
-	
-	pop rbp
   ret
 
 ;void update_weight(
@@ -124,14 +114,9 @@ section .text
 ;)
 
   update_weight:
-	push rbp
-	mov rbp, rsp
-
 	;Calculo w_size mod 4
-	xor rcx, rcx
-	add cl, 3
+	xor rcx, 0x3
 	and cl, dl						;rcx = w_size mod 4
-	cmp cl, 0
 	jz .multiple_of_4
 
 	;Caso no-multiplo
@@ -143,16 +128,14 @@ section .text
 		movd [rdi], xmm1
 		add rdi, 4
 		add rsi, 4
-		loop .not_multiple_of_4
-		and dl, 0xFC
+		dec cl
+		jnz .not_multiple_of_4
 
 	;Inicializo el contador
 	.multiple_of_4:
-	mov rcx, rdx 					;rcx = w_size
-	shr rcx, 2						;Proceso de a 4 elementos
+	shr rdx, 2						;Proceso de a 4 elementos
 
-	unpcklps xmm0, xmm0
-	unpcklps xmm0, xmm0
+	vbroadcastss xmm0, xmm0
 
 	;Itero sobre todos los pesos y realizo la actualizacion
 	.ciclo:
@@ -166,18 +149,14 @@ section .text
 		;Avanzo los punteros
 		add rdi, 16
 		add rsi, 16
-		loop .ciclo
-	
-  	pop rbp
+		dec rdx
+		jnz .ciclo
   ret
 
 ; inputs: rdi, rsi, rdx, rcx, r8
 ; float* matrix1, float* matrix2, uint n, uint m, float* output
 
   hadamard_product:
-	push rbp
-	mov rbp, rsp
-
 	;Calculo la cantidad de pixeles total
 	xor rax, rax
 	mov eax, edx
@@ -222,8 +201,6 @@ section .text
 		add r8, 16
 		sub rax, 4
 		jnz .ciclo
-	
-	pop rbp
   ret
 
 matrix_prod:
@@ -321,7 +298,7 @@ matrix_prod:
 				mov rbx, 3
 				and rbx, rcx						;rbx = m mod 4
 				jnz .nm4
-					sub r14,3 ; Si es multiplo de 4 entonces no se le van a restar 3 para posicionarse en el lugar correcto
+				sub r14,3 ; Si es multiplo de 4 entonces no se le van a restar 3 para posicionarse en el lugar correcto
 							  ; lo hago ahora entonces para posicionarme en r10-4
 				.nm4:
 				add r14, rcx	;Hago esto para situarme de vuelta
