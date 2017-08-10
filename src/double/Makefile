@@ -1,6 +1,6 @@
 CC=gcc 
 # Quitar -g (opcion de debugeo)
-CFLAGS=-std=c99 -lm -O3
+CFLAGS=-std=gnu11 -lm -O3
 DEPS = nn.h helpers.h tensorOps.h
 OBJ = nn.o helpers.o 
 

@@ -278,52 +278,50 @@ double evaluate(Network* net, Images* test_data){
 }
 
 int main(){
-  Images* training_data = trainSetReader();
-  Images* test_data = testSetReader();
-  Network* net = (Network*) malloc(sizeof(Network));
-  initialize_net(net, 30, 3.0);
+  // Images* training_data = trainSetReader();
+  // Images* test_data = testSetReader();
+  // Network* net = (Network*) malloc(sizeof(Network));
+  // initialize_net(net, 30, 3.0);
 
-  if (training_data == NULL || test_data == NULL){
-    printf("Error intentando leer data-sets de entrada\n");
-    return 0;
-  }
+  // if (training_data == NULL || test_data == NULL){
+  //   printf("Error intentando leer data-sets de entrada\n");
+  //   return 0;
+  // }
 
-  //testeo SGD con un mini-batch
-  double* res = (double*) malloc(10 * sizeof(double));
+  // //testeo SGD con un mini-batch
+  // double* res = (double*) malloc(10 * sizeof(double));
   
-  SGD(net, training_data, 8, MINI_BATCH_SIZE, net->eta);
+  // SGD(net, training_data, 8, MINI_BATCH_SIZE, net->eta);
 
-  feed_forward(net, &test_data->mat[1 * 784], 1, res);
+  // feed_forward(net, &test_data->mat[1 * 784], 1, res);
 
-  for(int i = 0; i < 10; i++){
-    printf("Valor para %d: %f\n", i, res[i]);
-  }
-  printf("Target: %d\n", test_data->res[1]);
+  // for(int i = 0; i < 10; i++){
+  //   printf("Valor para %d: %f\n", i, res[i]);
+  // }
+  // printf("Target: %d\n", test_data->res[1]);
 
-  //testeo feedforward con un 1 artificial
-  double input[784] = {[0 ... 783] = 0};
-  for(uint i = 42; i < 784; i += 28){
-    input[i] = 1.0;
-  }
+  // //testeo feedforward con un 1 artificial
+  // double input[784] = {[0 ... 783] = 0};
+  // for(uint i = 42; i < 784; i += 28){
+  //   input[i] = 1.0;
+  // }
 
-  feed_forward(net, input, 1, res);
-  for(int i = 0; i < 10; i++){
-    printf("Valor asignado a %d: %f\n", i, res[i]);
-  }
-  printf("Target: %d\n", 1);
+  // feed_forward(net, input, 1, res);
+  // for(int i = 0; i < 10; i++){
+  //   printf("Valor asignado a %d: %f\n", i, res[i]);
+  // }
+  // printf("Target: %d\n", 1);
 
-  free(res);
+  // free(res);
 
-  // Evaluate accuracy over data set
-  printf("Accuracy over testing data set: %f\n", evaluate(net, test_data));
+  // // Evaluate accuracy over data set
+  // printf("Accuracy over testing data set: %f\n", evaluate(net, test_data));
 
-  destructor_net(net);
-  imagesDestructor(training_data);
-  imagesDestructor(test_data);
+  // destructor_net(net);
+  // imagesDestructor(training_data);
+  // imagesDestructor(test_data);
   
-  clock_t start, end;
   double cpu_time_used = 0;
-
 
   double v[SIZE];
   double w[SIZE];
@@ -342,62 +340,78 @@ int main(){
   for(int i = 0; i < ITERACIONES; i++){
     randomVector(SIZE, v, randMax);
     randomVector(SIZE, w, randMax);
-    start = clock();
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    //start = clock();
     cost_derivative(v, w, u);
-    end = clock();
-    cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    //end = clock();
+    //if ((double) tend.tv_sec - tstart.tv_sec != 0) printf("%f\n", (double) tend.tv_sec - tstart.tv_sec);
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0)  / ITERACIONES;
   }
 
-  printf("Total time cost_derivative: %f\n", cpu_time_used);
+  printf("Average time cost_derivative: %f\n", cpu_time_used);
 
 
   cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){
     randomVector(SIZE, v, randMax);
     randomVector(SIZE, w, randMax);
-    start = clock();
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    //start = clock();
     mat_plus_vec(v, w, SIZE, u);
-    end = clock();
-    cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
+    //end = clock();
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
   }
 
-  printf("Total time mat_plus_vec: %f\n", cpu_time_used);
+  printf("Average time mat_plus_vec: %f\n", cpu_time_used);
 
   cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){
     randomVector(SIZE, v, randMax);
     randomVector(SIZE, w, randMax);
-    start = clock();
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    //start = clock();
     update_weight(v, w, SIZE, 0.3);
-    end = clock();
-    cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    //end = clock();
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
   }
 
-  printf("Total time update_weight: %f\n", cpu_time_used);
+  printf("Average time update_weight: %f\n", cpu_time_used);
 
   cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){
     randomVector(SIZE, v, randMax);
     randomVector(SIZE, w, randMax);
-    start = clock();
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    //start = clock();
     hadamardProduct(v, w, SIZE, 1, u);
-    end = clock();
-    cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    //end = clock();
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
   }
 
-  printf("Total time hadamardProduct: %f\n", cpu_time_used);
+  printf("Average time hadamardProduct: %f\n", cpu_time_used);
 
   cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){
     randomMatrix(m1, n, m);
     randomMatrix(m2, m, l);
-    start = clock();
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    //start = clock();
     matrix_prod(m1, m2, n, m, l, m_res);
-    end = clock();
-    cpu_time_used += ((double) end - start) / CLOCKS_PER_SEC;
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    //end = clock();
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
   }
 
-  printf("Total time matrix_prod: %f\n", cpu_time_used);
+  printf("Average time matrix_prod: %f\n", cpu_time_used);
 
   return 0;
 }
