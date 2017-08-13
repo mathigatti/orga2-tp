@@ -1,5 +1,9 @@
 TODO:
 * Modificar para que tome una matriz de imagenes en vez de una imagen
+---> Hacer que matrix_plus_vec haga lo que deberia hacer (actualmente hace suma de vectores solamente)
+---> Hacer que cost_derivative opere con matrices
+-X-> (No hace falta) Hacer que update_weight reciba una matriz en nabla
+---> Hacer una funcion compress que al final de backprop sume todas las columnas de la matriz resultante, dando un unico vector (para cada uno de los resultados)
 * Tomar los tiempos para los metodos individualmente, sacando un promedio en nanosegundos (usar hadamard con una matriz, no un vecto)
 * Tomar el tiempo para un epoch entero de la red. Jugar con la cantidad de unidades de la capa oculta.
 * Sopesar el impacto global de las optimizaciones locales
