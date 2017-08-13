@@ -9,10 +9,13 @@ void cost_derivative(double* res_vec, double* target_vec, double* output) {
   }
 }
 
-void mat_plus_vec(double* matrix, double* vector, uint n, double* output){
+void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output){
 // |vector| == n
   for(int i = 0; i < n; i++){
-    output[i] = vector[i] + matrix[i];
+    double val = vector[i];
+    for (int j = 0; j < m; j++) {
+      output[i * m + j] = val + matrix[i * m + j];
+    }
   }
 }
 
