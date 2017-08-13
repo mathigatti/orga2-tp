@@ -6,7 +6,7 @@
 ; inputs floats: xmm0, xmm1, ..., xmm7
 
 	global cost_derivative
-	global mat_plus_vec
+	global vector_sum
 	global update_weight
 	global hadamardProduct
 	global matrix_prod
@@ -34,38 +34,32 @@ section .text
 ; void cost_derivative(
 ;	double* res_vec  (rdi)
 ;	double* target_vec (rsi)
-;	double* output	(rdx)
+; uint cant_imgs (rdx)
+;	double* output	(rcx)
 ; )
 ;NOTA: cost_derivative es bastante mas eficiente con SSE2 que con AVR
 	cost_derivative:
-	; ;Calculo la cantidad de elementos total
-	; xor rax, rax
-	; mov eax, edx
-	; mul ecx					;eax = low(n*m) ;edx = high(n*m)
-	; shl rdx, 32
-	; add rax, rdx			;rax = #pixeles
+	cmp rdx, 0
+	jz .fin
 
 	;Itero sobre todos los elementos y realizo la operación de SUBPD
-	%rep 4
-		movupd xmm1, [rdi]	;xmm1 = | x0 | x1 | x2 | x3 |
-		movupd xmm2, [rsi]	;xmm2 = | y0 | y1 | y2 | y3 |
+	.ciclo:
+		%rep 5
+			movupd xmm1, [rdi]	;xmm1 = | x0 | x1 |
+			movupd xmm2, [rsi]	;xmm2 = | y0 | y1 |
 
-		subpd xmm1, xmm2
+			subpd xmm1, xmm2
 
-		movupd [rdx], xmm1
+			movupd [rcx], xmm1
 
-		;Avanzo los punteros
-		add rdi, 16
-		add rsi, 16
-		add rdx, 16
-	%endrep
-
-	movupd xmm1, [rdi]	;xmm1 = | x0 | x1 |
-	movupd xmm2, [rsi]	;xmm2 = | y0 | y1 |
-
-	subpd xmm1, xmm2
-
-	movupd [rdx], xmm1
+			;Avanzo los punteros
+			add rdi, 16
+			add rsi, 16
+			add rcx, 16
+		%endrep
+		dec rdx
+		jnz .ciclo
+	.fin
   ret
 
   hadamardProduct:
@@ -79,9 +73,8 @@ section .text
 	;Chequeo si la cantidad de elementos es par
 	mov rdx, 0x1
 	and rdx, rax
-	jz .A
+	jz .par
 
-	.B:
 	;Caso impar: opero sobre el primer elemento por separado
 	movq xmm1, [rdi]
 	movq xmm2, [rsi]
@@ -92,11 +85,9 @@ section .text
 	add rdi, 8
 	add rsi, 8
 	add r8, 8	
-	dec rdx
-	jnz .B
 
 	;Inicializo el contador
-	.A:
+	.par:
 	and al, 0xFE
 	;Itero sobre todos los pixeles y realizo la operación de SUBPD
 	.ciclo:
@@ -115,14 +106,18 @@ section .text
 		jnz .ciclo
   ret
 
- mat_plus_vec:
+	vector_sum:
+	; double* matrix, (rdi)
+	; double* vector, (rsi)
+	; uint n,				  (rdx)
+	; double* output  (rcx)
+
 	;Chequeo si la cantidad de elementos es par
 	mov rax, rdx
 	mov rdx, 0x1
 	and rdx, rax
-	jz .A
+	jz .par
 
-	.B:
 	;Caso impar: opero sobre el primer elemento por separado
 	movq xmm1, [rdi]
 	movq xmm2, [rsi]
@@ -131,11 +126,9 @@ section .text
 	add rdi, 8
 	add rsi, 8
 	add rcx, 8	
-	dec rdx
-	jnz .B
 
 	;Inicializo el contador
-	.A:
+	.par:
 	and al, 0xFE
 	;Itero sobre todos los pixeles y realizo la operación de SUBPD
 	.ciclo:
