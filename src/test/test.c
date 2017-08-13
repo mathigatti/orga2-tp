@@ -51,7 +51,7 @@ int main(){
     randomVector_double(SIZE, v, randMax);
     randomVector_double(SIZE, y, randMax);
 
-    cost_derivative_c_double(v, y, res_c);
+    cost_derivative_c_double(v, y, 1, res_c);
     cost_derivative_asm_double(v, y, res_asm);
 
     assert(equalVectors_double(res_c,res_asm,SIZE));
@@ -67,7 +67,7 @@ int main(){
     randomVector_double(SIZE, v, randMax);
     randomVector_double(SIZE, y, randMax);
 
-    mat_plus_vec_c_double(v, y, SIZE, res_c);
+    mat_plus_vec_c_double(v, y, SIZE, 1, res_c);
     mat_plus_vec_asm_double(v, y, SIZE, res_asm);
 
     assert(equalVectors_double(res_c,res_asm,SIZE));

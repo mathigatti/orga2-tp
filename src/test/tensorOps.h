@@ -12,9 +12,9 @@ typedef unsigned int uint;
 
 ///////////////////////////// VERSION C DOUBLE /////////////////////////////
 
-void cost_derivative_c_double(double* vector, double* target, double* output);
+void cost_derivative_c_double(double* vector, double* target, int cant_imgs, double* output);
 
-void mat_plus_vec_c_double(double* matrix, double* vector, uint n, double* output);
+void mat_plus_vec_c_double(double* matrix, double* vector, uint n, uint m, double* output);
 
 void update_weight_c_double(double* w, double* nw, uint w_size, double c);
 

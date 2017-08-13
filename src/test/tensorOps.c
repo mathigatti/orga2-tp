@@ -2,19 +2,23 @@
 
 ///////////// VERSION C DOUBLE /////////////
 
-void cost_derivative_c_double(double* res_vec, double* target_vec, double* output) {
-//Return the vector of partial derivatives \partial C_x /
+void cost_derivative_c_double(double* res_vec, double* target_mat, int cant_imgs, double* output) {
+//Return the matrix of partial derivatives \partial C_x /
 //partial a for the output activations.
-// Normalmente m = 1
-  for(uint i = 0; i < 10; i++){
-      output[i] = res_vec[i] - target_vec[i];
+  for (int i = 0; i < 10; i++) {
+    for (uint j = 0; j < cant_imgs; j++){
+        output[i * cant_imgs + j] = res_vec[i * cant_imgs + j] - target_mat[i * cant_imgs + j];
+    }
   }
 }
 
-void mat_plus_vec_c_double(double* matrix, double* vector, uint n, double* output){
+void mat_plus_vec_c_double(double* matrix, double* vector, uint n, uint m, double* output){
 // |vector| == n
-  for(uint i = 0; i < n; i++){
-    output[i] = vector[i] + matrix[i];
+  for(int i = 0; i < n; i++){
+    double val = vector[i];
+    for (int j = 0; j < m; j++) {
+      output[i * m + j] = val + matrix[i * m + j];
+    }
   }
 }
 
