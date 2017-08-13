@@ -5,7 +5,7 @@
 // Metodos implementados tanto en C como en ASSEMBLER
 void cost_derivative(float* vector, float* target, float* output);
 
-void mat_plus_vec(float* matrix, float* vector, uint n, float* output);
+void mat_plus_vec(float* matrix, float* vector, uint n, uint m, float* output);
 
 void update_weight(float* w, float* nw, uint w_size, float c);
 

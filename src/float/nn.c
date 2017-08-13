@@ -135,13 +135,11 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
   float* dnw_hid_to_out = (float*) malloc(h * 10 * sizeof(float));     // 10 x h
   float* dnb_hid_to_out = (float*) malloc(10 * sizeof(float)); // 10 x 1
 
-  for(uint i = start; i < end; i++){
-    backprop(net, &minibatch->mat[i*784], minibatch->res[i], dnw_in_to_hid, dnb_in_to_hid, dnw_hid_to_out, dnb_hid_to_out);
-    mat_plus_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 784, nabla_w_in_to_hid);
-    mat_plus_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, nabla_b_in_to_hid);
-    mat_plus_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, nabla_w_hid_to_out);
-    mat_plus_vec(nabla_b_hid_to_out, dnb_hid_to_out, 10, nabla_b_hid_to_out);
-  }
+  backprop(net, &minibatch->mat[i*784], end - start, minibatch->res[i], dnw_in_to_hid, dnb_in_to_hid, dnw_hid_to_out, dnb_hid_to_out);
+  mat_plus_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 784, cant_imgs, nabla_w_in_to_hid);
+  mat_plus_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, cant_imgs, nabla_b_in_to_hid);
+  mat_plus_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, cant_imgs, nabla_w_hid_to_out);
+  mat_plus_vec(nabla_b_hid_to_out, dnb_hid_to_out, 10, cant_imgs, nabla_b_hid_to_out);
 
   // Free memory for delta nablas
   free(dnw_in_to_hid);
@@ -162,46 +160,45 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
   free(nabla_b_hid_to_out);
 }
 
-void backprop(Network* net, float* input, int target, float* nw_in_to_hid, float* nb_in_to_hid, float* nw_hid_to_out, float* nb_hid_to_out){
+void backprop(Network* net, float* input, int cant_imgs, int* targets, float* nw_in_to_hid, float* nb_in_to_hid, float* nw_hid_to_out, float* nb_hid_to_out){
 /*Return a tuple ``(nabla_b, nabla_w)`` representing the
 gradient for the cost function C_x.  ``nabla_b`` and
 ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
 to ``self.biases`` and ``self.weights``.*/
 
+  uint inputUnits = 784;
+  uint outputUnits = 10;
+
   int h = net->num_of_hid_units;
 
-  float* activation0 = input;
+  float* activation0 = (float*) malloc(cant_imgs * inputUnits * sizeof(float));
+  transpose(input, cant_imgs, inputUnits, activation0);
 
   //--- FeedForward ---//
 
   // Ciclo 1
 
-  uint cant_img = 1;
-  uint inputUnits = 784;
-  uint outputUnits = 10;
+  float* resProduct1 = (float*) malloc(h * cant_imgs * sizeof(float));
+  matrix_prod(net->w_in_to_hid, activation0, h, inputUnits, cant_imgs, resProduct1);
 
-  float* resProduct1 = (float*) malloc(h * cant_img * sizeof(float));
-
-  matrix_prod(net->w_in_to_hid, activation0, h, inputUnits, cant_img, resProduct1);
-
-  float* z1 = (float*) malloc(h * cant_img * sizeof(float));
+  float* z1 = (float*) malloc(h * cant_imgs * sizeof(float));
   mat_plus_vec(resProduct1, net->bias_in_to_hid, h, z1);
 
-  float* activation1 = (float*) malloc(h * cant_img * sizeof(float));
-  sigmoid_v(z1, h, cant_img, activation1);
+  float* activation1 = (float*) malloc(h * cant_imgs * sizeof(float));
+  sigmoid_v(z1, h, cant_imgs, activation1);
 
   free(resProduct1);
 
   // Ciclo 2
 
-  float* resProduct2 = (float*) malloc(outputUnits * cant_img * sizeof(float));
-  matrix_prod(net->w_hid_to_out, activation1, outputUnits, h, cant_img, resProduct2);
+  float* resProduct2 = (float*) malloc(outputUnits * cant_imgs * sizeof(float));
+  matrix_prod(net->w_hid_to_out, activation1, outputUnits, h, cant_imgs, resProduct2);
 
-  float* z2 = (float*) malloc(outputUnits * cant_img * sizeof(float));
+  float* z2 = (float*) malloc(outputUnits * cant_imgs * sizeof(float));
   mat_plus_vec(resProduct2, net->bias_hid_to_out, outputUnits, z2);
 
-  float* activation2 = (float*) malloc(outputUnits * cant_img * sizeof(float));
-  sigmoid_v(z2, outputUnits, cant_img, activation2);
+  float* activation2 = (float*) malloc(outputUnits * cant_imgs * sizeof(float));
+  sigmoid_v(z2, outputUnits, cant_imgs, activation2);
 
   free(resProduct2);
 
@@ -209,48 +206,51 @@ to ``self.biases`` and ``self.weights``.*/
 
   // Ciclo 1
 
-  resProduct1 = (float*) malloc(outputUnits * cant_img * sizeof(float));
+  resProduct1 = (float*) malloc(outputUnits * cant_imgs * sizeof(float));
 
-  float y[10] = {[0 ... 9] = 0};
-  y[target] = 1;
+  // Creo la matriz con los targets
+  float* y = (float*) calloc(outputUnits * cant_imgs, sizeof(double));
+  for (int j = 0; j < cant_imgs; j++) {
+    y[targets[j] * cant_imgs + j] = 1;
+  }
 
   // (y - t)
   cost_derivative(activation2, y, resProduct1);
 
-  resProduct2 = (float*) malloc(outputUnits * cant_img * sizeof(float));
+  resProduct2 = (float*) malloc(outputUnits * cant_imgs * sizeof(float));
 
   // y(1-y)
-  sigmoid_prime_v(z2, outputUnits, 1, resProduct2);
+  sigmoid_prime_v(z2, outputUnits, cant_imgs, resProduct2);
 
   // y(1-y)(y-t)
-  hadamard_product(resProduct1, resProduct2, outputUnits, 1, nb_hid_to_out);
+  hadamard_product(resProduct1, resProduct2, outputUnits, cant_imgs, nb_hid_to_out);
 
   free(resProduct1);
   free(resProduct2);
 
   // xy(1-y)(y-t)
-  matrix_prod(nb_hid_to_out, activation1, outputUnits, 1, h, nw_hid_to_out);
+  matrix_prod(nb_hid_to_out, activation1, outputUnits, cant_imgs, h, nw_hid_to_out);
 
   // Ciclo 2
 
-  resProduct1 = (float*) malloc(h * cant_img * sizeof(float));
+  resProduct1 = (float*) malloc(h * cant_imgs * sizeof(float));
 
-  sigmoid_prime_v(z1, h, 1, resProduct1);
+  sigmoid_prime_v(z1, h, cant_imgs, resProduct1);
 
-  resProduct2 = (float*) malloc(h * cant_img * sizeof(float));
+  resProduct2 = (float*) malloc(h * cant_imgs * sizeof(float));
 
   // Hay que transponer net->w_hid_to_out
-  float* aux = (float*) malloc(h * 10 * sizeof(float));
-  transpose(net->w_hid_to_out, 10, h, aux);
-  matrix_prod(aux, nb_hid_to_out, h, 10, 1, resProduct2);
+  float* aux = (float*) malloc(h * outputUnits * sizeof(float));
+  transpose(net->w_hid_to_out, outputUnits, h, aux);
+  matrix_prod(aux, nb_hid_to_out, h, outputUnits, cant_imgs, resProduct2);
   free(aux);
 
-  hadamard_product(resProduct1, resProduct2, h, 1, nb_in_to_hid);
+  hadamard_product(resProduct1, resProduct2, h, cant_imgs, nb_in_to_hid);
 
   free(resProduct1);
   free(resProduct2);
 
-  matrix_prod(nb_in_to_hid, activation0, h, 1, inputUnits, nw_in_to_hid);
+  matrix_prod(nb_in_to_hid, activation0, h, cant_imgs, inputUnits, nw_in_to_hid);
 
   //--- Libero memoria ---//
 

@@ -133,9 +133,10 @@ section .text
 
 	;Inicializo el contador
 	.multiple_of_4:
+	unpcklps xmm0, xmm0
 	shr rdx, 2						;Proceso de a 4 elementos
-
-	vbroadcastss xmm0, xmm0
+	unpcklps xmm0, xmm0
+	;vbroadcastss xmm0, xmm0
 
 	;Itero sobre todos los pesos y realizo la actualizacion
 	.ciclo:
