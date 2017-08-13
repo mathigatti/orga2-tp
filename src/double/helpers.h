@@ -49,6 +49,6 @@ void sigmoid_prime_v(double* matrix, uint n, uint m, double* output);
 
 void transpose(double* matrix, uint n, uint m, double* output);
 
-void hadamardProduct(double* matrix1, double* matrix2, uint n, uint m, double* output);
+void compress(double* matrix, uint n, uint m, double* output);
 
 #endif

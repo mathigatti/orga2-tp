@@ -196,3 +196,13 @@ void randomMatrix(double* matrix, uint n, uint m){
     }
   }
 }
+
+void compress(double* matrix, uint n, uint m, double* output) {
+  // output.length() = n
+  for (int i = 0; i < n; i++) {
+    output[i] = 0.0;
+    for (int j = 0; j < m; j++) {
+      output[i] += matrix[i * m + j];
+    }
+  }
+}

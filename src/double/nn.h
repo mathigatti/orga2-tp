@@ -34,6 +34,6 @@ void SGD(Network* net, Images* training_data, uint epochs, uint mini_batch_size,
 
 void update_mini_batch(Network* net, Images* minibatch, uint start, uint end);
 
-void backprop(Network* net, double* X, int target, double* , double*, double*, double*);
+void backprop(Network* net, double* imgs, int cant_imgs, int* target, double* nw_in_to_hid, double* nb_in_to_hid, double* nw_hid_to_out, double* nb_hid_to_out);
 
 double evaluate(Network* net, Images* test_data);

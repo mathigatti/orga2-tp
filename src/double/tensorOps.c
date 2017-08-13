@@ -1,11 +1,12 @@
 #include "tensorOps.h"
 
-void cost_derivative(double* res_vec, double* target_vec, double* output) {
-//Return the vector of partial derivatives \partial C_x /
+void cost_derivative(double* res_vec, double* target_mat, uint cant_imgs, double* output) {
+//Return the matrix of partial derivatives \partial C_x /
 //partial a for the output activations.
-// Normalmente m = 1
-  for(uint i = 0; i < 10; i++){
-      output[i] = res_vec[i] - target_vec[i];
+  for (int i = 0; i < 10; i++) {
+    for (uint j = 0; j < cant_imgs; j++){
+        output[i * cant_imgs + j] = res_vec[i * cant_imgs + j] - target_mat[i * cant_imgs + j];
+    }
   }
 }
 
