@@ -181,7 +181,7 @@ to ``self.biases`` and ``self.weights``.*/
   matrix_prod(net->w_in_to_hid, activation0, h, inputUnits, cant_imgs, resProduct1);
 
   double* z1 = (double*) malloc(h * cant_imgs * sizeof(double));
-  vector_sum(resProduct1, net->bias_in_to_hid, h, z1);
+  mat_plus_vec(resProduct1, net->bias_in_to_hid, h, cant_imgs, z1);
 
   double* activation1 = (double*) malloc(h * cant_imgs * sizeof(double));
   sigmoid_v(z1, h, cant_imgs, activation1);
@@ -193,7 +193,7 @@ to ``self.biases`` and ``self.weights``.*/
   matrix_prod(net->w_hid_to_out, activation1, outputUnits, h, cant_imgs, resProduct2);
 
   double* z2 = (double*) malloc(outputUnits * cant_imgs * sizeof(double));
-  vector_sum(resProduct2, net->bias_hid_to_out, outputUnits, z2);
+  mat_plus_vec(resProduct2, net->bias_hid_to_out, outputUnits, cant_imgs, z2);
 
   double* activation2 = (double*) malloc(outputUnits * cant_imgs * sizeof(double));
   sigmoid_v(z2, outputUnits, cant_imgs, activation2);  

@@ -51,4 +51,6 @@ void transpose(double* matrix, uint n, uint m, double* output);
 
 void compress(double* matrix, uint n, uint m, double* output);
 
+void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output);
+
 #endif

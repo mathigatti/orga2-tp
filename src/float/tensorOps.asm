@@ -6,7 +6,7 @@
 ; inputs floats: xmm0, xmm1, ..., xmm7
 
 	global cost_derivative
-	global mat_plus_vec
+	global vector_sum
 	global update_weight
 	global hadamard_product
 	global matrix_prod
@@ -36,43 +36,56 @@ section .text
 ;	double* output	(rdx)
 ; )
 
-  cost_derivative:
+cost_derivative:
 	; ;Calculo la cantidad de elementos total
 	; xor rax, rax
 	; mov eax, edx
 	; mul ecx					;eax = low(n*m) ;edx = high(n*m)
 	; shl rdx, 32
 	; add rax, rdx			;rax = #pixeles
+	cmp rdx, 0
+	jz .fin
 
 	;Itero sobre todos los elementos y realizo la operación de SUBPD
-	%rep 2
-		movups xmm1, [rdi]	;xmm1 = | x0 | x1 | x2 | x3 |
-		movups xmm2, [rsi]	;xmm2 = | y0 | y1 | y2 | y3 |
+	.ciclo:
+		;Itero sobre todos los elementos y realizo la operación de SUBPD
+		%rep 2
+			movups xmm1, [rdi]	;xmm1 = | x0 | x1 | x2 | x3 |
+			movups xmm2, [rsi]	;xmm2 = | y0 | y1 | y2 | y3 |
 
-		subps xmm1, xmm2
+			subps xmm1, xmm2
 
-		movups [rdx], xmm1
+			movups [rcx], xmm1
 
-		;Avanzo los punteros
-		add rdi, 16
-		add rsi, 16
-		add rdx, 16
-	%endrep
+			;Avanzo los punteros
+			add rdi, 16
+			add rsi, 16
+			add rcx, 16
+		%endrep
 
-	movq xmm1, [rdi]	;xmm1 = | x0 | x1 |
-	movq xmm2, [rsi]	;xmm2 = | y0 | y1 |
+			movq xmm1, [rdi]	;xmm1 = | x0 | x1 |
+			movq xmm2, [rsi]	;xmm2 = | y0 | y1 |
 
-	subps xmm1, xmm2
+			subps xmm1, xmm2
 
-	movq [rdx], xmm1
+			movq [rcx], xmm1
+
+			add rdi, 8
+			add rsi, 8
+			add rcx, 8
+
+		dec rdx
+		jnz .ciclo
+	.fin:
+
   ret
 
- mat_plus_vec:
+ vector_sum:
 	;Chequeo si la cantidad de elementos es multiplo de 4
 	mov rax, rdx
 	mov rdx, 0x3
 	and rdx, rax
-	jz .A
+	jz .multiplo
 
 	.B:
 	;Caso multiplo de 4: opero sobre el primer elemento por separado
@@ -87,7 +100,7 @@ section .text
 	jnz .B
 
 	;Inicializo el contador
-	.A:
+	.multiplo:
 	and al, 0xFC
 	;Itero sobre todos los pixeles y realizo la operación de SUBPD
 	.ciclo:

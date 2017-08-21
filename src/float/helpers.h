@@ -49,4 +49,8 @@ void randomVector(uint size, float* vector, uint randMax);
 
 void randomMatrix(float* matrix, uint n, uint m);
 
+void compress(float* matrix, uint n, uint m, float* output);
+
+void mat_plus_vec(float* matrix, float* vector, uint n, uint m, float* output);
+
 #endif

@@ -59,7 +59,7 @@ section .text
 		%endrep
 		dec rdx
 		jnz .ciclo
-	.fin
+	.fin:
   ret
 
   hadamardProduct:
