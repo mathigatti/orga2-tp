@@ -23,13 +23,12 @@ Images* trainSetReader() {
 
       Img->mat[i * IMG_SIZE + j] = atof(record);
 			record = strtok(NULL,"\n");				
-	   	}
+	  }
 		line=fgets(buffer,sizeof(buffer),fstream);
 		record = strtok(line,"\n");
 
 		Img->res[i] = atoi(record);
 		record = strtok(NULL,"\n");
-
   }
   fclose(fstream);
   return Img;
@@ -132,7 +131,6 @@ double sigmoid_prime(double number){
   return sig * (1 - sig);
 }
 
-
 // A Implementar en ASM
 
 int max_arg(double* vector, uint n) {
@@ -183,7 +181,6 @@ void sigmoid_prime_v(double* matrix, uint n, uint m, double* output){
 }
 
 void randomVector(uint size, double* vector, uint randMax){
-
   for (uint i = 0; i < size; i++){
       vector[i] = (double) rand() / RAND_MAX;
   }
@@ -193,6 +190,16 @@ void randomMatrix(double* matrix, uint n, uint m){
   for (uint i = 0; i < n; i++){
     for (uint j = 0; j < m; j++){
       matrix[i * m + j] = (double) rand() / RAND_MAX;
+    }
+  }
+}
+
+void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output){
+// |vector| == n
+  for(int i = 0; i < n; i++){
+    double val = vector[i];
+    for (int j = 0; j < m; j++) {
+      output[i * m + j] = val + matrix[i * m + j];
     }
   }
 }
