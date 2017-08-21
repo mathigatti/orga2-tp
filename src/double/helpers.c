@@ -213,3 +213,13 @@ void compress(double* matrix, uint n, uint m, double* output) {
     }
   }
 }
+
+void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output){
+// |vector| == n
+  for(int i = 0; i < n; i++){
+    double val = vector[i];
+    for (int j = 0; j < m; j++) {
+      output[i * m + j] = val + matrix[i * m + j];
+    }
+  }
+}

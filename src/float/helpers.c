@@ -197,3 +197,24 @@ void randomMatrix(float* matrix, uint n, uint m){
     }
   }
 }
+
+void compress(float* matrix, uint n, uint m, float* output) {
+  // output.length() = n
+  for (int i = 0; i < n; i++) {
+    output[i] = 0.0;
+    for (int j = 0; j < m; j++) {
+      output[i] += matrix[i * m + j];
+    }
+  }
+}
+
+void mat_plus_vec(float* matrix, float* vector, uint n, uint m, float* output){
+// |vector| == n
+// dimension(matrix) = n*m
+  for(int i = 0; i < n; i++){
+    double val = vector[i];
+    for (int j = 0; j < m; j++) {
+      output[i * m + j] = val + matrix[i * m + j];
+    }
+  }
+}

@@ -61,7 +61,7 @@ void feed_forward(Network* net, float* input, uint cant_img, float* output) {
   matrix_prod(net->w_in_to_hid, input_tr, rows, cols, cant_img, resProduct1);
 
   float* z = (float*) malloc(rows * cant_img * sizeof(float));
-  mat_plus_vec(resProduct1, net->bias_in_to_hid, rows, z);
+  vector_sum(resProduct1, net->bias_in_to_hid, rows, z);
 
   float* hidden_state = (float*) malloc(rows * cant_img * sizeof(float));
 
@@ -79,7 +79,7 @@ void feed_forward(Network* net, float* input, uint cant_img, float* output) {
   z = (float*) malloc(rows * cant_img * sizeof(float));
 
   matrix_prod(net->w_hid_to_out, hidden_state, rows, cols, cant_img, resProduct2);
-  mat_plus_vec(resProduct2, net->bias_hid_to_out, rows, z);
+  vector_sum(resProduct2, net->bias_hid_to_out, rows, z);
 
   sigmoid_v(z, rows, cant_img, output);
 
@@ -138,10 +138,10 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
   uint cant_imgs = end - start;
 
   backprop(net, &minibatch->mat[start*784], cant_imgs, &minibatch->res[start], dnw_in_to_hid, dnb_in_to_hid, dnw_hid_to_out, dnb_hid_to_out);
-  mat_plus_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 784, cant_imgs, nabla_w_in_to_hid);
-  mat_plus_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, cant_imgs, nabla_b_in_to_hid);
-  mat_plus_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, cant_imgs, nabla_w_hid_to_out);
-  mat_plus_vec(nabla_b_hid_to_out, dnb_hid_to_out, 10, cant_imgs, nabla_b_hid_to_out);
+  vector_sum(nabla_w_in_to_hid, dnw_in_to_hid, h * 784, nabla_w_in_to_hid);
+  vector_sum(nabla_b_in_to_hid, dnb_in_to_hid, h, nabla_b_in_to_hid);
+  vector_sum(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, nabla_w_hid_to_out);
+  vector_sum(nabla_b_hid_to_out, dnb_hid_to_out, 10, nabla_b_hid_to_out);
 
   // Free memory for delta nablas
   free(dnw_in_to_hid);
@@ -184,7 +184,7 @@ to ``self.biases`` and ``self.weights``.*/
   matrix_prod(net->w_in_to_hid, activation0, h, inputUnits, cant_imgs, resProduct1);
 
   float* z1 = (float*) malloc(h * cant_imgs * sizeof(float));
-  mat_plus_vec(resProduct1, net->bias_in_to_hid, h, z1);
+  mat_plus_vec(resProduct1, net->bias_in_to_hid, h, cant_imgs, z1);
 
   float* activation1 = (float*) malloc(h * cant_imgs * sizeof(float));
   sigmoid_v(z1, h, cant_imgs, activation1);
@@ -197,7 +197,7 @@ to ``self.biases`` and ``self.weights``.*/
   matrix_prod(net->w_hid_to_out, activation1, outputUnits, h, cant_imgs, resProduct2);
 
   float* z2 = (float*) malloc(outputUnits * cant_imgs * sizeof(float));
-  mat_plus_vec(resProduct2, net->bias_hid_to_out, outputUnits, z2);
+  mat_plus_vec(resProduct2, net->bias_hid_to_out, outputUnits, cant_imgs, z2);
 
   float* activation2 = (float*) malloc(outputUnits * cant_imgs * sizeof(float));
   sigmoid_v(z2, outputUnits, cant_imgs, activation2);
@@ -217,21 +217,28 @@ to ``self.biases`` and ``self.weights``.*/
   }
 
   // (y - t)
-  cost_derivative(activation2, y, resProduct1);
+  cost_derivative(activation2, y, cant_imgs, resProduct1);
 
   resProduct2 = (float*) malloc(outputUnits * cant_imgs * sizeof(float));
 
   // y(1-y)
   sigmoid_prime_v(z2, outputUnits, cant_imgs, resProduct2);
 
+  float* delta = (float*) malloc(outputUnits * cant_imgs * sizeof(float));
+
   // y(1-y)(y-t)
-  hadamard_product(resProduct1, resProduct2, outputUnits, cant_imgs, nb_hid_to_out);
+  hadamard_product(resProduct1, resProduct2, outputUnits, cant_imgs, delta);
 
   free(resProduct1);
+
+  compress(delta, outputUnits, cant_imgs, nb_hid_to_out);
+
   free(resProduct2);
 
   // xy(1-y)(y-t)
-  matrix_prod(nb_hid_to_out, activation1, outputUnits, cant_imgs, h, nw_hid_to_out);
+  float* aux = (float*) malloc(cant_imgs * h * sizeof(float));
+  transpose(activation1, h, cant_imgs, aux);
+  matrix_prod(delta, aux, outputUnits, cant_imgs, h, nw_hid_to_out);
 
   // Ciclo 2
 
@@ -242,17 +249,23 @@ to ``self.biases`` and ``self.weights``.*/
   resProduct2 = (float*) malloc(h * cant_imgs * sizeof(float));
 
   // Hay que transponer net->w_hid_to_out
-  float* aux = (float*) malloc(h * outputUnits * sizeof(float));
+  aux = (float*) malloc(h * outputUnits * sizeof(float));
   transpose(net->w_hid_to_out, outputUnits, h, aux);
-  matrix_prod(aux, nb_hid_to_out, h, outputUnits, cant_imgs, resProduct2);
+  matrix_prod(aux, delta, h, outputUnits, cant_imgs, resProduct2);
   free(aux);
+  free(delta);
 
-  hadamard_product(resProduct1, resProduct2, h, cant_imgs, nb_in_to_hid);
+  delta = (float*) malloc(h * cant_imgs * sizeof(float));
+  hadamard_product(resProduct1, resProduct2, h, cant_imgs, delta);
+
+  compress(delta, h, cant_imgs, nb_in_to_hid);
 
   free(resProduct1);
   free(resProduct2);
 
-  matrix_prod(nb_in_to_hid, activation0, h, cant_imgs, inputUnits, nw_in_to_hid);
+  aux = (float*) malloc(cant_imgs * inputUnits * sizeof(float));
+  transpose(activation0, inputUnits, cant_imgs, aux);
+  matrix_prod(delta, aux, h, cant_imgs, inputUnits, nw_in_to_hid);
 
   //--- Libero memoria ---//
 
@@ -286,7 +299,7 @@ int main(){
   Images* training_data = trainSetReader();
   Images* test_data = testSetReader();
   Network* net = (Network*) malloc(sizeof(Network));
-  initialize_net(net, 30, 0.3);
+  initialize_net(net, 30, 3.0);
 
   if (training_data == NULL || test_data == NULL){
     printf("Error intentando leer data-sets de entrada\n");
@@ -344,36 +357,36 @@ int main(){
 
   srand(time(NULL));
 
-  for(int i = 0; i < ITERACIONES; i++){
-    randomVector(SIZE, v, randMax);
-    randomVector(SIZE, w, randMax);
-    struct timespec tstart, tend;
-    clock_gettime(CLOCK_MONOTONIC, &tstart);
-    //start = clock();
-    cost_derivative(v, w, u);
-    clock_gettime(CLOCK_MONOTONIC, &tend);
-    //end = clock();
-    //if ((double) tend.tv_sec - tstart.tv_sec != 0) printf("%f\n", (double) tend.tv_sec - tstart.tv_sec);
-    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0)  / ITERACIONES;
-  }
+  // for(int i = 0; i < ITERACIONES; i++){
+  //   randomVector(SIZE, v, randMax);
+  //   randomVector(SIZE, w, randMax);
+  //   struct timespec tstart, tend;
+  //   clock_gettime(CLOCK_MONOTONIC, &tstart);
+  //   //start = clock();
+  //   cost_derivative(v, w, u);
+  //   clock_gettime(CLOCK_MONOTONIC, &tend);
+  //   //end = clock();
+  //   //if ((double) tend.tv_sec - tstart.tv_sec != 0) printf("%f\n", (double) tend.tv_sec - tstart.tv_sec);
+  //   cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0)  / ITERACIONES;
+  // }
 
-  printf("Average time cost_derivative: %f\n", cpu_time_used);
+  // printf("Average time cost_derivative: %f\n", cpu_time_used);
 
 
-  cpu_time_used = 0;
-  for(int i = 0; i < ITERACIONES; i++){
-    randomVector(SIZE, v, randMax);
-    randomVector(SIZE, w, randMax);
-    struct timespec tstart, tend;
-    clock_gettime(CLOCK_MONOTONIC, &tstart);
-    //start = clock();
-    mat_plus_vec(v, w, SIZE, u);
-    //end = clock();
-    clock_gettime(CLOCK_MONOTONIC, &tend);
-    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
-  }
+  // cpu_time_used = 0;
+  // for(int i = 0; i < ITERACIONES; i++){
+  //   randomVector(SIZE, v, randMax);
+  //   randomVector(SIZE, w, randMax);
+  //   struct timespec tstart, tend;
+  //   clock_gettime(CLOCK_MONOTONIC, &tstart);
+  //   //start = clock();
+  //   mat_plus_vec(v, w, SIZE, u);
+  //   //end = clock();
+  //   clock_gettime(CLOCK_MONOTONIC, &tend);
+  //   cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
+  // }
 
-  printf("Average time mat_plus_vec: %f\n", cpu_time_used);
+  // printf("Average time mat_plus_vec: %f\n", cpu_time_used);
 
   cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){

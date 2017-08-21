@@ -3,9 +3,9 @@
 #include "helpers.h"
 
 // Metodos implementados tanto en C como en ASSEMBLER
-void cost_derivative(float* vector, float* target, float* output);
+void cost_derivative(float* vector, float* target, uint cant_imgs, float* output);
 
-void mat_plus_vec(float* matrix, float* vector, uint n, uint m, float* output);
+void vector_sum(float* vector1, float* vector2, uint n, float* output);
 
 void update_weight(float* w, float* nw, uint w_size, float c);
 
