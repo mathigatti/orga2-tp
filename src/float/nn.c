@@ -135,7 +135,9 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
   float* dnw_hid_to_out = (float*) malloc(h * 10 * sizeof(float));     // 10 x h
   float* dnb_hid_to_out = (float*) malloc(10 * sizeof(float)); // 10 x 1
 
-  backprop(net, &minibatch->mat[i*784], end - start, minibatch->res[i], dnw_in_to_hid, dnb_in_to_hid, dnw_hid_to_out, dnb_hid_to_out);
+  uint cant_imgs = end - start;
+
+  backprop(net, &minibatch->mat[start*784], cant_imgs, &minibatch->res[start], dnw_in_to_hid, dnb_in_to_hid, dnw_hid_to_out, dnb_hid_to_out);
   mat_plus_vec(nabla_w_in_to_hid, dnw_in_to_hid, h * 784, cant_imgs, nabla_w_in_to_hid);
   mat_plus_vec(nabla_b_in_to_hid, dnb_in_to_hid, h, cant_imgs, nabla_b_in_to_hid);
   mat_plus_vec(nabla_w_hid_to_out, dnw_hid_to_out, h * 10, cant_imgs, nabla_w_hid_to_out);
