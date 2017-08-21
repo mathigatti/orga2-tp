@@ -41,8 +41,6 @@ void randomMatrix(double* matrix, uint n, uint m);
 
 void random_shuffle(Images* batch);
 
-void mat_plus_vec(double* matrix, double* vector, uint n, uint m, double* output);
-
 int max_arg(double* vector, uint n);
 
 void sigmoid_v(double* matrix, uint n, uint m, double* output);
