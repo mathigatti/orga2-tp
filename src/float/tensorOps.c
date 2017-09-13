@@ -18,7 +18,6 @@ void vector_sum(float* vector1, float* vector2, uint n, float* output){
   }
 }
 
-
 void update_weight(float* w, float* nw, uint w_size, float c){
   for(uint i = 0; i < w_size; i++){
     w[i] -= c * nw[i];
@@ -33,7 +32,6 @@ void hadamard_product(float* matrix1, float* matrix2, uint n, uint m, float* out
     }
   }
 }
-
 
 void matrix_prod(float* matrix1, float* matrix2, uint n, uint m, uint l, float* output){
 // matrix1 is nxm

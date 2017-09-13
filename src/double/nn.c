@@ -1,11 +1,6 @@
 #include "nn.h"
 #include <time.h>
 
-#define SIZE 5000
-#define randMax 10
-#define ITERACIONES 50000
-
-
 /*
 The architechture of the network consist of
 784 input units ---> a custom number of hidden units ---> 10 output units
@@ -25,13 +20,13 @@ void initialize_net(Network* net, uint num_of_hid_units, double eta){
   net->bias_hid_to_out = (double*) malloc(10*sizeof(double));
   net->w_in_to_hid = (double*) malloc(784 * num_of_hid_units * sizeof(double));
   net->w_hid_to_out = (double*) malloc(10 * num_of_hid_units * sizeof(double));
-  
-  for(int i = 0; i < num_of_hid_units; i++) { 
+
+  for(int i = 0; i < num_of_hid_units; i++) {
     net->bias_in_to_hid[i] = (double) rand() / RAND_MAX;
     net->bias_in_to_hid[i] /= 10.0;
     for(int j = 0; j < 784; j++) {
-      net->w_in_to_hid[i * 784 + j] = (double) rand() / RAND_MAX;     
-      net->w_in_to_hid[i * 784 + j] /= 10.0;     
+      net->w_in_to_hid[i * 784 + j] = (double) rand() / RAND_MAX;
+      net->w_in_to_hid[i * 784 + j] /= 10.0;
     }
   }
 
@@ -87,7 +82,7 @@ void feed_forward(Network* net, double* input, uint cant_img, double* output) {
   vector_sum(resProduct2, net->bias_hid_to_out, rows, z);
 
   sigmoid_v(z, rows, cant_img, output);
- 
+
   free(resProduct2);
   free(hidden_state);
   free(z);
@@ -133,7 +128,7 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
   double* dnb_in_to_hid = (double*) malloc(h * sizeof(double));   // h x 1
   double* dnw_hid_to_out = (double*) malloc(h * 10 * sizeof(double));     // 10 x h
   double* dnb_hid_to_out = (double*) malloc(10 * sizeof(double)); // 10 x 1
-  
+
   uint cant_imgs = end - start;
 
   backprop(net, &minibatch->mat[start*784], cant_imgs, &minibatch->res[start], dnw_in_to_hid, dnb_in_to_hid, dnw_hid_to_out, dnb_hid_to_out);
@@ -158,7 +153,7 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
   free(nabla_w_in_to_hid);
   free(nabla_b_in_to_hid);
   free(nabla_w_hid_to_out);
-  free(nabla_b_hid_to_out);  
+  free(nabla_b_hid_to_out);
 }
 
 void backprop(Network* net, double* imgs, int cant_imgs, int* targets, double* nw_in_to_hid, double* nb_in_to_hid, double* nw_hid_to_out, double* nb_hid_to_out){
@@ -196,7 +191,7 @@ to ``self.biases`` and ``self.weights``.*/
   mat_plus_vec(resProduct2, net->bias_hid_to_out, outputUnits, cant_imgs, z2);
 
   double* activation2 = (double*) malloc(outputUnits * cant_imgs * sizeof(double));
-  sigmoid_v(z2, outputUnits, cant_imgs, activation2);  
+  sigmoid_v(z2, outputUnits, cant_imgs, activation2);
 
   free(resProduct2);
   //--- BackProp ---//
@@ -211,11 +206,8 @@ to ``self.biases`` and ``self.weights``.*/
     y[targets[j] * cant_imgs + j] = 1;
   }
 
-  // double y[10] = {[0 ... 9] = 0};
-  // y[target] = 1;
-
   // (y - t)
-  cost_derivative(activation2, y, cant_imgs, resProduct1); 
+  cost_derivative(activation2, y, cant_imgs, resProduct1);
 
   resProduct2 = (double*) malloc(outputUnits * cant_imgs * sizeof(double));
 
@@ -229,13 +221,16 @@ to ``self.biases`` and ``self.weights``.*/
 
   compress(delta, outputUnits, cant_imgs, nb_hid_to_out);
 
-  //free(resProduct1);  
+  free(y);
+  free(resProduct1);
   free(resProduct2);
 
   // xy(1-y)(y-t)
   double* aux = (double*) malloc(cant_imgs * h * sizeof(double));
   transpose(activation1, h, cant_imgs, aux);
   matrix_prod(delta, aux, outputUnits, cant_imgs, h, nw_hid_to_out);
+
+  free(aux);
 
   // Ciclo 2
 
@@ -245,10 +240,11 @@ to ``self.biases`` and ``self.weights``.*/
 
   resProduct2 = (double*) malloc(h * cant_imgs * sizeof(double));
 
-  // Hay que transponer net->w_hid_to_out 
+  // Hay que transponer net->w_hid_to_out
   aux = (double*) malloc(h * outputUnits * sizeof(double));
   transpose(net->w_hid_to_out, outputUnits, h, aux);
   matrix_prod(aux, delta, h, outputUnits, cant_imgs, resProduct2);
+
   free(aux);
   free(delta);
 
@@ -257,21 +253,23 @@ to ``self.biases`` and ``self.weights``.*/
 
   compress(delta, h, cant_imgs, nb_in_to_hid);
 
-  free(resProduct1);  
+  free(resProduct1);
   free(resProduct2);
-  
+
   aux = (double*) malloc(cant_imgs * inputUnits * sizeof(double));
   transpose(activation0, inputUnits, cant_imgs, aux);
   matrix_prod(delta, aux, h, cant_imgs, inputUnits, nw_in_to_hid);
 
   //--- Libero memoria ---//
 
+  free(aux);
+  free(delta);
   free(z1);
   free(z2);
 
+  free(activation0);
   free(activation1);
   free(activation2);
-
 }
 
 double evaluate(Network* net, Images* test_data){
@@ -292,6 +290,7 @@ double evaluate(Network* net, Images* test_data){
 }
 
 int main(){
+  double cpu_time_used = 0;
   Images* training_data = trainSetReader();
   Images* test_data = testSetReader();
   Network* net = (Network*) malloc(sizeof(Network));
@@ -304,8 +303,13 @@ int main(){
 
   //testeo SGD con un mini-batch
   double* res = (double*) malloc(10 * sizeof(double));
-  
-  SGD(net, training_data, 8, MINI_BATCH_SIZE, net->eta);
+
+  struct timespec t_start, t_end;
+  clock_gettime(CLOCK_MONOTONIC, &t_start);
+  SGD(net, training_data, EPOCHS, MINI_BATCH_SIZE, net->eta);
+  clock_gettime(CLOCK_MONOTONIC, &t_end);
+  cpu_time_used = ((t_end.tv_sec - t_start.tv_sec) + (t_end.tv_nsec - t_start.tv_nsec) / 1000000000.0)  / EPOCHS;
+  printf("Average time per epoch: %f\n", cpu_time_used);
 
   feed_forward(net, &test_data->mat[1 * 784], 1, res);
 
@@ -334,12 +338,10 @@ int main(){
   destructor_net(net);
   imagesDestructor(training_data);
   imagesDestructor(test_data);
-  
-  double cpu_time_used = 0;
 
-  double v[SIZE];
-  double w[SIZE];
-  double u[SIZE];
+/*  double v[MINI_BATCH_SIZE * 10];
+  double w[MINI_BATCH_SIZE * 10];
+  double u[MINI_BATCH_SIZE * 10];
 
   uint n = 10;
   uint m = 20;
@@ -351,81 +353,70 @@ int main(){
 
   srand(time(NULL));
 
-  // for(int i = 0; i < ITERACIONES; i++){
-  //   randomVector(SIZE, v, randMax);
-  //   randomVector(SIZE, w, randMax);
-  //   struct timespec tstart, tend;
-  //   clock_gettime(CLOCK_MONOTONIC, &tstart);
-  //   //start = clock();
-  //   cost_derivative(v, w, u);
-  //   clock_gettime(CLOCK_MONOTONIC, &tend);
-  //   //end = clock();
-  //   //if ((double) tend.tv_sec - tstart.tv_sec != 0) printf("%f\n", (double) tend.tv_sec - tstart.tv_sec);
-  //   cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0)  / ITERACIONES;
-  // }
+  for(int i = 0; i < ITERACIONES; i++){
+    randomMatrix(v, MINI_BATCH_SIZE, 10);
+    randomMatrix(w, MINI_BATCH_SIZE, 10);
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    cost_derivative(v, w, MINI_BATCH_SIZE, u);
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0)  / ITERACIONES;
+  }
 
-  // printf("Average time cost_derivative: %f\n", cpu_time_used);
+  printf("Average time cost_derivative (in milli sec): %f\n", cpu_time_used);
 
 
-  // cpu_time_used = 0;
-  // for(int i = 0; i < ITERACIONES; i++){
-  //   randomVector(SIZE, v, randMax);
-  //   randomVector(SIZE, w, randMax);
-  //   struct timespec tstart, tend;
-  //   clock_gettime(CLOCK_MONOTONIC, &tstart);
-  //   //start = clock();
-  //   vector_sum(v, w, SIZE, u);
-  //   //end = clock();
-  //   clock_gettime(CLOCK_MONOTONIC, &tend);
-  //   cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
-  // }
+  cpu_time_used = 0;
+  for(int i = 0; i < ITERACIONES; i++){
+    randomVector(SIZE, v, randMax);
+    randomVector(SIZE, w, randMax);
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    vector_sum(v, w, SIZE, u);
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
+  }
 
-  // printf("Average time vector_sum: %f\n", cpu_time_used);
+  printf("Average time vector_sum (in milli sec): %f\n", cpu_time_used);
 
-  // cpu_time_used = 0;
-  // for(int i = 0; i < ITERACIONES; i++){
-  //   randomVector(SIZE, v, randMax);
-  //   randomVector(SIZE, w, randMax);
-  //   struct timespec tstart, tend;
-  //   clock_gettime(CLOCK_MONOTONIC, &tstart);
-  //   //start = clock();
-  //   update_weight(v, w, SIZE, 0.3);
-  //   clock_gettime(CLOCK_MONOTONIC, &tend);
-  //   //end = clock();
-  //   cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
-  // }
+  cpu_time_used = 0;
+  for(int i = 0; i < ITERACIONES; i++){
+    randomVector(SIZE, v, randMax);
+    randomVector(SIZE, w, randMax);
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    update_weight(v, w, SIZE, 0.3);
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
+  }
 
-  // printf("Average time update_weight: %f\n", cpu_time_used);
+  printf("Average time update_weight (in milli sec): %f\n", cpu_time_used);
 
-  // cpu_time_used = 0;
-  // for(int i = 0; i < ITERACIONES; i++){
-  //   randomVector(SIZE, v, randMax);
-  //   randomVector(SIZE, w, randMax);
-  //   struct timespec tstart, tend;
-  //   clock_gettime(CLOCK_MONOTONIC, &tstart);
-  //   //start = clock();
-  //   hadamardProduct(v, w, SIZE, 1, u);
-  //   clock_gettime(CLOCK_MONOTONIC, &tend);
-  //   //end = clock();
-  //   cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
-  // }
+  cpu_time_used = 0;
+  for(int i = 0; i < ITERACIONES; i++){
+    randomVector(MINI_BATCH_SIZE * 10, v, randMax);
+    randomVector(MINI_BATCH_SIZE * 10, w, randMax);
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    hadamardProduct(v, w, 10, MINI_BATCH_SIZE, u);
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
+  }
 
-  // printf("Average time hadamardProduct: %f\n", cpu_time_used);
+  printf("Average time hadamardProduct (in milli seconds): %f\n", cpu_time_used);
 
-  // cpu_time_used = 0;
-  // for(int i = 0; i < ITERACIONES; i++){
-  //   randomMatrix(m1, n, m);
-  //   randomMatrix(m2, m, l);
-  //   struct timespec tstart, tend;
-  //   clock_gettime(CLOCK_MONOTONIC, &tstart);
-  //   //start = clock();
-  //   matrix_prod(m1, m2, n, m, l, m_res);
-  //   clock_gettime(CLOCK_MONOTONIC, &tend);
-  //   //end = clock();
-  //   cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
-  // }
+  cpu_time_used = 0;
+  for(int i = 0; i < ITERACIONES; i++){
+    randomMatrix(m1, n, m);
+    randomMatrix(m2, m, l);
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    matrix_prod(m1, m2, n, m, l, m_res);
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
+  }
 
-  // printf("Average time matrix_prod: %f\n", cpu_time_used);
-
+  printf("Average time matrix_prod (in milli seconds): %f\n", cpu_time_used);
+*/
   return 0;
 }

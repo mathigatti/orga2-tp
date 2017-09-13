@@ -1,8 +1,8 @@
 ; RECORDATORIOS
 ; inputs: rdi, rsi, rdx, rcx, r8, r9
-; preservar: r12, r13, r14, r15, rbx, 
+; preservar: r12, r13, r14, r15, rbx,
 ; la pila: rbp, rsp
-; devolver cosas por rax o xmmo 
+; devolver cosas por rax o xmmo
 ; inputs floats: xmm0, xmm1, ..., xmm7
 
 	global cost_derivative
@@ -18,11 +18,11 @@
 	extern fclose
 	extern fopen
 
-; /** DEFINES **/ 
+; /** DEFINES **/
 	%define NULL        0
 	%define TRUE        1
 	%define FALSE       0
-	
+
 	%define LF          10
 
 section .text
@@ -95,7 +95,7 @@ cost_derivative:
 	movd [rcx], xmm1
 	add rdi, 4
 	add rsi, 4
-	add rcx, 4	
+	add rcx, 4
 	dec rdx
 	jnz .B
 
@@ -120,15 +120,15 @@ cost_derivative:
   ret
 
 ;void update_weight(
-; 		double* w, 		(rdi) 
-;			double* nw, 	(rsi)
-;			uint w_size, 	(rdx)	
-;			double c    	(xmm0)
+; 		float* w, 		(rdi)
+;			float* nw, 	(rsi)
+;			uint w_size, 	(rdx)
+;			float c    	(xmm0)
 ;)
 
   update_weight:
 	;Calculo w_size mod 4
-	xor rcx, 0x3
+	mov rcx, 0x3
 	and cl, dl						;rcx = w_size mod 4
 	jz .multiple_of_4
 
@@ -141,7 +141,7 @@ cost_derivative:
 		movd [rdi], xmm1
 		add rdi, 4
 		add rsi, 4
-		dec cl
+		dec rcx
 		jnz .not_multiple_of_4
 
 	;Inicializo el contador
@@ -193,7 +193,7 @@ cost_derivative:
 	movd [r8], xmm1
 	add rdi, 4
 	add rsi, 4
-	add r8, 4	
+	add r8, 4
 	dec rdx
 	jnz .B
 
@@ -261,7 +261,7 @@ matrix_prod:
 			mov rbx, 3
 			and rbx, rcx						;rbx = m mod 4
 			jz .k
-			
+
 			; Hago rbx operaciones por separado
 			.not_multiple_of_4:
 				movss xmm1, [rdi + 4 * r14]	;xmm1 = matrix1[r10][r11]
@@ -332,7 +332,7 @@ matrix_prod:
 				;mov edx, eax ; rdx = i * m
 				lea r15, [rdx + rax]
 				lea r15, [r15 + r12 - 1]
-				
+
 				movss [r9 + 4 * r15], xmm1
 				dec r12
 				jnz .j
@@ -340,7 +340,7 @@ matrix_prod:
 		dec r10
 		jnz .i
 
-	pop rbx ; Cambiar esto por el add correspondiente 
+	pop rbx ; Cambiar esto por el add correspondiente
 	pop rbx
 	pop r15
 	pop r14

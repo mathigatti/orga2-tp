@@ -1,10 +1,6 @@
 #include "nn.h"
 #include <time.h>
 
-#define SIZE 5000
-#define randMax 10
-#define ITERACIONES 50000
-
 /*
 The architechture of the network consist of
 784 input units ---> a custom number of hidden units ---> 10 output units
@@ -162,19 +158,17 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end) {
   free(nabla_b_hid_to_out);
 }
 
-void backprop(Network* net, float* input, int cant_imgs, int* targets, float* nw_in_to_hid, float* nb_in_to_hid, float* nw_hid_to_out, float* nb_hid_to_out){
+void backprop(Network* net, float* imgs, int cant_imgs, int* targets, float* nw_in_to_hid, float* nb_in_to_hid, float* nw_hid_to_out, float* nb_hid_to_out){
 /*Return a tuple ``(nabla_b, nabla_w)`` representing the
 gradient for the cost function C_x.  ``nabla_b`` and
 ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
 to ``self.biases`` and ``self.weights``.*/
-
   uint inputUnits = 784;
   uint outputUnits = 10;
-
   int h = net->num_of_hid_units;
 
   float* activation0 = (float*) malloc(cant_imgs * inputUnits * sizeof(float));
-  transpose(input, cant_imgs, inputUnits, activation0);
+  transpose(imgs, cant_imgs, inputUnits, activation0);
 
   //--- FeedForward ---//
 
@@ -190,7 +184,6 @@ to ``self.biases`` and ``self.weights``.*/
   sigmoid_v(z1, h, cant_imgs, activation1);
 
   free(resProduct1);
-
   // Ciclo 2
 
   float* resProduct2 = (float*) malloc(outputUnits * cant_imgs * sizeof(float));
@@ -203,7 +196,6 @@ to ``self.biases`` and ``self.weights``.*/
   sigmoid_v(z2, outputUnits, cant_imgs, activation2);
 
   free(resProduct2);
-
   //--- BackProp ---//
 
   // Ciclo 1
@@ -211,7 +203,7 @@ to ``self.biases`` and ``self.weights``.*/
   resProduct1 = (float*) malloc(outputUnits * cant_imgs * sizeof(float));
 
   // Creo la matriz con los targets
-  float* y = (float*) calloc(outputUnits * cant_imgs, sizeof(double));
+  float* y = (float*) calloc(outputUnits * cant_imgs, sizeof(float));
   for (int j = 0; j < cant_imgs; j++) {
     y[targets[j] * cant_imgs + j] = 1;
   }
@@ -229,16 +221,18 @@ to ``self.biases`` and ``self.weights``.*/
   // y(1-y)(y-t)
   hadamard_product(resProduct1, resProduct2, outputUnits, cant_imgs, delta);
 
-  free(resProduct1);
-
   compress(delta, outputUnits, cant_imgs, nb_hid_to_out);
 
+  free(y);
+  free(resProduct1);
   free(resProduct2);
 
   // xy(1-y)(y-t)
   float* aux = (float*) malloc(cant_imgs * h * sizeof(float));
   transpose(activation1, h, cant_imgs, aux);
   matrix_prod(delta, aux, outputUnits, cant_imgs, h, nw_hid_to_out);
+
+  free(aux);
 
   // Ciclo 2
 
@@ -252,6 +246,7 @@ to ``self.biases`` and ``self.weights``.*/
   aux = (float*) malloc(h * outputUnits * sizeof(float));
   transpose(net->w_hid_to_out, outputUnits, h, aux);
   matrix_prod(aux, delta, h, outputUnits, cant_imgs, resProduct2);
+
   free(aux);
   free(delta);
 
@@ -269,12 +264,14 @@ to ``self.biases`` and ``self.weights``.*/
 
   //--- Libero memoria ---//
 
+  free(aux);
+  free(delta);
   free(z1);
   free(z2);
 
+  free(activation0);
   free(activation1);
   free(activation2);
-
 }
 
 float evaluate(Network* net, Images* test_data){
@@ -311,28 +308,28 @@ int main(){
 
   struct timespec tstart, tend;
   clock_gettime(CLOCK_MONOTONIC, &tstart);
-  SGD(net, training_data, 8, MINI_BATCH_SIZE, net->eta);
+  SGD(net, training_data, EPOCHS, MINI_BATCH_SIZE, net->eta);
   clock_gettime(CLOCK_MONOTONIC, &tend);
   printf("Total time training: %f\n", (tend.tv_sec - tstart.tv_sec) + (tend.tv_nsec - tstart.tv_nsec) / 1000000000.0);
 
-  // feed_forward(net, &test_data->mat[1 * 784], 1, res);
+  feed_forward(net, &test_data->mat[1 * 784], 1, res);
 
-  // for(int i = 0; i < 10; i++){
-  //   printf("Valor para %d: %f\n", i, res[i]);
-  // }
-  // printf("Target: %d\n", test_data->res[1]);
+  for(int i = 0; i < 10; i++){
+    printf("Valor para %d: %f\n", i, res[i]);
+  }
+  printf("Target: %d\n", test_data->res[1]);
 
-  // //testeo feedforward con un 1 artificial
-  // float input[784] = {[0 ... 783] = 0};
-  // for(uint i = 42; i < 784; i += 28){
-  //   input[i] = 1.0;
-  // }
+  //testeo feedforward con un 1 artificial
+  float input[784] = {[0 ... 783] = 0};
+  for(uint i = 42; i < 784; i += 28){
+    input[i] = 1.0;
+  }
 
-  // feed_forward(net, input, 1, res);
-  // for(int i = 0; i < 10; i++){
-  //   printf("Valor asignado a %d: %f\n", i, res[i]);
-  // }
-  // printf("Target: %d\n", 1);
+  feed_forward(net, input, 1, res);
+  for(int i = 0; i < 10; i++){
+    printf("Valor asignado a %d: %f\n", i, res[i]);
+  }
+  printf("Target: %d\n", 1);
 
   free(res);
 
@@ -343,13 +340,13 @@ int main(){
   imagesDestructor(training_data);
   imagesDestructor(test_data);
 
-  float v[SIZE];
-  float w[SIZE];
-  float u[SIZE];
+/*  float v[MINI_BATCH_SIZE * 10];
+  float w[MINI_BATCH_SIZE * 10];
+  float u[MINI_BATCH_SIZE * 10];
 
-  uint n = 784;
-  uint m = 1;
-  uint l = 10;
+  uint n = 10;
+  uint m = 20;
+  uint l = 30;
 
   float m1[n*m];
   float m2[m*l];
@@ -357,36 +354,18 @@ int main(){
 
   srand(time(NULL));
 
-  // for(int i = 0; i < ITERACIONES; i++){
-  //   randomVector(SIZE, v, randMax);
-  //   randomVector(SIZE, w, randMax);
-  //   struct timespec tstart, tend;
-  //   clock_gettime(CLOCK_MONOTONIC, &tstart);
-  //   //start = clock();
-  //   cost_derivative(v, w, u);
-  //   clock_gettime(CLOCK_MONOTONIC, &tend);
-  //   //end = clock();
-  //   //if ((double) tend.tv_sec - tstart.tv_sec != 0) printf("%f\n", (double) tend.tv_sec - tstart.tv_sec);
-  //   cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0)  / ITERACIONES;
-  // }
+  for(int i = 0; i < ITERACIONES; i++){
+    randomMatrix(v, MINI_BATCH_SIZE, 10);
+    randomMatrix(w, MINI_BATCH_SIZE, 10);
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    cost_derivative(v, w, MINI_BATCH_SIZE, u);
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0)  / ITERACIONES;
+  }
 
-  // printf("Average time cost_derivative: %f\n", cpu_time_used);
+  printf("Average time cost_derivative (in milli sec): %f\n", cpu_time_used);
 
-
-  // cpu_time_used = 0;
-  // for(int i = 0; i < ITERACIONES; i++){
-  //   randomVector(SIZE, v, randMax);
-  //   randomVector(SIZE, w, randMax);
-  //   struct timespec tstart, tend;
-  //   clock_gettime(CLOCK_MONOTONIC, &tstart);
-  //   //start = clock();
-  //   mat_plus_vec(v, w, SIZE, u);
-  //   //end = clock();
-  //   clock_gettime(CLOCK_MONOTONIC, &tend);
-  //   cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
-  // }
-
-  // printf("Average time mat_plus_vec: %f\n", cpu_time_used);
 
   cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){
@@ -394,28 +373,38 @@ int main(){
     randomVector(SIZE, w, randMax);
     struct timespec tstart, tend;
     clock_gettime(CLOCK_MONOTONIC, &tstart);
-    //start = clock();
-    update_weight(v, w, SIZE, 0.3);
+    vector_sum(v, w, SIZE, u);
     clock_gettime(CLOCK_MONOTONIC, &tend);
-    //end = clock();
     cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
   }
 
-  printf("Average time update_weight: %f\n", cpu_time_used);
+  printf("Average time vector_sum (in milli sec): %f\n", cpu_time_used);
 
   cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){
-    randomMatrix(m1, n, m);
+    randomVector(SIZE, v, randMax);
+    randomVector(SIZE, w, randMax);
     struct timespec tstart, tend;
     clock_gettime(CLOCK_MONOTONIC, &tstart);
-    //start = clock();
-    hadamard_product(m1, m1, n, m, m1);
+    update_weight(v, w, SIZE, 0.3);
     clock_gettime(CLOCK_MONOTONIC, &tend);
-    //end = clock();
     cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
   }
 
-  printf("Average time hadamardProduct: %f\n", cpu_time_used);
+  printf("Average time update_weight (in milli sec): %f\n", cpu_time_used);
+
+  cpu_time_used = 0;
+  for(int i = 0; i < ITERACIONES; i++){
+    randomVector(MINI_BATCH_SIZE * 10, v, randMax);
+    randomVector(MINI_BATCH_SIZE * 10, w, randMax);
+    struct timespec tstart, tend;
+    clock_gettime(CLOCK_MONOTONIC, &tstart);
+    hadamard_product(v, w, 10, MINI_BATCH_SIZE, u);
+    clock_gettime(CLOCK_MONOTONIC, &tend);
+    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
+  }
+
+  printf("Average time hadamardProduct (in milli seconds): %f\n", cpu_time_used);
 
   cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){
@@ -423,14 +412,12 @@ int main(){
     randomMatrix(m2, m, l);
     struct timespec tstart, tend;
     clock_gettime(CLOCK_MONOTONIC, &tstart);
-    //start = clock();
     matrix_prod(m1, m2, n, m, l, m_res);
     clock_gettime(CLOCK_MONOTONIC, &tend);
-    //end = clock();
     cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
   }
 
-  printf("Average time matrix_prod: %f\n", cpu_time_used);
-
+  printf("Average time matrix_prod (in milli seconds): %f\n", cpu_time_used);
+*/
   return 0;
 }

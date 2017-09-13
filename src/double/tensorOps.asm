@@ -208,7 +208,6 @@ matrix_prod:
 	push r14
 	push r15
 	push rbx
-	push rbx ; Cambiar esto por el sub correspondiente
 
 	mov r10, rdx ; r10 = n
 
@@ -296,7 +295,6 @@ matrix_prod:
 		dec r10
 		jnz .i
 
-	pop rbx ; Cambiar esto por el add correspondiente 
 	pop rbx
 	pop r15
 	pop r14
