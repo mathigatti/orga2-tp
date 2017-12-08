@@ -3,7 +3,7 @@
 #include <time.h>
 #include "tensorOps.h"
 
-#define MINI_BATCH_SIZE 100
+#define MINI_BATCH_SIZE 32
 #define SIZE 1000
 #define randMax 10
 #define ITERACIONES 400000
