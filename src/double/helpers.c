@@ -10,7 +10,7 @@ Images* trainSetReader() {
   Img->res = (int*) malloc(IMGS_NUM * sizeof(double));
   Img->size = IMGS_NUM;
 
-  FILE *fstream = fopen("../data/train_set.txt","r");
+  FILE *fstream = fopen("data/train_set.txt","r");
   if(fstream == NULL) {
     printf("\n file opening failed ");
     return NULL ;
@@ -44,7 +44,7 @@ Images* testSetReader() {
   Img->res = (int*) malloc(TEST_IMGS_NUM * sizeof(double));
   Img->size = TEST_IMGS_NUM;
 
-  FILE *fstream = fopen("../data/test_set.txt","r");
+  FILE *fstream = fopen("data/test_set.txt","r");
   if(fstream == NULL) {
     printf("\n file opening failed ");
     return NULL ;
@@ -68,6 +68,26 @@ Images* testSetReader() {
 
   fclose(fstream);
   return Img;
+}
+
+double* loadTestImage(double* matrix, const char* inputImage) {
+  printf("Loading test image...\n");
+  char buffer[150];
+  char *record,*line;
+
+  FILE *fstream = fopen(inputImage,"r");
+  if(fstream == NULL) {
+    printf("\n file opening failed\n");
+    return NULL ;
+  }
+
+  for(int j = 0; j<IMG_SIZE; j++){
+    line=fgets(buffer,sizeof(buffer),fstream);
+    record = strtok(line,"\n");
+    matrix[j] = atof(record);
+  }
+
+  fclose(fstream);
 }
 
 void imagesDestructor(Images* imgs) {

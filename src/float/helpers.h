@@ -25,6 +25,8 @@ Images* trainSetReader();
 
 Images* testSetReader();
 
+float* loadTestImage(float* matrix, const char* inputImage);
+
 void imagesDestructor(Images* imgs);
 
 float sigmoid(float z);
@@ -35,6 +37,10 @@ void printImg(float* img);
 
 void printMatrix(float* matrix, int n, int m);
 
+void randomVector(uint size, float* vector, uint randMax);
+
+void randomMatrix(float* matrix, uint n, uint m);
+
 void random_shuffle(Images* batch);
 
 int max_arg(float* vector, uint n);
@@ -44,10 +50,6 @@ void sigmoid_v(float* matrix, uint n, uint m, float* output);
 void sigmoid_prime_v(float* matrix, uint n, uint m, float* output);
 
 void transpose(float* matrix, uint n, uint m, float* output);
-
-void randomVector(uint size, float* vector, uint randMax);
-
-void randomMatrix(float* matrix, uint n, uint m);
 
 void compress(float* matrix, uint n, uint m, float* output);
 

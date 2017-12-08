@@ -1,5 +1,6 @@
 #include "nn.h"
 #include <time.h>
+#include <stdio.h>
 
 /*
 The architechture of the network consist of
@@ -216,7 +217,7 @@ to ``self.biases`` and ``self.weights``.*/
   double* delta = (double*) malloc(outputUnits * cant_imgs * sizeof(double));
 
   // y(1-y)(y-t)
-  hadamardProduct(resProduct1, resProduct2, outputUnits, cant_imgs, delta);
+  hadamard_product(resProduct1, resProduct2, outputUnits, cant_imgs, delta);
 
   compress(delta, outputUnits, cant_imgs, nb_hid_to_out);
 
@@ -248,7 +249,7 @@ to ``self.biases`` and ``self.weights``.*/
   free(delta);
 
   delta = (double*) malloc(h * cant_imgs * sizeof(double));
-  hadamardProduct(resProduct1, resProduct2, h, cant_imgs, delta);
+  hadamard_product(resProduct1, resProduct2, h, cant_imgs, delta);
 
   compress(delta, h, cant_imgs, nb_in_to_hid);
 
@@ -310,56 +311,7 @@ double calculateSD(double data[])
     return sqrt(standardDeviation/ITERACIONES);
 }
 
-int main(){
-  double cpu_time_used = 0;
-  Images* training_data = trainSetReader();
-  Images* test_data = testSetReader();
-  Network* net = (Network*) malloc(sizeof(Network));
-  initialize_net(net, 30, 3.0);
-
-  if (training_data == NULL || test_data == NULL){
-    printf("Error intentando leer data-sets de entrada\n");
-    return 0;
-  }
-
-  //testeo SGD con un mini-batch
-  double* res = (double*) malloc(10 * sizeof(double));
-
-  struct timespec t_start, t_end;
-  clock_gettime(CLOCK_MONOTONIC, &t_start);
-  SGD(net, training_data, EPOCHS, MINI_BATCH_SIZE, net->eta);
-  clock_gettime(CLOCK_MONOTONIC, &t_end);
-  cpu_time_used = ((t_end.tv_sec - t_start.tv_sec) + (t_end.tv_nsec - t_start.tv_nsec) / 1000000000.0)  / EPOCHS;
-  printf("Average time per epoch: %f\n", cpu_time_used);
-
-  feed_forward(net, &test_data->mat[1 * 784], 1, res);
-
-  for(int i = 0; i < 10; i++){
-    printf("Valor para %d: %f\n", i, res[i]);
-  }
-  printf("Target: %d\n", test_data->res[1]);
-
-  //testeo feedforward con un 1 artificial
-  double input[784] = {[0 ... 783] = 0};
-  for(uint i = 42; i < 784; i += 28){
-    input[i] = 1.0;
-  }
-
-  feed_forward(net, input, 1, res);
-  for(int i = 0; i < 10; i++){
-    printf("Valor asignado a %d: %f\n", i, res[i]);
-  }
-  printf("Target: %d\n", 1);
-
-  free(res);
-
-  // Evaluate accuracy over data set
-  printf("Accuracy over testing data set: %f\n", evaluate(net, test_data));
-
-  destructor_net(net);
-  imagesDestructor(training_data);
-  imagesDestructor(test_data);
-
+void calculateTime(){
   double v[MINI_BATCH_SIZE * 10];
   double w[MINI_BATCH_SIZE * 10];
   double u[MINI_BATCH_SIZE * 10];
@@ -419,12 +371,12 @@ int main(){
     randomVector(MINI_BATCH_SIZE * 10, w, randMax);
     struct timespec tstart, tend;
     clock_gettime(CLOCK_MONOTONIC, &tstart);
-    hadamardProduct(v, w, 10, MINI_BATCH_SIZE, u);
+    hadamard_product(v, w, 10, MINI_BATCH_SIZE, u);
     clock_gettime(CLOCK_MONOTONIC, &tend);
     times[i] = (tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0;
   }
 
-  printf("Average time hadamardProduct (in milli seconds): %f\n", calculateMean(times));
+  printf("Average time hadamard_product (in milli seconds): %f\n", calculateMean(times));
   printf("Standard deviation for hadamard_product: %f\n", calculateSD(times));
 
   for(int i = 0; i < ITERACIONES; i++){
@@ -439,6 +391,62 @@ int main(){
 
   printf("Average time matrix_prod (in milli seconds): %f\n", calculateMean(times));
   printf("Standard deviation for matrix_prod: %f\n", calculateSD(times));
+
+}
+
+void predictNumber(Network* net, const char* txtImage){
+  printf("\n//////////// STARTING INPUT DIGIT PREDICTION ////////////\n");
+
+  double* res = (double*) malloc(10 * sizeof(double));
+  double* input = (double*) malloc( IMG_SIZE * sizeof(double) );
+  loadTestImage(input, txtImage);
+
+  printf("\nThe image of the digit to predict is:\n");
+  printImg(input);
+
+  printf("\nThe prediction is:\n");
+  feed_forward(net, input, 1, res);
+  for(int i = 0; i < 10; i++){
+    printf("\tProbability of being a %d: %f\n", i, res[i]);
+  }
+
+  free(input);
+  free(res);
+
+  printf("\n//////////// ENDED INPUT DIGIT PREDICTION ////////////\n\n");
+}
+
+int main(int argc, const char *argv[]){
+  double cpu_time_used = 0;
+  Images* training_data = trainSetReader();
+  Images* test_data = testSetReader();
+  Network* net = (Network*) malloc(sizeof(Network));
+  initialize_net(net, 30, 3.0);
+
+  if (training_data == NULL || test_data == NULL){
+    printf("Error intentando leer data-sets de entrada\n");
+    return 0;
+  }
+
+  // Testeo SGD con un mini-batch
+  struct timespec t_start, t_end;
+  clock_gettime(CLOCK_MONOTONIC, &t_start);
+  SGD(net, training_data, EPOCHS, MINI_BATCH_SIZE, net->eta);
+  clock_gettime(CLOCK_MONOTONIC, &t_end);
+  cpu_time_used = ((t_end.tv_sec - t_start.tv_sec) + (t_end.tv_nsec - t_start.tv_nsec) / 1000000000.0)  / EPOCHS;
+  printf("Average time per epoch: %f\n", cpu_time_used);
+  printf("Accuracy over testing data set: %f\n", evaluate(net, test_data));
+
+  // Prediccion de numero de testeo
+  predictNumber(net, argv[1]);
+
+  // Libero memoria
+  destructor_net(net);
+  imagesDestructor(training_data);
+  imagesDestructor(test_data);
+
+  // CALCULO DE TIEMPOS
+  //calculateTime();
 
   return 0;
 }

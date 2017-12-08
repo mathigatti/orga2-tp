@@ -7,7 +7,7 @@
 #define SIZE 1000
 #define randMax 10
 #define ITERACIONES 400000
-#define EPOCHS 50
+#define EPOCHS 8
 
 typedef struct Network {
   /*The list ``sizes`` contains the number of neurons in the
@@ -41,3 +41,7 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end);
 void backprop(Network* net, float* input, int cant_imgs, int* targets, float* nw_in_to_hid, float* nb_in_to_hid, float* nw_hid_to_out, float* nb_hid_to_out);
 
 float evaluate(Network* net, Images* test_data);
+
+void predictNumber(Network* net, const char* txtImage);
+
+void calculateTime();
