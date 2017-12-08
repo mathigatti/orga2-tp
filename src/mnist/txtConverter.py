@@ -8,7 +8,6 @@ def formatearEspaciado(imagen,numero,myfile):
 # Load the dataset
 f = gzip.open('./mnist.pkl.gz', 'rb')
 # tamanio de train_set: 50000
-# tamanio de valid_set: 10000
 # tamanio de test_set: 10000
 train_set, valid_set, test_set = cPickle.load(f)
 with open("../data/train_set.txt", "a") as myfile:

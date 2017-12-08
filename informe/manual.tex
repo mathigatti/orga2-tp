@@ -1,16 +1,48 @@
-\subsection{Fase de entrenamiento}
-\subsection{Reconocimiento de dígitos}
 
-\subsection{Uso del programa}
+En las próximos secciones se hablará en mayor detalle del funcionamiento del programa implementado pero para los usuarios que quieran utilizar rapidamente nuestro software sin necesidad de entrar en detalles técnicos se describe a continuación lo necesario para ejecutarlo y los pasos a seguir.
 
-El programa esta formado por un set de datos sobre el cual trabajamos llamado MNIST el cual contiene unas matrices de números enteros las cuales representan imágenes de números centrados y de tamaño fijo. Estas son de 28 pixeles de ancho por 28 pixels de alto en escala de grises.
+\subsection{Requerimientos}
 
-Este set de datos esta en la carpeta $mnist$ y es convertido a archivos de texto que contienen un pixel por línea con un script de python el cual aloja los archivos en la carpeta $data$. Esto se hace para facilitar la posterior lectura de estos datos por nuestro programa.
+Para utilizar nuestro programa se necesita tener instalado $Python 2.7$ y $C$.
+\\
+\\
+Las bibliotecas de Python utilizados son las siguientes:
 
-Una vez hecho esto se pueden compilar y ejecutar nuestros programas que crean y entrenan una red neuronal para reconocer estos caracteres. Tanto en la carpeta $float$ como en la carpeta $double$ se encontrará el código que implementa dicho programa y las correspondientes herramientas de compilación. Para ejecutar el programa basta compilarlo con el \texttt{Makefile} y luego ejecutar \texttt{asm\_version} o \texttt{c\_version} según la versión que uno desee probar.
+\begin{itemize}
 
-\subsection{Tests}
+\item cPickle
+\item gzip
+\item numpy
+\item matplotlib
+\item subprocess
 
-Tanto la versión del programa que recibe Floats como la que recibe Doubles tiene una batería de tests en las funciones que implementamos tanto en ASSEMBLER como C, esto fue para corroborar el buen funcionamiento de lo dessarrollado y ayudarnos a debuguear.
+\end{itemize}
 
-Los test se compilan con el \texttt{Makefile} el cual crea el ejecutable test que corre los mismos.
+\subsection{Preparación de datos de entrenamiento}
+
+Una vez cumplidos los requerimientos se debe ejecutar el script de $Python$ ubicado en la carpeta $mnist$ en la raiz del proyecto. Este creará los archivos de entrenamiento que utilizará nuestro programa en la carpeta $data$.
+
+\subsection{Ejecución del programa}
+
+Con los archivos de entrenamiento listos ya podemos ejecutar el programa, este se ejecuta a partir de $program.py$ ubicado en la raiz del proyecto. Este programa recibe 3 parámetros, primero el lenguaje que queremos utilizar (\"C\" o \"asm\"), luego el tipo de dato (\"float\" o \"double\") y por ultimo la ubicación de la imagen del digito que queremos predecir.
+\\
+\\
+La imagen debe ser de 28x28 pixeles, como ejemplo esta $test_image.png$, para predecir el caracter escrito se utilizará entonces el siguiente comando.
+
+\begin{lstlisting}[frame=single]
+python program.py asm float test_image.png
+\end{lstlisting}
+
+
+Al ejecutar este comando se debería recibir como resultado algo similar a lo que se ve en la siguiente imagen.
+
+\fboxsep=1mm%padding thickness
+\fboxrule=2pt%border thickness
+
+\begin{figure}[H]
+\fcolorbox{black}{black}{\includegraphics[scale=0.8]{imgs/example_execution.png}}
+\centering
+\caption{Imagen de ejemplo del output del programa}
+\centering
+\end{figure}
+
