@@ -25,6 +25,8 @@ Images* trainSetReader();
 
 Images* testSetReader();
 
+float* loadTestImage(float* matrix, const char* inputImage);
+
 void imagesDestructor(Images* imgs);
 
 float sigmoid(float z);

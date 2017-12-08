@@ -1,5 +1,6 @@
 #include "nn.h"
 #include <time.h>
+#include <stdio.h>
 
 /*
 The architechture of the network consist of
@@ -289,7 +290,7 @@ double evaluate(Network* net, Images* test_data){
   return hits / (double) test_data->size;
 }
 
-int main(){
+int main(int argc, const char *argv[]){
   double cpu_time_used = 0;
   Images* training_data = trainSetReader();
   Images* test_data = testSetReader();
@@ -310,31 +311,25 @@ int main(){
   clock_gettime(CLOCK_MONOTONIC, &t_end);
   cpu_time_used = ((t_end.tv_sec - t_start.tv_sec) + (t_end.tv_nsec - t_start.tv_nsec) / 1000000000.0)  / EPOCHS;
   printf("Average time per epoch: %f\n", cpu_time_used);
+  // Evaluate accuracy over data set
+  printf("Accuracy over testing data set: %f\n", evaluate(net, test_data));
 
-  feed_forward(net, &test_data->mat[1 * 784], 1, res);
+  // Prediccion de numero de testeo
+  printf("Predicting inpunt number image\n");
 
-  for(int i = 0; i < 10; i++){
-    printf("Valor para %d: %f\n", i, res[i]);
-  }
-  printf("Target: %d\n", test_data->res[1]);
-
-  //testeo feedforward con un 1 artificial
-  double input[784] = {[0 ... 783] = 0};
-  for(uint i = 42; i < 784; i += 28){
-    input[i] = 1.0;
-  }
+  double* input = (double*) malloc( IMG_SIZE * sizeof(double) );
+  loadTestImage(input, argv[1]);
+  printImg(input);
 
   feed_forward(net, input, 1, res);
   for(int i = 0; i < 10; i++){
     printf("Valor asignado a %d: %f\n", i, res[i]);
   }
-  printf("Target: %d\n", 1);
 
+  // Libero memoria
+
+  free(input);
   free(res);
-
-  // Evaluate accuracy over data set
-  printf("Accuracy over testing data set: %f\n", evaluate(net, test_data));
-
   destructor_net(net);
   imagesDestructor(training_data);
   imagesDestructor(test_data);
