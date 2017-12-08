@@ -1,0 +1,69 @@
+* PARAMETROS:
+  MINI_BATCH_SIZE 32
+  SIZE 1000
+  randMax 10
+  ITERACIONES 400000
+  EPOCHS 50
+  30 unidades ocultas
+  learning rate = 3.0
+
+* Double C:
+  Accuracy over testing data set: 0.950800
+  Average time cost_derivative (in milli sec): 0.251953
+  Standard deviation for cost_derivative: 0.088764
+  Average time vector_sum (in milli sec): 0.344978
+  Standard deviation for vector_sum: 0.085860
+  Average time update_weight (in milli sec): 0.392532
+  Standard deviation for update_weight: 0.108260
+  Average time hadamardProduct (in milli seconds): 0.307460
+  Standard deviation for hadamard_product: 0.163436
+  Average time matrix_prod (in milli seconds): 7.145342
+  Standard deviation for matrix_prod: 1.293915
+
+  Average time per epoch: 3.799580
+
+* Double ASM:
+  Accuracy over testing data set: 0.950300
+  Average time cost_derivative (in milli sec): 0.128182
+  Standard deviation for cost_derivative: 0.060222
+  Average time vector_sum (in milli sec): 0.415999
+  Standard deviation for vector_sum: 0.112268
+  Average time update_weight (in milli sec): 0.393279
+  Standard deviation for update_weight: 0.683633
+  Average time hadamardProduct (in milli seconds): 0.137181
+  Standard deviation for hadamard_product: 0.062210
+  Average time matrix_prod (in milli seconds): 3.770623
+  Standard deviation for matrix_prod: 1.011386
+
+  Average time per epoch: 3.054587
+
+* Float C:
+  Accuracy over testing data set: 0.946700
+  Average time cost_derivative (in milli sec): 0.252914
+  Standard deviation for cost_derivative: 0.061287
+  Average time vector_sum (in milli sec): 0.207263
+  Standard deviation for vector_sum: 0.062842
+  Average time update_weight (in milli sec): 0.242674
+  Standard deviation for update_weight: 0.061426
+  Average time hadamardProduct (in milli seconds): 0.256564
+  Standard deviation for hadamard_product: 0.080366
+  Average time matrix_prod (in milli seconds): 6.704427
+  Standard deviation for matrix_prod: 0.491350
+
+  Average time per epoch: 3.395475
+
+* Float ASM:
+  Accuracy over testing data set: 0.951100
+  Average time cost_derivative (in milli sec): 0.083133
+  Standard deviation for cost_derivative: 0.048002
+  Average time vector_sum (in milli sec): 0.229253
+  Standard deviation for vector_sum: 0.070555
+  Average time update_weight (in milli sec): 0.223944
+  Standard deviation for update_weight: 0.680904
+  Average time hadamardProduct (in milli seconds): 0.093358
+  Standard deviation for hadamard_product: 0.053049
+  Average time matrix_prod (in milli seconds): 4.033694
+  Standard deviation for matrix_prod: 0.324861
+
+  Average time per epoch: 2.576224
+

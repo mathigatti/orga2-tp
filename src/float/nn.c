@@ -100,16 +100,9 @@ void SGD(Network* net, Images* training_data, uint epochs, uint mini_batch_size,
   for(uint i = 0; i < epochs; i++){
     printf("Epoch: %d\n", i);
     random_shuffle(training_data);
-    //printf("Shuffle exitoso\n");
-    double totalTime = 0.0;
     for(uint j = 0; j < n; j += mini_batch_size){
-      struct timespec tstart, tend;
-      clock_gettime(CLOCK_MONOTONIC, &tstart);
-      update_mini_batch(net, training_data, j, j + mini_batch_size);
-      clock_gettime(CLOCK_MONOTONIC, &tend);
-      totalTime += (tend.tv_sec - tstart.tv_sec) + (tend.tv_nsec - tstart.tv_nsec) / 1000000000.0;
+      update_mini_batch(net, training_data, j, j + mini_batch_size <= training_data->size ? j + mini_batch_size : training_data->size);
     }
-    printf("Total epoch time: %f\n", totalTime);
   }
   printf("SGD ended successfully\n");
 }
@@ -291,8 +284,29 @@ float evaluate(Network* net, Images* test_data){
   return hits / (float) test_data->size;
 }
 
+//TOFIX: remove it
+double calculateMean(double data[])
+{
+    double sum = 0.0;
+
+    for(int i=0; i<ITERACIONES; i++) {
+        sum += data[i];
+    }
+
+    return sum/ITERACIONES;
+}
+
+double calculateSD(double data[])
+{
+    double standardDeviation = 0.0;
+    double mean = calculateMean(data);
+    for(int i=0; i<ITERACIONES; i++)
+        standardDeviation += pow(data[i] - mean, 2);
+
+    return sqrt(standardDeviation/ITERACIONES);
+}
+
 int main(){
-  double cpu_time_used = 0;
   Images* training_data = trainSetReader();
   Images* test_data = testSetReader();
   Network* net = (Network*) malloc(sizeof(Network));
@@ -310,7 +324,7 @@ int main(){
   clock_gettime(CLOCK_MONOTONIC, &tstart);
   SGD(net, training_data, EPOCHS, MINI_BATCH_SIZE, net->eta);
   clock_gettime(CLOCK_MONOTONIC, &tend);
-  printf("Total time training: %f\n", (tend.tv_sec - tstart.tv_sec) + (tend.tv_nsec - tstart.tv_nsec) / 1000000000.0);
+  printf("Average time per epoch: %f\n", ((tend.tv_sec - tstart.tv_sec) + (tend.tv_nsec - tstart.tv_nsec) / 1000000000.0) / EPOCHS);
 
   feed_forward(net, &test_data->mat[1 * 784], 1, res);
 
@@ -340,7 +354,7 @@ int main(){
   imagesDestructor(training_data);
   imagesDestructor(test_data);
 
-/*  float v[MINI_BATCH_SIZE * 10];
+  float v[MINI_BATCH_SIZE * 10];
   float w[MINI_BATCH_SIZE * 10];
   float u[MINI_BATCH_SIZE * 10];
 
@@ -354,6 +368,7 @@ int main(){
 
   srand(time(NULL));
 
+  double times[ITERACIONES];
   for(int i = 0; i < ITERACIONES; i++){
     randomMatrix(v, MINI_BATCH_SIZE, 10);
     randomMatrix(w, MINI_BATCH_SIZE, 10);
@@ -361,13 +376,12 @@ int main(){
     clock_gettime(CLOCK_MONOTONIC, &tstart);
     cost_derivative(v, w, MINI_BATCH_SIZE, u);
     clock_gettime(CLOCK_MONOTONIC, &tend);
-    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0)  / ITERACIONES;
+    times[i] = (tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0;
   }
 
-  printf("Average time cost_derivative (in milli sec): %f\n", cpu_time_used);
-
-
-  cpu_time_used = 0;
+  printf("Average time cost_derivative (in milli sec): %f\n", calculateMean(times));
+  printf("Standard deviation for cost_derivative: %f\n", calculateSD(times));
+  
   for(int i = 0; i < ITERACIONES; i++){
     randomVector(SIZE, v, randMax);
     randomVector(SIZE, w, randMax);
@@ -375,12 +389,12 @@ int main(){
     clock_gettime(CLOCK_MONOTONIC, &tstart);
     vector_sum(v, w, SIZE, u);
     clock_gettime(CLOCK_MONOTONIC, &tend);
-    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
+    times[i] = (tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0;
   }
 
-  printf("Average time vector_sum (in milli sec): %f\n", cpu_time_used);
+  printf("Average time vector_sum (in milli sec): %f\n", calculateMean(times));
+  printf("Standard deviation for vector_sum: %f\n", calculateSD(times));
 
-  cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){
     randomVector(SIZE, v, randMax);
     randomVector(SIZE, w, randMax);
@@ -388,12 +402,12 @@ int main(){
     clock_gettime(CLOCK_MONOTONIC, &tstart);
     update_weight(v, w, SIZE, 0.3);
     clock_gettime(CLOCK_MONOTONIC, &tend);
-    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
+    times[i] = (tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0;
   }
 
-  printf("Average time update_weight (in milli sec): %f\n", cpu_time_used);
+  printf("Average time update_weight (in milli sec): %f\n", calculateMean(times));
+  printf("Standard deviation for update_weight: %f\n", calculateSD(times));
 
-  cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){
     randomVector(MINI_BATCH_SIZE * 10, v, randMax);
     randomVector(MINI_BATCH_SIZE * 10, w, randMax);
@@ -401,12 +415,12 @@ int main(){
     clock_gettime(CLOCK_MONOTONIC, &tstart);
     hadamard_product(v, w, 10, MINI_BATCH_SIZE, u);
     clock_gettime(CLOCK_MONOTONIC, &tend);
-    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
+    times[i] = (tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0;
   }
 
-  printf("Average time hadamardProduct (in milli seconds): %f\n", cpu_time_used);
+  printf("Average time hadamardProduct (in milli seconds): %f\n", calculateMean(times));
+  printf("Standard deviation for hadamard_product: %f\n", calculateSD(times));
 
-  cpu_time_used = 0;
   for(int i = 0; i < ITERACIONES; i++){
     randomMatrix(m1, n, m);
     randomMatrix(m2, m, l);
@@ -414,10 +428,11 @@ int main(){
     clock_gettime(CLOCK_MONOTONIC, &tstart);
     matrix_prod(m1, m2, n, m, l, m_res);
     clock_gettime(CLOCK_MONOTONIC, &tend);
-    cpu_time_used += ((tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0) / ITERACIONES;
+    times[i] = (tend.tv_sec - tstart.tv_sec) * 1000000.0 + (tend.tv_nsec - tstart.tv_nsec) / 1000.0;
   }
 
-  printf("Average time matrix_prod (in milli seconds): %f\n", cpu_time_used);
-*/
+  printf("Average time matrix_prod (in milli seconds): %f\n", calculateMean(times));
+  printf("Standard deviation for matrix_prod: %f\n", calculateSD(times));
+
   return 0;
 }

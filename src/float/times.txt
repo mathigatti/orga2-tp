@@ -1,0 +1,15 @@
+## C
+
+Average time cost_derivative (in milli sec): 1.370134
+Average time vector_sum (in milli sec): 0.202891
+Average time update_weight (in milli sec): 0.249250
+Average time hadamardProduct (in milli seconds): 1.365456
+Average time matrix_prod (in milli seconds): 6.591551
+
+## ASM
+
+Average time cost_derivative (in milli sec): 0.453666
+Average time vector_sum (in milli sec): 0.241888
+Average time update_weight (in milli sec): 0.239605
+Average time hadamardProduct (in milli seconds): 0.389921
+Average time matrix_prod (in milli seconds): 4.035877

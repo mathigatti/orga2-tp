@@ -3,11 +3,11 @@
 #include <time.h>
 #include "tensorOps.h"
 
-#define MINI_BATCH_SIZE 100
+#define MINI_BATCH_SIZE 32
 #define SIZE 1000
 #define randMax 10
 #define ITERACIONES 400000
-#define EPOCHS 2
+#define EPOCHS 50
 
 typedef struct Network {
   /*The list ``sizes`` contains the number of neurons in the
