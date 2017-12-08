@@ -1,2 +1,6 @@
 
-En el presente trabajo se realiza la implementación de una red neuronal sigmoidea con una capa oculta, usando los lenguajes C99 y Assembly x64. Debido a que dicho tipo de redes se basa fuertemente en operaciones vectoriales, encontramos en este proyecto una buena excusa para probar distintas optimizaciones usando SIMD.
+En el presente trabajo se realiza la implementación de una red neuronal sigmoidea con una capa oculta, usando los lenguajes C99 y Assembly x64. Debido a que dicho tipo de redes se basa fuertemente en operaciones vectoriales, encontramos en este proyecto una buena excusa para probar distintas optimizaciones usando SIMD. 
+
+Dicha red fue diseñada para resolver la clásica tarea de reconocimiento de digitos manuscritos, utilizando el dataset MNIST. Escogimos esta tarea por ser un problema de tamaño razonable para tratar con el hardware del que disponemos, pero que a su vez es lo suficientemente grande como para permitir un análisis interesante.
+
+Otra de las razones para escoger este dataset es que el objetivo central que se persigue es el de conseguir una optimización desde el punto de vista temporal, por lo que no se busca profundizar en las distintas técnicas conocidas para mejorar la precisión de la red, sino que nos conformamos con una versión bastante simple de la misma. En este sentido, un dataset más complicado no nos aportaría nada \textit{a priori}.

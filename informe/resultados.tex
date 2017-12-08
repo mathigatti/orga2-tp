@@ -5,125 +5,20 @@ La red neuronal tiene un porcentaje de acierto del 95\% en todas sus versiones. 
 
 \subsection{Tiempos}
 
-A continuación se listan, para los distintos algoritmos que fueron optimizados, tablas que permiten comparar los tiempos promedios para las distintas versiones implementadas, junto con el desvío estándar en cada caso.
-
-Dado que las optimizaciones implementadas en ASM diferencian los casos en que ciertas dimensiones de los parámetros son divisibles por 2 (si usamos Double) o 4 (si usamos Float), decidimos usar siempre dimensiones multiplo de 4. Esto es para poder ver el mejor caso de la optimización.
-
-Los tiempos en esta sección están expresados en milisegundos salvo que se explicite lo contrario.
-
-En total se corrieron 400k iteraciones de cada algoritmo para estimar estos valores, con un procesador i5-5300U y 8GB de memoria RAM. La versión en C fue compilada con la compilación más agresiva (O3).
-
-\paragraph{cost\_derivative}
-
-Como parámetros se le pasaron dos matrices de tamaño $10\times32$. En este caso la dimensión que nos importa que sea múltiplo de 4 es la segunda. [TODO: completar comentando que esta es una funcion particularmente chica y fue facil de optimizar en ASM]
+Aquí se puede observar un cuadro de resultados comparando nuestras implementaciones de ASSEMBLER contra las de C compiladas con gcc -03.
 
 \begin{center}
-    \begin{tabular}{| l | c | c |}
+    \resizebox{\textwidth}{!}{
+        \begin{tabular}{| l | c | c | c | c | c |}
                 \hline
-    Versión & Media & Desvío estándar \\
+    Versión & cost\_derivative & mat\_plus\_vec & update\_weight & hadamard\_product & matrix\_prod \\
                 \hline
-    Double C & 0.251953 & 0.088764 \\
-    Double ASM & 0.128182 & 0.060222 \\
-    Float C & 0.252914 & 0.061287 \\
-    Float ASM  & 0.083133 & 0.048002 \\
+    Double C & 0.019694 & 0.323289 & 0.298969 & 0.966852 & 0.841608 \\
+    Double ASM & 0.019881 & 0.338240 & 0.758107 & 0.341586 & 0.498035 \\
+    Float C & 0.019256 & 0.171635 & 0.158144 & 0.922496 & 0.711830 \\
+    Float ASM  & 0.018904 & 0.170835 & 0.381136 & 0.167613 & 0.490826 \\
                 \hline
 			
-        \end{tabular}
+        \end{tabular}}
 \end{center}
-
-\paragraph{vector\_sum}
-
-Esta función recibió como parámetros dos vectores de longitud 1000.
-
-\begin{center}
-    \begin{tabular}{| l | c | c |}
-                \hline
-    Versión & Media & Desvío estándar \\
-                \hline
-    Double C & 0.344978 & 0.085860 \\
-    Double ASM & 0.415999 & 0.112268 \\
-    Float C & 0.207263 & 0.062842 \\
-    Float ASM  & 0.229253 & 0.070555 \\
-                \hline
-            
-        \end{tabular}
-\end{center}
-
-
-\paragraph{update\_weight}
-
-Tomó como parámetros dos vectores de longitud 1000.
-
-\begin{center}
-    \begin{tabular}{| l | c | c |}
-                \hline
-    Versión & Media & Desvío estándar \\
-                \hline
-    Double C & 0.392532 & 0.108260 \\
-    Double ASM & 0.393279 & 0.683633 \\
-    Float C & 0.242674 & 0.061426 \\
-    Float ASM  & 0.223944 & 0.680904 \\
-                \hline
-            
-        \end{tabular}
-\end{center}
-
-
-\paragraph{hadamard\_product}
-
-Recibió dos matrices de dimensiones $1000\times 10$. En este caso para que la optimización se aproveche al máximo el producto de las dimensiones debe ser divisible por 4.
-
-\begin{center}
-    \begin{tabular}{| l | c | c |}
-                \hline
-    Versión & Media & Desvío estándar \\
-                \hline
-    Double C & 0.307460 & 0.163436 \\
-    Double ASM & 0.137181 & 0.062210 \\
-    Float C & 0.256564 & 0.080366 \\
-    Float ASM  & 0.093358 & 0.053049 \\
-                \hline
-            
-        \end{tabular}
-\end{center}
-
-\paragraph{matrix\_prod}
-
-Se le pasaron dos matrices, una de dimensión $10\times 20$ y la otra de $20\times 30$. En este caso la dimensión que nos importa que sea multiplo de 4 es la dimensión en común entre ambas matrices.
-
-\begin{center}
-    \begin{tabular}{| l | c | c |}
-                \hline
-    Versión & Media & Desvío estándar \\
-                \hline
-    Double C & 7.145342 & 1.293915 \\
-    Double ASM & 3.770623 & 1.011386 \\
-    Float C & 6.704427 & 0.491350 \\
-    Float ASM  & 4.033694 & 0.324861 \\
-                \hline
-            
-        \end{tabular}
-\end{center}
-
-
-Finalmente mostramos el tiempo promedio que insume realizar un epoch\footnote{Un epoch es una pasada de entrenamento sobre un mini-batch}. Los hiperparámetros usados fueron:
-\begin{itemize}
-    \item cantidad de unidades de la capa oculta = 30
-    \item mini\_batch = 32
-    \item epochs = 50
-    \item learning\_rate = 3.0 (esto no afecta el tiempo que tarda un epoch)
-\end{itemize}
-
-\begin{center}
-    \begin{tabular}{| l | c |}
-                \hline
-    Versión & Media (en segundos) \\
-                \hline
-    Double C & 3.799580 \\
-    Double ASM & 3.054587 \\
-    Float C & 3.395475 \\
-    Float ASM  & 2.576224 \\
-                \hline
-            
-        \end{tabular}
-\end{center}
+\captionof{table}{ Cuadro de resultados obtenidos en cada método. }
