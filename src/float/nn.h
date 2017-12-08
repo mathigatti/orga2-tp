@@ -41,3 +41,7 @@ void update_mini_batch(Network* net, Images* minibatch, uint start, uint end);
 void backprop(Network* net, float* input, int cant_imgs, int* targets, float* nw_in_to_hid, float* nb_in_to_hid, float* nw_hid_to_out, float* nb_hid_to_out);
 
 float evaluate(Network* net, Images* test_data);
+
+void predictNumber(Network* net, const char* txtImage);
+
+void calculateTime();

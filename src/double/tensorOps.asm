@@ -8,7 +8,7 @@
 	global cost_derivative
 	global vector_sum
 	global update_weight
-	global hadamardProduct
+	global hadamard_product
 	global matrix_prod
 
 ; YA IMPLEMENTADAS EN C
@@ -62,7 +62,7 @@ section .text
 	.fin:
   ret
 
-  hadamardProduct:
+  hadamard_product:
 	;Calculo la cantidad de pixeles total
 	xor rax, rax
 	mov eax, edx

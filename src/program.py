@@ -30,8 +30,8 @@ def main(argv):
 	programPath = "./" + numberType + "/"
 	subprocess.call(["make"], cwd=programPath)
 	subprocess.call([programPath + programs[languageType], txtImage])
-	subprocess.call(["rm",txtImage])
 	subprocess.call(["make","clean"], cwd=programPath)
+	subprocess.call(["rm",txtImage])
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
