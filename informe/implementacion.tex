@@ -18,7 +18,7 @@ Dentro de las carpetas hay 3 archivos con código fuente, $helpers$, $tensorOps$
 Los archivos $helpers$ implementan varias funciones útiles, entre otras cosas las que utilizamos para leer los TXTs donde estan los datos de entrenamiento, también algunas funciones matriciales básicas como transpocisión e impresión.
 \\
 \\
-Luego esta $tensorOps$ en el cual pusimos los métodos que implementamos tanto en $C$ como en $ASSEMBLER$ estas son operaciones matriciales y vectoriales como el producto matricial y la suma vectorial.
+Luego esta $tensorOps$ en el cual pusimos los métodos que implementamos tanto en $C$ como en $ASSEMBLER$ estas son operaciones matriciales y vectoriales como el producto matricial y la suma vectorial. Es importante entender el objetivo de la implementación en $ASSEMBLER$, al utilizar SIMD podemos realizar 2 operaciones de $double$ a la vez y 4 de $float$, por ejemplo la suma, multiplicación y reordenamiento de valores en un registro. Esta herramienta nos permitirá paralelizar los cálculos e idealmente mejorar los tiempos significativamente.
 \\
 \\
 Por último esta $nn$ que es el archivo que utiliza a los demás para implementar toda la lógica de la red neuronal y donde se encuentra el main de nuestro programa.
@@ -37,15 +37,15 @@ Por ejemplo, al ingresar los valores de una imagen que represente al número 2 s
 \centering
 \end{figure}
 
-Es importante notar que si bien la cantidad de neuronas en la capa interna y externa esta fijada por el dominio del problema, la cantidad de neuronas en la capa oculta es una variable con la que se puede jugar, en la imagen se ve el caso en que se utilizan 100 neuronas como capa interna pero nosotros utilizamos 30 para la mayor parte de la experimentación ya que con este valor obtuvimos un buen trade-off entre tiempo de computo y performance.
+Es importante notar que si bien la cantidad de neuronas en la capa interna y externa esta fijada por el dominio del problema, la cantidad de neuronas en la capa oculta es una variable con la que se puede jugar, en la imagen se ve el caso en que se utilizan 100 neuronas como capa interna pero nosotros utilizamos 30 para la mayor parte de la experimentación ya que con este valor obtuvimos un buen trade-off entre tiempo de cómputo y performance.
 
 \subsection{Métodos implementados Assembler}
 
-A continuación damos una breve explicación de los métodos que implementamos en assembler para intentar mejorar la performance se describen a continuación. Todos ellos poseen la propiedad de realizar cierta operación aritmética repetidas veces para distintos valores haciendo propicio el intento de paralelización con SIMD.
+A continuación damos una breve explicación de los métodos que implementamos en $ASSEMBLER$ para intentar mejorar la performance. Todos ellos poseen la propiedad de realizar cierta operación aritmética repetidas veces para distintos valores, haciendo propicio el intento de paralelización con SIMD.
 
 \subsubsection{cost\_derivative}
 
-Este método es el gradiente del error cuadrático medio lo cual se reduce simplemente al computo de la resta entre vectores.
+Este método es el gradiente del error cuadrático medio lo cual se reduce simplemente al cómputo de la resta entre vectores.
 \\
 \\
 \begin{lstlisting}
@@ -60,12 +60,11 @@ void cost_derivative(double* res_vec, double* target_mat, uint cant_imgs, double
 
 \subsubsection{vector\_sum}
 
-Como indica su nombre esta método computa la suma vectoria.
+Como indica su nombre esta método computa la suma vectorial.
 \\
 \\
 \begin{lstlisting}[frame=single]
 void vector_sum(double* vector1, double* vector2, uint n, double* output){
-// |vector1| == |vector2| == n
   for (int i = 0; i < n; i++) {
     output[i] = vector1[i] + vector2[i];
   }
@@ -75,7 +74,7 @@ void vector_sum(double* vector1, double* vector2, uint n, double* output){
 
 \subsubsection{update\_weight}
 
-COMPLETAR
+Esta función actualiza los valores de un vector restandole un porcentaje de los valores de otro vector. El porcentaje descontado esta dado por la variable c. Esto se utiliza en la red neuronal para ir actualizando los parámetros de las neuronas hasta que converjan a una configuración que clasifica lo mejor posible.
 \\
 \\
 \begin{lstlisting}[frame=single]
@@ -93,7 +92,6 @@ El producto de Hadamard consiste en la multiplicación componente a componente e
 \\
 \begin{lstlisting}[frame=single]
 void hadamard_product(double* matrix1, double* matrix2, uint n, uint m, double* output){
-/* matrix1 and matrix2 are nxm*/
   for(uint i = 0; i < n; i++){
     for(uint j = 0; j < m; j++){
       output[i * m + j] = matrix1[i * m + j] * matrix2[i * m + j];
@@ -109,9 +107,6 @@ Este es el clásico producto matricial donde $matrix1$ es de $n \times m$, $matr
 \\
 \begin{lstlisting}[frame=single,xleftmargin=1cm]
 void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, double* output){
-// matrix1 is nxm
-// matrix2 is mxl
-// output is nxl
   for(uint i = 0; i < n; i++) {
     for(uint j = 0; j < l; j++){
       output[i * l + j] = 0;
@@ -126,7 +121,7 @@ void matrix_prod(double* matrix1, double* matrix2, uint n, uint m, uint l, doubl
 
 \subsection{Tests}
 
-Tanto la versión del programa que recibe Floats como la que recibe Doubles tiene un conjunto de tests en las funciones que implementamos tanto en ASSEMBLER como C, esto fue para corroborar el buen funcionamiento de lo dessarrollado y ayudarnos a debuguear.
+Tanto la versión del programa que utiliza Floats como la que utiliza Doubles tienen un conjunto de tests en las funciones que implementamos en ASSEMBLER y C, esto fue para corroborar el buen funcionamiento de lo desarrollado y ayudarnos a debuguear.
 \\
 \\
 Dichos tests se encuentran en la carpeta $test$ y se compilan con el \texttt{Makefile} el cual crea el ejecutable $test$ que corre los mismos.

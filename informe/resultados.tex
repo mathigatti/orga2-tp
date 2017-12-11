@@ -1,6 +1,6 @@
 \subsection{Porcentaje de aciertos de las redes}
 
-La red neuronal tiene un porcentaje de acierto promedio del 95\% en todas sus versiones. A pesar de que el tipo float tiene una menor capacidad de representación numérica que su contraparte el tipo double su precisión parece ser suficiente para realizar los cálculos necesarios y hacer que la red neuronal llegue a las mismas conclusiones que la red que utiliza double.
+La red neuronal tiene un porcentaje de acierto promedio del 95\% en todas sus versiones. A pesar de que el tipo float tiene una menor capacidad de representación numérica que su contraparte de tipo double su precisión parece ser suficiente para realizar los cálculos necesarios y hacer que la red neuronal llegue a las mismas conclusiones que la red que utiliza double.
 
 \subsection{Tiempos}
 
@@ -14,7 +14,7 @@ En total se corrieron 400k iteraciones de cada algoritmo para estimar estos valo
 
 \paragraph{cost\_derivative}
 
-Como parámetros se le pasaron dos matrices de tamaño $10\times32$. En este caso la dimensión que nos importa que sea múltiplo de 4 es la segunda. [TODO: completar comentando que esta es una funcion particularmente chica y fue facil de optimizar en ASM]
+Como parámetros se le pasaron dos matrices de tamaño $10\times32$. En este caso la dimensión que nos importa que sea múltiplo de 4 es la segunda. A parte de realizar los cálculos con SIMD aprovechamos que para el caso particular en que se usa esta matriz siempre la cantidad de filas es de 10 y realizamos una técnica de loop unrolling para mejorar los tiempos de computo de la versión de $ASSEMBLER$ intentando evitar el overhead del branch prediction.
 
 \begin{center}
     \begin{tabular}{| l | c | c |}
@@ -104,7 +104,6 @@ Se le pasaron dos matrices, una de dimensión $10\times 20$ y la otra de $20\tim
         \end{tabular}
 \end{center}
 
-
 Finalmente mostramos el tiempo promedio que insume realizar un epoch\footnote{Un epoch es una pasada de entrenamento sobre un mini-batch}. Los hiperparámetros usados fueron:
 \begin{itemize}
     \item cantidad de unidades de la capa oculta = 30
@@ -126,3 +125,10 @@ Finalmente mostramos el tiempo promedio que insume realizar un epoch\footnote{Un
             
         \end{tabular}
 \end{center}
+
+\subsection{Análisis de los resultados}
+
+Hay varios puntos destacables en los resultados obtenidos durante la experimentación. Por un lado hay funciones que no superaron a su versión de C, como son update\_weight y vector\_sum, que incluso dió peor. Ambas son funciones bastante simples formadas por un solo loop, creemos que el compilador de C puede tener ciertas optimizaciones para estos casos básicos que hacen que obtenga buenos tiempos. De todas maneras algo interesante para notar en estas dos funciones es que obtuvieron tiempos ideales comparando $float$ con $double$, en estas se cumple que $float$ tarda la mitad del tiempo que $double$ para la versión de $ASSEMBLER$, esto se debe probablemente a lo simple que es el código de estas funciones lo cual permite que las dos versiones sean muy similares y no se agregue gran complejidad al empezar a trabajar con 4 elementos a la vez como ocurre al implementar la versión de $float$. Esto no se dió tanto con funciones mas complejas, teniendo como caso mas extremo a matrix\_prod la cual dió peor con $float$ que con $double$, esto sucedió debido a que tuvimos que utilizar funciones mas sofisticadas y menos eficientes para reordenar y mover los valores obtenidos cuando trabajabamos de a 4, perdiendo todo lo que habiamos ganado al paralelizar mas.
+\\
+\\
+Como último comentario es importante notar como todas estas optimizaciones juntas terminan logrando una mejora significativa en la red neuronal, logrando que una epoch reduzca su tiempo de ejecución en aproximadamente un 23\%.
