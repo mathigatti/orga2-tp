@@ -1,4 +1,4 @@
-En esta sección esperamos poder brindar una breve introducción a los temas que son relevantes para el desarrollo y la implmentación de este proyecto. La dividiremos en tres partes: qué dataset elegimos y por qué; brindaremos una breve explicación que busca proveer al lector de las herramientas para poder interpretar la implementación; finalmente, explicaremos porque la aplicación de SIMD resulta pertinente a este problema.
+En esta sección esperamos poder brindar una breve introducción a los temas que son relevantes para el desarrollo y la implementación de este proyecto. La dividiremos en tres partes: qué dataset elegimos y por qué; brindaremos una breve explicación que busca proveer al lector de las herramientas para poder interpretar la implementación; finalmente, explicaremos porque la aplicación de SIMD resulta pertinente a este problema.
 
 \subsection{El dataset: MNIST}
 
@@ -20,7 +20,7 @@ La función que ejecuta la neurona tiene dos partes. Primero una lineal (tambié
 
 $$z = \sum w_i x_i + b$$
 
-Luego, se le aplica a $z$ la llamada \emph{función de activación}, que nos dará el output de la neurona. Dicha función puede ser cualquiera que vaya de los reales a los reales, aunque típicamente se escojen ciertas funciones no lineales (se puede probar fácilmente que usar una función lineal no agrega mayor capacidad para aproximar funciones). En particular, para este trabajo usaremos como función de activación la función sigmoidea definida como sigue:
+Luego, se le aplica a $z$ la llamada \emph{función de activación}, que nos dará el output de la neurona. Dicha función puede ser cualquiera que vaya de los reales a los reales, aunque típicamente se escogen ciertas funciones no lineales (se puede probar fácilmente que usar una función lineal no agrega mayor capacidad para aproximar funciones). En particular, para este trabajo usaremos como función de activación la función sigmoidea definida como sigue:
 
 $$\sigma(z) = \frac{1}{1 + e^{-z}}$$
 
@@ -53,11 +53,11 @@ Las ecuaciones vistas antes para el cálculo del output de una neurona pueden ge
 $$z^l = W^l a^{l-1} + b^l$$
 $$a^l = \sigma (z^l)$$
 
-donde $1\leq l\leq L$, y definimos $a_0 = x$, con $x$ el input de la red. $\sigma$ en este caso es una función sobre un vector o una matriz y se aplica en forma \emph{element-wise}. Algo que puede generar confusión es que $x$ (y por lo tanto las subsecuentes $a^l$) puede ser tanto un vector como una matriz, de acuerdo a sí hay uno o muchos inputs (cada input es un vector columna) tratando de computarse en simultáneo. Como usamos $mini-batches$ para entrenar, siempre será una matriz durante la fase de entrenamiento.
+donde $1\leq l\leq L$, y definimos $a_0 = x$, con $x$ el input de la red. $\sigma$ en este caso es una función sobre un vector o una matriz y se aplica en forma \emph{element-wise}. Algo que puede generar confusión es que $x$ (y por lo tanto las subsecuentes $a^l$) puede ser tanto un vector como una matriz, de acuerdo a si hay uno o muchos inputs (cada input es un vector columna) tratando de computarse en simultáneo. Como usamos $mini-batches$ para entrenar, siempre será una matriz durante la fase de entrenamiento.
 
 \subsubsection{Entrenamiento}
 
-Pasemos ahora a la parte más importante, que es el algoritmo de entrenamiento de la red. Ante todo es importante entender que lo que queremos aprender son los parámetros $W^l$ y $b^l$. Además, es necesario definir una función de costo: es decir, una función que nos indique cuan ``lejos'' están las predicciones de las etiquetas verdaderas. Luego, el objetivo del entrenamiento será seleccionar los parámetros $W^l$ y $b^l$ que minimizen esta función.
+Pasemos ahora a la parte más importante, que es el algoritmo de entrenamiento de la red. Ante todo es importante entender que lo que queremos aprender son los parámetros $W^l$ y $b^l$. Además, es necesario definir una función de costo: es decir, una función que nos indique cuán ``lejos'' están las predicciones de las etiquetas verdaderas. Luego, el objetivo del entrenamiento será seleccionar los parámetros $W^l$ y $b^l$ que minimicen esta función.
 
 Usaremos como función de costo el Error Cuadrático Medio (ECM)
 
@@ -70,7 +70,7 @@ La heurística de optimización usada es Gradient Descent\footnote{\url{https://
 $$W^l_{ij} := W^l_{ij} - \eta \frac{\partial C}{\partial W^l_{ij}}$$
 $$b^l_i := b^l_i - \eta \frac{\partial C}{\partial b^l_i}$$
 
-donde $\eta$ es el \emph{learning rate} que determina cuanto queremos modificar nuestros parámetros en una iteración, y $\frac{\partial C}{\partial v}$ es la derivada parcial de $C$ respecto del parámetro $v$.
+donde $\eta$ es el \emph{learning rate} que determina cuánto queremos modificar nuestros parámetros en una iteración, y $\frac{\partial C}{\partial v}$ es la derivada parcial de $C$ respecto del parámetro $v$.
 
 La pregunta que queda entonces es cómo calculamos las derivadas parciales. Para esto se utiliza un algoritmo conocido como \emph{backpropagation}. Recibe este nombre en contraposición al \emph{forward-propagation}, que es la pasada que se realiza sobre la red para calcular el output. Es decir que ahora querremos atravesar la red en sentido opuesto para calcular las derivadas parciales.
 

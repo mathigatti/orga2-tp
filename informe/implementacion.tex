@@ -3,7 +3,7 @@ En esta sección se explican los detalles implementativos de nuestro clasificado
 
 \subsection{Datos de Entrada}
 
-El programa tiene el set de datos de MNIST ubicado en la carpeta $mnist$ en un archivo comprimido, este es convertido a archivos de texto que contienen un pixel por línea con un script de python el cual aloja los archivos en la carpeta $data$. Esto se hace para facilitar la posterior lectura de estos datos por nuestro programa.
+El programa tiene el set de datos de MNIST ubicado en la carpeta $mnist$ en un archivo comprimido, este es convertido a archivos de texto que contienen un píxel por línea con un script de python el cual aloja los archivos en la carpeta $data$. Esto se hace para facilitar la posterior lectura de estos datos por nuestro programa.
 
 Una vez hecho esto se puede utilizar program.py para compilar y ejecutar nuestro código de c que entrena una red neuronal para reconocer estos caracteres. Tanto en la carpeta $float$ como en la carpeta $double$ se encontrará el código que implementa dicho programa y las correspondientes herramientas de compilación. Para compilar los archivos fuente manualmente basta con utilizar el \texttt{Makefile}, este crea los archivos \texttt{asm\_version} y \texttt{c\_version} que ejecutan la red neuronal.
 
@@ -15,20 +15,20 @@ En las carpetas $double$ y $float$ hay versiones equivalentes del clasificador p
 Dentro de las carpetas hay 3 archivos con código fuente, $helpers$, $tensorOps$ y $nn$.
 \\
 \\
-Los archivos $helpers$ implementan varias funciones útiles, entre otras cosas las que utilizamos para leer los TXTs donde estan los datos de entrenamiento, también algunas funciones matriciales básicas como transpocisión e impresión.
+Los archivos $helpers$ implementan varias funciones útiles, entre otras cosas las que utilizamos para leer los TXTs donde estan los datos de entrenamiento, también algunas funciones matriciales básicas como transposición e impresión.
 \\
 \\
-Luego esta $tensorOps$ en el cual pusimos los métodos que implementamos tanto en $C$ como en $ASSEMBLER$ estas son operaciones matriciales y vectoriales como el producto matricial y la suma vectorial. Es importante entender el objetivo de la implementación en $ASSEMBLER$, al utilizar SIMD podemos realizar 2 operaciones de $double$ a la vez y 4 de $float$, por ejemplo la suma, multiplicación y reordenamiento de valores en un registro. Esta herramienta nos permitirá paralelizar los cálculos e idealmente mejorar los tiempos significativamente.
+Luego está $tensorOps$ en el cual pusimos los métodos que implementamos tanto en $C$ como en $ASSEMBLER$ estas son operaciones matriciales y vectoriales como el producto matricial y la suma vectorial. Es importante entender el objetivo de la implementación en $ASSEMBLER$, al utilizar SIMD podemos realizar 2 operaciones de $double$ a la vez y 4 de $float$, por ejemplo la suma, multiplicación y reordenamiento de valores en un registro. Esta herramienta nos permitirá paralelizar los cálculos e idealmente mejorar los tiempos significativamente.
 \\
 \\
 Por último esta $nn$ que es el archivo que utiliza a los demás para implementar toda la lógica de la red neuronal y donde se encuentra el main de nuestro programa.
 
 \subsection{Estructura de la Red Neuronal}
 
-La estructura de la red implementada en los archivos $nn$ esta dada por una capa de entrada formada por 784 inputs ($28^2$) las cuales representan cada uno de los pixels de las imágenes. Esta capa se conecta a la capa interna de nuestra red y luego de ahí se va a la capa externa, formada por 10 salidas representando cada uno de los posibles digitos resultantes.
+La estructura de la red implementada en los archivos $nn$ esta dada por una capa de entrada formada por 784 inputs ($28^2$) las cuales representan cada uno de los pixels de las imágenes. Esta capa se conecta a la capa interna de nuestra red y luego de ahí se va a la capa externa, formada por 10 salidas representando cada uno de los posibles dígitos resultantes.
 \\
 \\
-Por ejemplo, al ingresar los valores de una imagen que represente al número 2 se esperará que la tercera neurona de salida (Ya que se empieza a contar desde el cero) indique 1 y todas las demas outputs indiquen 0.
+Por ejemplo, al ingresar los valores de una imagen que represente al número 2 se esperará que la tercera neurona de salida (Ya que se empieza a contar desde el cero) indique 1 y todas las demás outputs indiquen 0.
 
 \begin{figure}[H]
 \fcolorbox{black}{black}{\includegraphics[width=0.9\linewidth]{imgs/MNIST_neuralnet.png}}
@@ -37,7 +37,7 @@ Por ejemplo, al ingresar los valores de una imagen que represente al número 2 s
 \centering
 \end{figure}
 
-Es importante notar que si bien la cantidad de neuronas en la capa interna y externa esta fijada por el dominio del problema, la cantidad de neuronas en la capa oculta es una variable con la que se puede jugar, en la imagen se ve el caso en que se utilizan 100 neuronas como capa interna pero nosotros utilizamos 30 para la mayor parte de la experimentación ya que con este valor obtuvimos un buen trade-off entre tiempo de cómputo y performance.
+Es importante notar que si bien la cantidad de neuronas en la capa interna y externa está fijada por el dominio del problema, la cantidad de neuronas en la capa oculta es una variable con la que se puede jugar, en la imagen se ve el caso en que se utilizan 100 neuronas como capa interna pero nosotros utilizamos 30 para la mayor parte de la experimentación ya que con este valor obtuvimos un buen trade-off entre tiempo de cómputo y performance.
 
 \subsection{Métodos implementados Assembler}
 
@@ -74,7 +74,7 @@ void vector_sum(double* vector1, double* vector2, uint n, double* output){
 
 \subsubsection{update\_weight}
 
-Esta función actualiza los valores de un vector restandole un porcentaje de los valores de otro vector. El porcentaje descontado esta dado por la variable c. Esto se utiliza en la red neuronal para ir actualizando los parámetros de las neuronas hasta que converjan a una configuración que clasifica lo mejor posible.
+Esta función actualiza los valores de un vector restándole un porcentaje de los valores de otro vector. El porcentaje descontado está dado por la variable c. Esto se utiliza en la red neuronal para ir actualizando los parámetros de las neuronas hasta que converjan a una configuración que clasifica lo mejor posible.
 \\
 \\
 \begin{lstlisting}[frame=single]
